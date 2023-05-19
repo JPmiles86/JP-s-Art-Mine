@@ -1,0 +1,100 @@
+body {
+  margin: 0;
+  padding-top: 0px;
+}
+
+.landing {
+  text-align: center;
+  padding: 2rem;
+}
+
+.header {
+  font-size: 2.5rem;
+  color: #fff;
+  background-color: #000;
+  padding: 2rem;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin-top: 0;
+}
+
+.subtext {
+  font-size: 1rem;
+  margin: 75px auto;
+  padding: 0 0%;
+  width: 60%;
+  margin-top: calc(150px + 3rem);
+}
+
+.choose-series {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.series-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.landing-series-grid {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.series {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: black;
+}
+
+.series img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  object-position: center;
+  padding: 0.2rem;
+  border: 0px solid #ccc;
+  border-radius: 50%;
+}
+
+.series p {
+  margin-top: 1rem;
+}
+
+.subtext a {
+  text-decoration: none;
+  color: black;
+}
+
+.subtext a:hover {
+  text-decoration: none;
+  color: black;
+}
+
+
+@media (max-width: 1024px) {
+  .series-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .series-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .subtext {
+    font-size: 1.1rem;
+    margin: 75px auto;
+    padding: 0 5%;
+    width: 90%;
+  }
+}

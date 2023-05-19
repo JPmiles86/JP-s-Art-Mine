@@ -1,15 +1,32 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import GlobalStyles from './GlobalStyles';
+import '@fontsource/eb-garamond';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-root.render(
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error("No root element found");
+}
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'EB Garamond, serif',
+  },
+});
+
+createRoot(rootElement).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <GlobalStyles />
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );
 

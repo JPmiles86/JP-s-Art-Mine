@@ -1,0 +1,26 @@
+/* SeriesGrid.css */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.gridItem {
+  text-align: center;
+}
+
+.imageWrapper {
+  width: 100%;
+  padding-top: 100%; /* 1:1 aspect ratio */
+  position: relative;
+  overflow: hidden;
+}
+
+.gridItem img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
