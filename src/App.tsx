@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Landing from './screens/Landing';
 import ImageGrid from './screens/ImageGrid';
 import ExhibitionSpace from './screens/ExhibitionSpace';
-import { create } from 'zustand';
 
 
 const App: React.FC = () => {

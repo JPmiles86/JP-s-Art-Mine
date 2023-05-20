@@ -1,4 +1,4 @@
-import create from 'zustand'
+import { create } from 'zustand';
 
 // define the store's initial state
 const initialState = {

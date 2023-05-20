@@ -62,17 +62,6 @@ const ImageGrid: React.FC = () => {
   
 // Inside your ImageGrid component
 useEffect(() => {
-    const sortedImages = sortImages(sortOrder, images);
-    
-    const idsAreSame = sortedImages.every((image, index) => image.photoID === images[index]?.photoID);
-    if (!idsAreSame) {
-      setImages(sortedImages);
-    }
-  }, [sortOrder, images]);
-  
-  
-  
-  useEffect(() => {
     let url = '';
     let dataUrl = '';
     if (filter) { // Check if filter is defined
@@ -89,26 +78,23 @@ useEffect(() => {
     }
     
     if (url !== '') {
-        console.log("dataUrl: ", dataUrl); // log the dataUrl
       fetch(url)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
           setHeaderData(data);
         })
         .catch(error => console.error('Error fetching header data:', error));
   
       fetch(dataUrl)
-  .then(response => response.json())
-  .then(data => {
-    console.log('Fetched data:', data);
-    console.log('Images:', data.images);
-    const sortedImages = sortImages(sortOrder, data);
-    setImages(sortedImages); // this now updates the store's state
-  })
-  .catch(error => console.error('Error fetching images:', error));
+        .then(response => response.json())
+        .then(data => {
+          const sortedImages = sortImages(sortOrder, data);
+          setImages(sortedImages);
+        })
+        .catch(error => console.error('Error fetching images:', error));
     }
-  }, [filter, sortOrder]);  
+  }, [filter, sortOrder]);
+  
 
   return (
     <div className={styles.seriesPage}>
@@ -167,4 +153,3 @@ useEffect(() => {
 }
 
 export default ImageGrid;
-
