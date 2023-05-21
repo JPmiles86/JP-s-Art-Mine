@@ -163,7 +163,6 @@ select {
 .artwork::after {
   box-shadow: 0 6px 6px rgba(0, 0, 0, 0.1);
   filter: drop-shadow 0 6px 6px rgba(0, 0, 0, 0);
-  border-width: var(--border-width, 20px);
 }
 
 .buttonContainer {
@@ -269,9 +268,4 @@ select {
 .noFrame::before,
 .noFrame::after {
   display: none;
-}
-
-.noFrame::before,
-.noFrame::after {
-  --border-width: 0px;
 }

@@ -166,13 +166,13 @@ const ExhibitionSpace = () => {
           }}
         >
           <div 
-  className={`${styles.artwork} ${isMerged ? styles.merged : ''} ${isMerged ? styles.noFrame : ''} ${leftArtwork === 'original' ? styles.mirrored : ''}`} 
+  className={`${styles.artwork} ${isMerged ? styles.merged : ''} ${frameVisible ? '' : styles.noFrame} ${leftArtwork === 'original' ? styles.mirrored : ''}`} 
   data-frame-color={frameColor}
   style={{transform: `rotate(${originalRotation}deg) scaleX(${leftArtwork === 'original' ? -1 : 1})`,}}>
   <img src={`http://localhost:4000/images${selectedImage?.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Artwork" />
 </div>
 <div 
-  className={`${styles.artwork} ${isMerged ? styles.merged : ''} ${isMerged ? styles.noFrame : ''} ${rightArtwork === 'original' ? styles.mirrored : ''}`} 
+  className={`${styles.artwork} ${isMerged ? styles.merged : ''} ${frameVisible ? '' : styles.noFrame} ${rightArtwork === 'original' ? styles.mirrored : ''}`} 
   data-frame-color={frameColor}
   style={{transform: `rotate(${mirroredRotation}deg) scaleX(${rightArtwork === 'original' ? -1 : 1})`,}}>
   <img src={`http://localhost:4000/images${selectedImage?.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Mirrored Artwork" />
