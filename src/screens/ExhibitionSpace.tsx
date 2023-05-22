@@ -165,17 +165,24 @@ const ExhibitionSpace = () => {
             gap: getGap(),
           }}
         >
-          <div 
-  className={`${styles.artwork} ${isMerged ? styles.merged : ''} ${isMerged ? styles.noFrame : ''} ${leftArtwork === 'original' ? styles.mirrored : ''}`} 
+          <div
+  className={`${styles.artwork} ${styles.artworkFrame} ${isMerged ? styles.merged : ''} ${frameVisible ? '' : styles.noFrame} ${leftArtwork === 'original' ? styles.mirrored : ''}`}
   data-frame-color={frameColor}
   style={{transform: `rotate(${originalRotation}deg) scaleX(${leftArtwork === 'original' ? -1 : 1})`,}}>
   <img src={`http://localhost:4000/images${selectedImage?.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Artwork" />
 </div>
 <div 
-  className={`${styles.artwork} ${isMerged ? styles.merged : ''} ${isMerged ? styles.noFrame : ''} ${rightArtwork === 'original' ? styles.mirrored : ''}`} 
+  className={`${styles.artwork} ${styles.artworkFrame} ${isMerged ? styles.merged : ''} ${frameVisible ? '' : styles.noFrame} ${rightArtwork === 'original' ? styles.mirrored : ''}`}
   data-frame-color={frameColor}
   style={{transform: `rotate(${mirroredRotation}deg) scaleX(${rightArtwork === 'original' ? -1 : 1})`,}}>
   <img src={`http://localhost:4000/images${selectedImage?.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Mirrored Artwork" />
+</div>
+<div 
+  className={`${styles.artwork} ${styles.placeholder} ${getOrientation() === 'portrait' ? styles.portrait : styles.landscape} ${frameVisible ? styles.placeholder : ''}`} 
+  style={{display: isMerged ? 'block' : 'none'}}
+  data-frame-color={frameColor}
+>
+  <img src={`http://localhost:4000/images/${getOrientation() === 'portrait' ? 'diptych-merged-portrait-3-4.png' : 'diptych-merged-landscape-1-3.png'}`} alt="Placeholder" />
 </div>
         </div>
         <div className={styles.buttonContainer}>

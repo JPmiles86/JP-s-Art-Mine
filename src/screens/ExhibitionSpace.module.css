@@ -122,11 +122,11 @@ select {
   transition: transform 0.3s ease;
   vertical-align: bottom;
   margin: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
-.artwork::before,
-.artwork::after {
+.artworkFrame::before,
+.artworkFrame::after {
   content: '';
   position: absolute;
   border: 20px solid white;
@@ -134,14 +134,14 @@ select {
   transition: transform 0.3s ease;
 }
 
-.artwork::before {
+.artworkFrame::before {
   top: -2.5%;
   left: -3.75%;
   width: calc(100% + 7.5%);
   height: calc(100% + 5%);
 }
 
-.artwork::after {
+.artworkFrame::after {
   top: -2.5%;
   right: -3.75%;
   width: calc(100% + 7.5%);
@@ -163,7 +163,6 @@ select {
 .artwork::after {
   box-shadow: 0 6px 6px rgba(0, 0, 0, 0.1);
   filter: drop-shadow 0 6px 6px rgba(0, 0, 0, 0);
-  border-width: var(--border-width, 20px);
 }
 
 .buttonContainer {
@@ -179,7 +178,6 @@ select {
 .rotateButton,
 .mergeButton, 
 .frameColorButton, 
-.frameButton
 .buyButton {
   padding: 10px 20px;
   border: 1px solid #000;
@@ -192,7 +190,6 @@ select {
 .rotateButton:hover,
 .mergeButton:hover, 
 .frameColorButton:hover, 
-.frameButton
 .buyButton:hover {
   background-color: #000;
   color: #fff;
@@ -271,7 +268,50 @@ select {
   display: none;
 }
 
-.noFrame::before,
-.noFrame::after {
-  --border-width: 0px;
+.placeholder {
+  align-self: center;
+  justify-self: center;
+  position: absolute;
+  z-index: 1; /* Increase the z-index */
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.placeholder.portrait {
+  width: 40%;
+}
+
+.placeholder.landscape {
+  width: 60%;
+}
+
+.placeholder::before,
+.placeholder::after {
+  content: '';
+  position: absolute;
+  top: -2%;
+  right: -1%; /* Adjust the right value */
+  bottom: -2%;
+  left: -1%; /* Adjust the left value */
+  border: 0.5vw solid white;
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+.placeholder[data-frame-color="white"]::before,
+.placeholder[data-frame-color="white"]::after {
+  border-color: white;
+}
+
+.placeholder[data-frame-color="black"]::before,
+.placeholder[data-frame-color="black"]::after {
+  border-color: black;
+}
+
+.placeholder::before,
+.placeholder::after {
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0));
 }
