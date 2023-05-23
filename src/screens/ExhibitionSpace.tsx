@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
-import { useStore } from './store'; // adjust the path as needed
+import useStore from './store';
 
-interface ImageData {
+interface ImageObject {
   photoID: string;
   number: string;
   url: string;
-  title: string;
-  dateOriginal: string;
   imagePath?: string;
+  title: string;
+  date: string;
+  dateOriginal: string;
   index?: number;
 }
 
@@ -46,13 +47,18 @@ const ExhibitionSpace = () => {
       if (images && images.length > 0) {
         const image = images.find((image: any) => image.photoID === photoID);
         console.log("Found image:", image); // This should print the image found or 'undefined'
-        setSelectedImageInStore(image);
-        setCurrentIndex(image?.index ?? 0);
+        if(image !== undefined) {
+          setSelectedImageInStore(image);
+          setCurrentIndex(image?.index ?? 0);
+        } else {
+          console.log("Image is not available yet!");
+        }
         setIsLoading(false); // You should adjust this depending on when your data is considered "loaded"
       } else {
         console.log("Images are not available yet!");
       }
     }, [photoID, images, setSelectedImageInStore]);
+    
 
   useEffect(() => {
     console.log("Inside useEffect with dependency on selectedImage:", selectedImage);

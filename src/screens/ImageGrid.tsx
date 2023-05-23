@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
-import { useStore } from './store'; // adjust the path as needed
-import { create } from 'zustand';
+import useStore from './store'; // adjust the path as needed
+
 
 
 interface ImageObject {
     photoID: string;
     number: string;
     url: string;
-    imagePath?: string; 
+    imagePath?: string;
     title: string;
+    date: string;
     dateOriginal: string;
-    index?: number; 
-  }
+    index?: number;
+}
 
 interface HeaderData {
   title: string;

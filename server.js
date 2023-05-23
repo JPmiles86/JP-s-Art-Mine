@@ -171,6 +171,44 @@ app.get('/api/numbers/:number/header', async (req, res) => {
   }
 });
 
+app.get('/api/photos/filter/:filter', async (req, res) => {
+  const { filter } = req.params;
+  try {
+    let photos;
+    switch(filter) {
+      case 'CST':
+      case '230321':
+      case '1125':
+        photos = await Photo.findAll({ where: { filter } });
+        break;
+      // Add other cases here as needed
+      default:
+        photos = [];
+        break;
+    }
+    res.json(photos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/photo/:photoID', async (req, res) => {
+  const { photoID } = req.params;
+  try {
+    const photo = await Photo.findOne({ where: { photoID } });
+    if (photo) {
+      res.json(photo);
+    } else {
+      res.status(404).send('Photo not found');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
