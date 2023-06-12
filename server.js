@@ -21,8 +21,10 @@ app.get('/', (req, res) => {
 
 app.get('/api/photos/date/:date', async (req, res) => {
   const { date } = req.params;
+  console.log(`Date: ${date}`);
   try {
     const photos = await Photo.findAll({ where: { date } });
+    console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
     console.error(error);
@@ -32,8 +34,10 @@ app.get('/api/photos/date/:date', async (req, res) => {
 
 app.get('/api/photos/number/:number', async (req, res) => {
   const { number } = req.params;
+  console.log(`Number: ${number}`);
   try {
     const photos = await Photo.findAll({ where: { number } });
+    console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
     console.error(error);
@@ -43,10 +47,12 @@ app.get('/api/photos/number/:number', async (req, res) => {
 
 app.get('/api/photos/series/:series', async (req, res) => {
   const { series } = req.params;
+  console.log(`Series: ${series}`);
   try {
     const photos = await Photo.findAll({ 
       where: { seriesCode: series } 
     });
+    console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
     console.error(error);
@@ -64,6 +70,7 @@ app.get('/api/photos/:photoID', async (req, res) => {
         seriesName: photo.seriesName,
         date: photo.date,
         number: photo.number,
+        shutterSpeed: photo.shutterSpeed
         // add other required fields here
       });
     } else {
@@ -134,7 +141,7 @@ app.get('/api/series/:seriesCode/header', async (req, res) => {
 app.get('/api/dates/:date/header', async (req, res) => {
   const { date } = req.params;
   try {
-    const dateData = await Dates.ByPk(date);
+    const dateData = await Dates.findByPk(date);
     if (dateData) {
       res.json({
         title: dateData.date,

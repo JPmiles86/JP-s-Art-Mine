@@ -18,6 +18,7 @@ const sequelize = new Sequelize(
     {
       host: config.development.host,
       dialect: 'postgres',
+      timezone: 'UTC', // Add this line
     }
 );
 

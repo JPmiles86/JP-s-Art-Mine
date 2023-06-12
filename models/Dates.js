@@ -6,6 +6,9 @@ const Dates = sequelize.define('Dates', {
     type: DataTypes.STRING,
     primaryKey: true
   },
+  dateFormal: {
+    type: DataTypes.STRING,
+  },
   shortDescription: {
     type: DataTypes.STRING(150),  // Instagram bios are typically up to 150 characters
   },
@@ -16,7 +19,15 @@ const Dates = sequelize.define('Dates', {
     type: DataTypes.STRING,
   }
 }, {
-  freezeTableName: true
+  freezeTableName: true,
+
+  // Add this instance method
+  instanceMethods: {
+    async updateImageUrl(imageUrl) {
+      this.imageUrl = imageUrl;
+      await this.save();
+    }
+  }
 });
 
 module.exports = Dates;

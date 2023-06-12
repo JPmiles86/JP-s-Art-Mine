@@ -1,3 +1,4 @@
+// Photo.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const CameraModel = require('./CameraModel');

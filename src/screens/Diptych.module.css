@@ -1,0 +1,34 @@
+.artworkContainer {
+    width: 100vw;
+    height: 75vw; /* Maintain aspect ratio 2:3 (1000x1500) for the widest scenario */
+    max-height: 100vh;
+    max-width: calc(100vh * 4/3); /* Adjust for the tallest scenario */
+    position: relative; /* This allows the .diptych to be positioned absolutely */
+    background: black; /* This will simulate the border */
+    margin: auto; /* Center the artworkContainer on the page */
+}
+
+.diptych {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - 3vw); /* Adjust border width here */
+    height: calc(100% - 3vw); /* Adjust border width here */
+    margin: 1.5vw; /* Adjust border width here */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    background: white; /* Set background to white to simulate border */
+}
+
+.artwork {
+    width: 50%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.artworkMirror {
+    transform: scaleX(-1);
+    margin-left: -1px; /* To remove possible gap between images */
+}

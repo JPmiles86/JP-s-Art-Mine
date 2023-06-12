@@ -137,17 +137,17 @@ select {
 }
 
 .artworkFrame::before {
-  top: -2.5%;
-  left: -3.75%;
-  width: calc(100% + 7.5%);
-  height: calc(100% + 5%);
+  top: -2%;
+  left: -3%;
+  width: calc(100% + 6%);
+  height: calc(100% + 4%);
 }
 
 .artworkFrame::after {
-  top: -2.5%;
-  right: -3.75%;
-  width: calc(100% + 7.5%);
-  height: calc(100% + 5%);
+  top: -2%;
+  right: -3%;
+  width: calc(100% + 6%);
+  height: calc(100% + 4%);
   transform: scaleX(-1);
 }
 
@@ -294,12 +294,11 @@ select {
   content: '';
   position: absolute;
   top: -2%;
-  right: -1%; /* Adjust the right value */
+  right: -.85%; /* Adjust the right value */
   bottom: -2%;
-  left: -1%; /* Adjust the left value */
+  left: -.85%; /* Adjust the left value */
   border: 0.5vw solid white;
   pointer-events: none;
-  transition: transform 0.3s ease;
 }
 
 .placeholder[data-frame-color="white"]::before,

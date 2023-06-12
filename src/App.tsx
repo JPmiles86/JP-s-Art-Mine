@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Landing from './screens/Landing';
 import ImageGrid from './screens/ImageGrid';
 import ExhibitionSpace from './screens/ExhibitionSpace';
+import Inquire from './screens/Inquire';
 
 
 const App: React.FC = () => {
@@ -15,6 +16,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/:filter" element={<ImageGrid />} />
             <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />
+            <Route path="/:filter/:photoID/inquire" element={<Inquire />} />
             {/* Other routes go here */}
           </Routes>
         </Container>
