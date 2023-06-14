@@ -2,20 +2,26 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import useStore from './store';
-import Diptych from './Diptych';
+import * as diptychs from '../Diptychs';
 
 const Inquiry: React.FC = () => {
-  const { photoID } = useParams();
+  const { photoID } = useParams<{ photoID: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { setSelectedImage, selectedImage, sortedImages } = useStore();
+  const { images, fetchImages, setSelectedImage, selectedImage, sortedImages } = useStore();
   const currentFilter = location.pathname.split('/')[1];
+
+  React.useEffect(() => {
+    if (images.length === 0) {
+      fetchImages();
+    }
+  }, [images, fetchImages]);
 
   React.useEffect(() => {
     if (photoID) {
       setSelectedImage(photoID);
     }
-  }, [photoID, setSelectedImage]);
+  }, [photoID, setSelectedImage, images]); // added images as dependency
 
   const currentIndex = sortedImages.findIndex(image => image.photoID === photoID);
 
@@ -44,8 +50,103 @@ const Inquiry: React.FC = () => {
       </div>
       {selectedImage ? (
         <Box>
-          {/* display the selected artwork */}
-          <Diptych />
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_CD_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_CD_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '100px' }}>
+            <diptychs.E_2x3_CD_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_CD_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '100px' }}>
+            <diptychs.E_2x3_CT_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_CT_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '100px' }}>
+            <diptychs.F_2x3_CT_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_CT_P_B
+            </Typography>
+          </div>
+          
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_SD_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_SD_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.E_2x3_SD_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_SD_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_ST_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_ST_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.E_2x3_ST_P_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_ST_P_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_DC_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_DC_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_DS_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_DS_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_TC_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_TC_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.F_2x3_TS_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: F_2x3_TS_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.E_2x3_DC_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_DC_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.E_2x3_DS_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_DS_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.E_2x3_TC_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_TC_L_B
+            </Typography>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <diptychs.E_2x3_TS_L_B />
+            <Typography style={{ textAlign: 'center' }}>
+              Diptych: E_2x3_TS_L_B
+            </Typography>
+          </div>
         </Box>
       ) : (
         <Typography>Loading...</Typography>
