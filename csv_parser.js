@@ -54,7 +54,7 @@ module.exports = function parseCSV(csvFilePath, date) {
           iso: data['ISO'],
           dateOriginal: new Date(data['Date Original']),
           dateFormal: convertToDateFormal(data['File name'].split('.')[0].split('-')[0]),
-          imagePath: path.join('/assets/images/originals', year, month, date, data['File name'].replace('.CR2', '.jpg')),
+          imagePath: path.join('/assets/images/originals', year, month, date, data['File name'].replace('.CR2', '.jpg').replace('.RAF', '.jpg').replace('.ARW', '.jpg')),
           uniqueKey: data['File name'].split('.')[0] + '-' + format(new Date(data['Date Original']), 'HHmmss'),
         };
         console.log('Record:', record); // Log the constructed record

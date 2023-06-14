@@ -1,0 +1,23 @@
+// F_3x4_CT_P_B.tsx
+import React from 'react';
+import useStore from '../screens/store';
+
+const F_3x4_CT_P_B = () => {
+  const { selectedImage } = useStore();
+  const imageUrl = selectedImage ? `http://localhost:4000/images${selectedImage.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}` : '';
+
+  if (!imageUrl) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', border: '.75vw solid black', boxShadow: '0px 5px 10px rgba(0, 0, 0, 0.3)' }}>
+    <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet">
+      <image href={imageUrl} x="0" y="0" height="400" width="300" transform="translate(200) scale(-1, 1) rotate(180, 100, 200)" preserveAspectRatio="xMidYMid meet" />
+      <image href={imageUrl} x="200" y="0" height="400" width="300" transform="translate(600) rotate(180, 100, 200)" preserveAspectRatio="xMidYMid meet" />
+    </svg>
+    </div>
+  );
+};
+
+export default F_3x4_CT_P_B;
