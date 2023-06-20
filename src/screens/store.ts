@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { DataService } from './DataService';
 import { UrlService } from './UrlService';
+import { DiptychSVG } from '../Diptychs/DiptychFilter';
 
 const dataService = new DataService();
 const urlService = new UrlService();
@@ -18,86 +19,109 @@ export interface ExhibitionHeaderData {
   seriesName: string;
 }
 
-export interface ImageObject {
-    photoID: string;
-    number: string;
-    url: string;
-    imagePath?: string;
-    title: string;
-    date: string;
-    dateOriginal: string;
-    index?: number;
-    seriesName: string;
-    seriesCode: string;
+export interface Photograph extends DiptychSVG {
+  photoID: string;
+  number: string;
+  url: string;
+  imagePath: string;
+  title: string;
+  date: string;
+  dateOriginal: string;
+  index?: number;
+  seriesName: string;
+  seriesCode: string;
+  aspectRatio: string;
+  DiptchId: string;
+  FrameId: string;
+  leftSide: string;
+  leftRotation: string;
+  rightSide: string;
+  rightRotation: string;
+  shapeInCenterEdge: string;
+  shapeAtTopEdge: string;
+  DiptychIdName: string;
+  diptcyhName: string;
+  artworkID: string;
 }
 
 export interface Store {
-  images: ImageObject[];
-  sortedImages: ImageObject[];
-  selectedImage: ImageObject | null;
+  photos: Photograph[];
+  sortedPhotos: Photograph[];
+  selectedPhoto: Photograph | null;
   gridHeaderData: GridHeaderData | null;
   exhibitionHeaderData: ExhibitionHeaderData | null;
   initialLoad: boolean;
   loading: boolean; 
-  initialImageFetch: boolean;
+  initialPhotoFetch: boolean;
+  selectedSeries: string;
+  seriesFilter: string;
+  setSeriesFilter: (series: string) => void;
+  setSelectedSeries: (series: string) => void;
   setLoading: (loading: boolean) => void;
   setInitialLoad: (value: boolean) => void;
-  setSelectedImage: (photoID: string | null) => void;
-  setSortedImages: (images: ImageObject[]) => void;
+  setSelectedPhoto: (photoID: string | null) => void;
+  setSortedPhotos: (photos: Photograph[]) => void;
   setGridHeaderData: (data: GridHeaderData) => void;
   setExhibitionHeaderData: (data: ExhibitionHeaderData) => void;
   fetchGridHeaderData: (filter: string) => Promise<GridHeaderData | null>;
   fetchExhibitionHeaderData: (filter: string) => Promise<void>;
-  fetchImages: () => Promise<void>;
+  fetchPhotos: () => Promise<void>;
   sortValue: 'newest' | 'oldest' | 'random';
   setSortValue: (value: 'newest' | 'oldest' | 'random') => void;
 }
 
-// Define a separate function for sorting images
-function sortImages(images: ImageObject[], sortValue: 'newest' | 'oldest' | 'random') {
-  let sortedImages = [...images];
+// Define a separate function for sorting photos
+function sortPhotos(photos: Photograph[], sortValue: 'newest' | 'oldest' | 'random') {
+  let sortedPhotos = [...photos];
 
   if (sortValue === 'random') {
-    for (let i = sortedImages.length - 1; i > 0; i--) {
+    for (let i = sortedPhotos.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [sortedImages[i], sortedImages[j]] = [sortedImages[j], sortedImages[i]];
+      [sortedPhotos[i], sortedPhotos[j]] = [sortedPhotos[j], sortedPhotos[i]];
     }
   } else if (sortValue === 'newest') {
-    sortedImages.sort((a, b) => new Date(b.dateOriginal).getTime() - new Date(a.dateOriginal).getTime());
+    sortedPhotos.sort((a, b) => new Date(b.dateOriginal).getTime() - new Date(a.dateOriginal).getTime());
   } else if (sortValue === 'oldest') {
-    sortedImages.sort((a, b) => new Date(a.dateOriginal).getTime() - new Date(b.dateOriginal).getTime());
+    sortedPhotos.sort((a, b) => new Date(a.dateOriginal).getTime() - new Date(b.dateOriginal).getTime());
   }
 
-  return sortedImages;
+  return sortedPhotos;
 }
 
 const useStore = create<Store>((set, get) => ({
-  images: [],
-  sortedImages: [],
-  selectedImage: null,
+  photos: [],
+  sortedPhotos: [],
+  selectedPhoto: null,
   loading: true,
   gridHeaderData: null,
   exhibitionHeaderData: null,
   initialLoad: true,
   sortValue: 'random',
-  initialImageFetch: false,
+  initialPhotoFetch: false,
+  selectedSeries: '',
+  seriesFilter: '',
+  setSelectedSeries: (series) => set({ selectedSeries: series }),
   setLoading: (loading) => set({ loading }),
   setInitialLoad: (load: boolean) => set({ initialLoad: load }),
-// Modify setSelectedImage to find the image based on photoID
-setSelectedImage: (photoID: string | null) => {
+  setSeriesFilter: (series) => {
+    set({ seriesFilter: series });
+    get().fetchPhotos();
+  },
+// Modify setSelectedPhoto to find the photo based on photoID
+setSelectedPhoto: (photoID: string | null) => {
   if (photoID !== null) {
-    const selectedImage = get().images.find(image => image.photoID === photoID);
-    set({ selectedImage });
+    const selectedPhoto = get().photos.find(photo => photo.photoID === photoID);
+    set({ selectedPhoto });
   } else {
-    set({ selectedImage: null });
+    set({ selectedPhoto: null });
   }
 },
-  setSortedImages: (images) => set({ sortedImages: images }),
+  setSortedPhotos: (photos) => set({ sortedPhotos: photos }),
   setGridHeaderData: (data) => set({ gridHeaderData: data }),
   setExhibitionHeaderData: (data) => set({ exhibitionHeaderData: data }),
   setSortValue: (value) => {
-    const sortedImages = sortImages(get().images, value);
-    set({ sortValue: value, sortedImages });
+    const sortedPhotos = sortPhotos(get().photos, value);
+    set({ sortValue: value, sortedPhotos });
   },
   fetchGridHeaderData: async (filter) => {
     const data = await dataService.fetchGridHeaderData(filter);
@@ -105,45 +129,46 @@ setSelectedImage: (photoID: string | null) => {
     return data;
   },
   fetchExhibitionHeaderData: async (photoID) => {
-    const data = await dataService.getHeaderDataForImage(get().images, photoID);
+    const data = await dataService.getHeaderDataForPhoto(get().photos, photoID);
     set({ exhibitionHeaderData: data });
   }, 
-  fetchImages: async () => {
-    set({ loading: true });
-    
-    // Parse the URL to get the filter and photoID
-    const { filter: urlFilter, photoID } = urlService.parseUrl();
-    
-    // Fetch the images
-    const fetchedImages = await dataService.fetchImages(urlFilter);
-    console.log('Fetched images:', fetchedImages);
-    console.log(fetchedImages.map(image => image.photoID));
-    
-    // Update the state with the new images
-    set({ images: fetchedImages });
+// Define fetchPhotos here, inside the object that create is called with
+fetchPhotos: async () => {
+  set({ loading: true });
   
-    // Sort the images by date and set the sortedImages in the store
-    let sortedImages = sortImages(fetchedImages, get().sortValue);
+  // Parse the URL to get the filter and photoID
+  const { filter: urlFilter, photoID } = urlService.parseUrl();
   
-    set({ sortedImages });
+  // Fetch the photos
+  const fetchedPhotos = await dataService.fetchPhotos(urlFilter, get().seriesFilter);
+  console.log('Fetched photos:', fetchedPhotos);
+  console.log(fetchedPhotos.map(photo => photo.photoID));
   
-    // If there's a photoID in the URL, find the corresponding image and set it as the selected image
-    if (photoID) {
-      const selectedImage = fetchedImages.find(image => image.photoID === photoID);
-      if (selectedImage) {
-        set({ selectedImage });
-      } else {
-        console.error(`Could not find image with photoID: ${photoID}`);
-      }
+  // Update the state with the new photos
+  set({ photos: fetchedPhotos });
+
+   // Sort the photos by date and set the sortedPhotos in the store
+   let sortedPhotos = sortPhotos(fetchedPhotos, get().sortValue);
+
+   set({ sortedPhotos });
+
+  // If there's a photoID in the URL, find the corresponding photo and set it as the selected photo
+  if (photoID) {
+    const selectedPhoto = fetchedPhotos.find(photo => photo.photoID === photoID);
+    if (selectedPhoto) {
+      set({ selectedPhoto });
+    } else {
+      console.error(`Could not find photo with photoID: ${photoID}`);
     }
-  
-    // Fetch the header data based on the new filter
-    const headerData = await dataService.fetchGridHeaderData(urlFilter);
-    set({ gridHeaderData: headerData });
-    set({ initialImageFetch: true });
-    set({ loading: false });
-    
-  },
+  }
+
+  // Fetch the header data based on the new filter
+  const headerData = await dataService.fetchGridHeaderData(urlFilter);
+  set({ gridHeaderData: headerData });
+  set({ initialPhotoFetch: true });
+  set({ loading: false });
+},
 }));
-  
+
 export default useStore;
+

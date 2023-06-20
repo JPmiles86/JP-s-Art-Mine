@@ -5,11 +5,12 @@ import styles from './ExhibitionSpace.module.css';
 import useStore from './store';
 
 
-interface ImageObject {
+interface Photograph {
   photoID: string;
   number: string;
   url: string;
   imagePath?: string;
+  aspectRatio: string;
   title: string;
   date: string;
   dateOriginal: string;
@@ -20,7 +21,7 @@ interface ImageObject {
 
 const ExhibitionSpace = () => {
   const navigate = useNavigate();
-  const { images, fetchImages, selectedImage } = useStore((state) => state);
+  const { photos, fetchPhotos, selectedPhoto } = useStore((state) => state);
   const { photoID } = useParams<{ photoID: string }>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMerged, setIsMerged] = useState(false);
@@ -36,49 +37,49 @@ const ExhibitionSpace = () => {
   const location = useLocation();
   const currentFilter = location.pathname.split('/')[1];
   const currentPhotoID = location.pathname.split('/')[2];
-  const { setSelectedImage, sortedImages } = useStore();
+  const { setSelectedPhoto, sortedPhotos } = useStore();
   const [isOriginalFlipped, setIsOriginalFlipped] = useState(false);
   const [isMirroredFlipped, setIsMirroredFlipped] = useState(true);
 
   useEffect(() => {
-    if (images.length === 0) {
-      fetchImages();
+    if (photos.length === 0) {
+      fetchPhotos();
     }
-  }, [images, fetchImages]);
+  }, [photos, fetchPhotos]);
 
   useEffect(() => {
     if (photoID) {
-      setSelectedImage(photoID);
+      setSelectedPhoto(photoID);
     }
-  }, [photoID, setSelectedImage, images]); // added images as dependency
+  }, [photoID, setSelectedPhoto, photos]); // added photos as dependency
 
   useEffect(() => {
-    if (sortedImages && sortedImages.length > 0) {
-      const newIndex = sortedImages.findIndex((img: ImageObject) => img.photoID === photoID);
+    if (sortedPhotos && sortedPhotos.length > 0) {
+      const newIndex = sortedPhotos.findIndex((img: Photograph) => img.photoID === photoID);
       setCurrentIndex(newIndex);
       setIsLoading(false);
     } else {
-      console.log("Images are not available yet!");
+      console.log("Photos are not available yet!");
     }
-  }, [photoID, sortedImages]);
+  }, [photoID, sortedPhotos]);
 
-  const handlePrevImage = useCallback(() => {
-    if (sortedImages && currentIndex > 0) {
+  const handlePrevPhoto = useCallback(() => {
+    if (sortedPhotos && currentIndex > 0) {
       const newIndex = currentIndex - 1;
-      const previousImage = sortedImages[newIndex];
-      navigate(`/${currentFilter}/${previousImage.photoID}`);
-      console.log(`Navigating to previous image with index ${newIndex}`);
+      const previousPhoto = sortedPhotos[newIndex];
+      navigate(`/${currentFilter}/${previousPhoto.photoID}`);
+      console.log(`Navigating to previous photo with index ${newIndex}`);
     }
-  }, [currentIndex, sortedImages, navigate]);
+  }, [currentIndex, sortedPhotos, navigate]);
 
-  const handleNextImage = useCallback(() => {
-    if (sortedImages && currentIndex < sortedImages.length - 1) {
+  const handleNextPhoto = useCallback(() => {
+    if (sortedPhotos && currentIndex < sortedPhotos.length - 1) {
       const newIndex = currentIndex + 1;
-      const nextImage = sortedImages[newIndex];
-      navigate(`/${currentFilter}/${nextImage.photoID}`);
-      console.log(`Navigating to next image with index ${newIndex}`);
+      const nextPhoto = sortedPhotos[newIndex];
+      navigate(`/${currentFilter}/${nextPhoto.photoID}`);
+      console.log(`Navigating to next photo with index ${newIndex}`);
     }
-  }, [currentIndex, sortedImages, navigate]);
+  }, [currentIndex, sortedPhotos, navigate]);
 
   const changeFrameColor = () => {
     setFrameColor((prevColor) => (prevColor === 'white' ? 'black' : 'white'));
@@ -96,14 +97,14 @@ const ExhibitionSpace = () => {
 
   const swapArtworks = () => {
     if (getOrientation() === 'landscape') {
-      // If the images are in landscape mode, swap their positions in the DOM
+      // If the photos are in landscape mode, swap their positions in the DOM
       const gallery = document.querySelector(`.${styles.gallery}`);
       if (gallery) {
         const [artwork1, artwork2] = Array.from(gallery.children);
         gallery.insertBefore(artwork2, artwork1);
       }
     } else {
-      // If the images are in portrait mode, flip them as before
+      // If the photos are in portrait mode, flip them as before
       setIsOriginalFlipped((prevArtwork) => !prevArtwork);
       setIsMirroredFlipped((prevArtwork) => !prevArtwork);
     }
@@ -134,10 +135,10 @@ const ExhibitionSpace = () => {
       const handleKeyDown = (e: KeyboardEvent) => {
         switch(e.key) {
           case "ArrowRight":
-            handleNextImage();
+            handleNextPhoto();
             break;
           case "ArrowLeft":
-            handlePrevImage();
+            handlePrevPhoto();
             break;
           case "ArrowUp":
           case "s":
@@ -165,18 +166,18 @@ const ExhibitionSpace = () => {
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
       }
-    }, [handleNextImage, handlePrevImage, rotateArtwork, swapArtworks, mergeArtworks]);  
+    }, [handleNextPhoto, handlePrevPhoto, rotateArtwork, swapArtworks, mergeArtworks]);  
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
       setGalleryBackground(`/assets/images/gallerybg/${event.target.value}`);
     };
-    if (!selectedImage) {
-      return <div>No image selected.</div>;
+    if (!selectedPhoto) {
+      return <div>No photo selected.</div>;
     }
     if (error) {
       return <div>Error: {error.message}</div>;
     } else if (isLoading) {
-      return <div>Loading Exhibition... (if this persists, there may be an issue with the image data)</div>;
+      return <div>Loading Exhibition... (if this persists, there may be an issue with the photo data)</div>;
     } else {
       return (
         <div className={styles.exhibitionSpace}>
@@ -189,32 +190,32 @@ const ExhibitionSpace = () => {
               <p>
     <strong>Artwork ID:&nbsp;</strong> <button
       className={styles.idButton}
-      onClick={() => navigate(`/${selectedImage.date}`)}
+      onClick={() => navigate(`/${selectedPhoto.date}`)}
     >
-      {selectedImage.date}
+      {selectedPhoto.date}
     </button>
     <strong> - </strong>
     <button
       className={styles.idButton}
-      onClick={() => navigate(`/${selectedImage.number}`)}
+      onClick={() => navigate(`/${selectedPhoto.number}`)}
     >
-      {selectedImage.number}
+      {selectedPhoto.number}
     </button>
     <br></br>
     <strong>From the Series:&nbsp;</strong> <button
       className={styles.idButton}
-      onClick={() => navigate(`/${selectedImage.seriesCode}`)}
+      onClick={() => navigate(`/${selectedPhoto.seriesCode}`)}
     >
-      {selectedImage.seriesName}
+      {selectedPhoto.seriesName}
     </button>
   </p>
   </div>
           <div className={styles.rightColumn}>
-	<button className={styles.idButton} onClick={() => handlePrevImage()}>
+	<button className={styles.idButton} onClick={() => handlePrevPhoto()}>
             &larr; Previous  
             </button>
             <strong> &nbsp;&nbsp;-&nbsp;&nbsp;Photo&nbsp;&nbsp;-&nbsp;&nbsp; </strong>
-            <button className={styles.idButton} onClick={() => handleNextImage()}>
+            <button className={styles.idButton} onClick={() => handleNextPhoto()}>
             Next &rarr;
             </button>
           </div>
@@ -231,14 +232,14 @@ const ExhibitionSpace = () => {
   data-frame-color={frameColor}
   style={{transform: `rotate(${originalRotation}deg) scaleX(${isOriginalFlipped ? -1 : 1})`,}}
 >
-  <img src={`http://localhost:4000/images${selectedImage?.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Artwork" />
+  <img src={`http://localhost:4000/images${selectedPhoto?.imagePath ? selectedPhoto.imagePath.slice(selectedPhoto.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Artwork" />
 </div>
 <div 
   className={`${styles.artwork} ${styles.artworkFrame} ${isMerged ? styles.merged : ''} ${frameVisible ? '' : styles.noFrame}`}
   data-frame-color={frameColor}
   style={{transform: `rotate(${mirroredRotation}deg) scaleX(${isMirroredFlipped ? -1 : 1})`,}}
 >
-  <img src={`http://localhost:4000/images${selectedImage?.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Mirrored Artwork" />
+  <img src={`http://localhost:4000/images${selectedPhoto?.imagePath ? selectedPhoto.imagePath.slice(selectedPhoto.imagePath.indexOf('originals') + 'originals'.length) : ''}`} alt="Mirrored Artwork" />
 </div>
 <div 
   className={`${styles.artwork} ${styles.placeholder} ${getOrientation() === 'portrait' ? styles.portrait : styles.landscape} ${frameVisible ? styles.placeholder : ''}`} 

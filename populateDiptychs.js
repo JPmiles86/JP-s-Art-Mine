@@ -2,7 +2,7 @@
 const Diptych = require('./models/Diptych');
 
 const diptychData = [
-  { diptychName: 'Singles', diptychType: 'Singles' },
+  { diptychName: 'Entangled', diptychType: 'Singles' },
   { diptychName: 'Circle', diptychType: 'mergedLandscape' },
   { diptychName: 'Diamond', diptychType: 'mergedPortrait' },
   { diptychName: 'Square', diptychType: 'mergedLandscape' },

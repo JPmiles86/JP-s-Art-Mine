@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+// ImageGrid.tsx
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
-import useStore, { Store, GridHeaderData, ImageObject } from './store';
+import { DataService, Series } from './DataService';
+import useStore, { Store, GridHeaderData, Photograph } from './store';
 
 interface RouteParams {
   filter?: string;
@@ -9,22 +11,43 @@ interface RouteParams {
 }
 
 const ImageGrid: React.FC = () => {
+  const [series, setSeries] = useState<Series[]>([]);
   const { filter } = useParams<RouteParams>();
-  const { loading, gridHeaderData, setSortValue, fetchGridHeaderData, fetchImages, sortValue, sortedImages } = useStore();
+  const { seriesFilter, setSeriesFilter, loading, gridHeaderData, setSortValue, fetchGridHeaderData, fetchPhotos, sortValue, sortedPhotos } = useStore();
   const navigate = useNavigate();  
+
+  // Add this useEffect hook to fetch all series when the component is first loaded
+  useEffect(() => {
+    const dataService = new DataService();
+    dataService.fetchAllSeries()
+      .then(fetchedSeries => setSeries(fetchedSeries))
+      .catch(error => console.error('Error fetching series:', error));
+  }, []);
 
   useEffect(() => {
     if (filter) {
       fetchGridHeaderData(filter)
         .catch((error: any) => console.error('Error fetching header data:', error));
-      fetchImages();
+      fetchPhotos();
+      if (filter === 'series') {
+        const seriesCode = window.location.pathname.split('/')[2];
+        setSeriesFilter(seriesCode);
+      }
     }
   }, [filter]);  
+  
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortOrder = event.target.value as 'newest' | 'oldest' | 'random';
     setSortValue(newSortOrder); // Update the sortValue in the global state when the dropdown changes
   };
+
+  const handleSeriesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSeries = event.target.value;
+    setSeriesFilter(newSeries);
+    navigate(`/${newSeries}`);
+  };   
+  
 
   return (
     <div className={styles.seriesPage}>
@@ -46,30 +69,34 @@ const ImageGrid: React.FC = () => {
 </header>
 <div style={{ display: 'flex', alignItems: 'center' }}>
         <p style={{ marginRight: '10px' }}>Sort By:</p> 
-        <select 
-          value={sortValue} // Use the global state variable
-          onChange={handleSortChange}
-          style={{ fontFamily: 'EB Garamond' }}
-        >
+        <select value={sortValue} onChange={handleSortChange} style={{ fontFamily: 'EB Garamond' }}>
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="random">Random</option>
         </select>
-      </div>
+        {filter && filter.length <= 3 && (
+          <>
+           <p style={{ marginRight: '10px', marginLeft: '30px' }}>Sort By Series:</p> 
+           <select value={seriesFilter} onChange={handleSeriesChange} style={{ fontFamily: 'EB Garamond' }}>
+             {series.map((series: Series) => <option value={series.seriesCode}>{series.seriesName}</option>)}
+           </select>
+          </>
+         )}
+        </div>
       <div style={{ marginBottom: '20px' }} /> {/* Add this line for a gap */}
       <div className={styles.grid}>
-  {!loading && sortedImages.map((image: ImageObject, index: number) => (
+  {!loading && sortedPhotos.map((photo: Photograph, index: number) => (
     <div
-      key={image.photoID}
+      key={photo.photoID}
       className={styles.gridItem} 
       onClick={() => { 
-        console.log('Navigating with state:', { data: { sortedImages } }); 
-        navigate(`/${filter}/${image.photoID}`, { state: { data: { sortedImages } }});
+        console.log('Navigating with state:', { data: { sortedPhotos } }); 
+        navigate(`/${filter}/${photo.photoID}`, { state: { data: { sortedPhotos } }});
       }}      
     >
-      {image.imagePath && 
+      {photo.imagePath && 
         <img 
-          src={`http://localhost:4000/images${image.imagePath.slice(image.imagePath.indexOf('originals') + 'originals'.length)}`} 
+          src={`http://localhost:4000/images${photo.imagePath.slice(photo.imagePath.indexOf('originals') + 'originals'.length)}`} 
           alt="Grid Item" 
           className={styles.image} 
         />

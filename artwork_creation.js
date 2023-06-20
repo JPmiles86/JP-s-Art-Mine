@@ -7,7 +7,7 @@ const PrintSizes = require('./models/PrintSizes');
 const sequelize = require('./config/database');
 
 const diptychNameToTypeMapping = {
-  'Singles': 'Singles',
+  'Entangled': 'Singles',
   'Circle': 'mergedLandscape',
   'Diamond': 'mergedPortrait',
   'Square': 'mergedLandscape',
@@ -16,14 +16,14 @@ const diptychNameToTypeMapping = {
 
 const aspectRatioToDiptychRatioMapping = {
   '2:3': {
-    'Singles': '2x2:3',
+    'Entangled': '2x2:3',
     'Circle': '3:1',
     'Diamond': '4:3',
     'Square': '3:1',
     'Triangle': '4:3'
   },
   '3:4': {
-    'Singles': '2x3:4',
+    'Entangled': '2x3:4',
     'Circle': '8:3',
     'Diamond': '3:2',
     'Square': '8:3',

@@ -121,9 +121,4 @@ export { default as F_3x4_ST_P_B } from './F_3x4_ST_P_B';
 export { default as F_3x4_TC_L_B } from './F_3x4_TC_L_B';
 export { default as F_3x4_TS_L_B } from './F_3x4_TS_L_B';
 
-// ...and so on for all diptychs
-
-
-
-// ...and so on for all diptychs
-
+export { getImagesForDiptychType } from './DiptychFilter';

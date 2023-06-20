@@ -3,8 +3,8 @@ import React from 'react';
 import useStore from '../screens/store';
 
 const F_3x4_TS_L_B = () => {
-  const { selectedImage } = useStore();
-  const imageUrl = selectedImage ? `http://localhost:4000/images${selectedImage.imagePath ? selectedImage.imagePath.slice(selectedImage.imagePath.indexOf('originals') + 'originals'.length) : ''}` : '';
+  const { selectedPhoto } = useStore();
+  const imageUrl = selectedPhoto ? `http://localhost:4000/images${selectedPhoto.imagePath ? selectedPhoto.imagePath.slice(selectedPhoto.imagePath.indexOf('originals') + 'originals'.length) : ''}` : '';
 
   if (!imageUrl) {
     return <div>Loading...</div>;

@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const sequelize = require('./config/database');
 const app = express();
@@ -6,6 +7,8 @@ const Photo = require('./models/Photo');
 const Series = require('./models/Series');
 const Dates = require('./models/Dates');
 const ImageNumbers = require('./models/ImageNumbers');
+const DiptychSVG = require('./models/DiptychSVG');
+const Artwork = require('./models/Artwork');
 const cors = require('cors');
 
 app.use(cors({
@@ -209,6 +212,42 @@ app.get('/api/photo/:photoID', async (req, res) => {
     } else {
       res.status(404).send('Photo not found');
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/diptychsvgs/:diptychID', async (req, res) => {
+  const { diptychID } = req.params;
+  try {
+    const diptychSVGs = await DiptychSVGs.findAll({ where: { diptychID } });
+    res.json(diptychSVGs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/diptychsvgs/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const diptychSVG = await DiptychSVGs.findOne({ where: { id } });
+    if (diptychSVG) {
+      res.json(diptychSVG);
+    } else {
+      res.status(404).send('DiptychSVG not found');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/series', async (req, res) => {
+  try {
+    const series = await Series.findAll();
+    res.json(series);
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');

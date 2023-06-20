@@ -1,7 +1,7 @@
 // associations.js
 const models = require('./index');
 
-const { Photo, CameraModel, Series, Dates, ImageNumbers, Artwork, Diptych, Pricing, PrintSizes, SizeCategories } = models;
+const { Photo, CameraModel, Series, Dates, ImageNumbers, Artwork, Diptych, DiptychSVG, Frame, Pricing, PrintSizes, SizeCategories } = models;
 
 Photo.belongsTo(CameraModel, { foreignKey: 'model' });
 CameraModel.hasMany(Photo, { foreignKey: 'model' });
@@ -20,6 +20,12 @@ Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
 
 Artwork.belongsTo(Diptych, { foreignKey: 'diptychId' });
 Diptych.hasMany(Artwork, { foreignKey: 'diptychId' });
+
+Diptych.hasMany(DiptychSVG, { foreignKey: 'diptychId' });
+DiptychSVG.belongsTo(Diptych, { foreignKey: 'diptychId' });
+
+Frame.hasMany(DiptychSVG, { foreignKey: 'frameId' });
+DiptychSVG.belongsTo(Frame, { foreignKey: 'frameId' });
 
 Artwork.belongsTo(Pricing, { foreignKey: 'pricingId' });
 Pricing.hasMany(Artwork, { foreignKey: 'pricingId' });
