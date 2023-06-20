@@ -37,7 +37,7 @@ const ExhibitionSpace = () => {
   const location = useLocation();
   const currentFilter = location.pathname.split('/')[1];
   const currentPhotoID = location.pathname.split('/')[2];
-  const { setSelectedPhoto, sortedPhotos } = useStore();
+  const { setSelectedPhoto, sortedPhotos, setPreviousFilter } = useStore();
   const [isOriginalFlipped, setIsOriginalFlipped] = useState(false);
   const [isMirroredFlipped, setIsMirroredFlipped] = useState(true);
 
@@ -62,6 +62,11 @@ const ExhibitionSpace = () => {
       console.log("Photos are not available yet!");
     }
   }, [photoID, sortedPhotos]);
+
+  const handleBackToImageGrid = () => {
+    setPreviousFilter(currentFilter);
+    navigate(`/${currentFilter}`);
+  };
 
   const handlePrevPhoto = useCallback(() => {
     if (sortedPhotos && currentIndex > 0) {
@@ -183,7 +188,7 @@ const ExhibitionSpace = () => {
         <div className={styles.exhibitionSpace}>
         <header className={styles.header}>
           <div className={styles.leftColumn}>
-          <button className={styles.navButton} onClick={() => navigate(`/${currentFilter}`)}>
+          <button className={styles.navButton} onClick={handleBackToImageGrid}>
   &larr; Back to Image Grid
 </button> </div> 
               <div className={styles.centerColumn}>

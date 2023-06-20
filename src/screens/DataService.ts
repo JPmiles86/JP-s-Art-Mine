@@ -34,10 +34,6 @@ export class DataService {
           throw new Error(`Invalid filter: ${filterUrl}`);
       }
   
-      // If a series is provided, append it to the URL
-      if (series) {
-        dataUrl += `?series`;
-      }
   
       const response = await fetch(dataUrl);
       const data = await response.json();

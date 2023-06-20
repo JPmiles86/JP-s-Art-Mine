@@ -12,30 +12,49 @@ interface RouteParams {
 
 const ImageGrid: React.FC = () => {
   const [series, setSeries] = useState<Series[]>([]);
+  const [loading, setLoading] = useState(false);
   const { filter } = useParams<RouteParams>();
-  const { seriesFilter, setSeriesFilter, loading, gridHeaderData, setSortValue, fetchGridHeaderData, fetchPhotos, sortValue, sortedPhotos } = useStore();
+  const { previousFilter, setPreviousFilter, seriesFilter, setSeriesFilter, gridHeaderData, setSortValue, fetchGridHeaderData, fetchPhotos, sortValue, sortedPhotos, clearPhotos } = useStore();
   const navigate = useNavigate();  
 
-  // Add this useEffect hook to fetch all series when the component is first loaded
   useEffect(() => {
     const dataService = new DataService();
     dataService.fetchAllSeries()
-      .then(fetchedSeries => setSeries(fetchedSeries))
+      .then(fetchedSeries => {
+        setSeries(fetchedSeries);
+      })
       .catch(error => console.error('Error fetching series:', error));
-  }, []);
-
+  }, []);  
+  
   useEffect(() => {
-    if (filter) {
+    console.log('seriesFilter changed:', seriesFilter);
+  }, [seriesFilter]);
+  
+  
+  useEffect(() => {
+    if (filter && filter !== previousFilter) {
+      clearPhotos(); // Clear the old data
+      setLoading(true); // Set loading to true before fetching new data
+      setSeriesFilter(filter);
+      const filterValueFromUrl = window.location.pathname.split('/')[1];
+      if (filterValueFromUrl && filterValueFromUrl.length === 3) {
+        setSeriesFilter(filterValueFromUrl);
+      } else {
+        setSeriesFilter(''); // Reset the seriesFilter state when the filter is not 'series'
+      }
       fetchGridHeaderData(filter)
         .catch((error: any) => console.error('Error fetching header data:', error));
-      fetchPhotos();
-      if (filter === 'series') {
-        const seriesCode = window.location.pathname.split('/')[2];
-        setSeriesFilter(seriesCode);
-      }
+      fetchPhotos().then(() => {
+        console.log('Photos after fetch:', sortedPhotos);
+        setLoading(false); // Set loading to false after fetching new data
+      });
+      setPreviousFilter(filter);
     }
-  }, [filter]);  
+  }, [filter, previousFilter, setPreviousFilter, setSeriesFilter, fetchPhotos, clearPhotos]);  
   
+  useEffect(() => {
+    console.log('sortedPhotos after fetch:', sortedPhotos);
+  }, [sortedPhotos]);  
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortOrder = event.target.value as 'newest' | 'oldest' | 'random';
@@ -43,13 +62,14 @@ const ImageGrid: React.FC = () => {
   };
 
   const handleSeriesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSeries = event.target.value;
-    setSeriesFilter(newSeries);
-    navigate(`/${newSeries}`);
-  };   
-  
+    const newSeriesCode = event.target.value;
+    setSeriesFilter(newSeriesCode);
+    navigate(`/${newSeriesCode}`);
+  };  
 
-  return (
+  if (loading) {
+    return <div>Loading...</div>; // Replace this with your actual loading component
+  } else {return (
     <div className={styles.seriesPage}>
       <header className={styles.header}>
   <div className={styles.headerContent}>
@@ -85,7 +105,7 @@ const ImageGrid: React.FC = () => {
         </div>
       <div style={{ marginBottom: '20px' }} /> {/* Add this line for a gap */}
       <div className={styles.grid}>
-  {!loading && sortedPhotos.map((photo: Photograph, index: number) => (
+      {!loading && sortedPhotos.map((photo: Photograph, index: number) => (
     <div
       key={photo.photoID}
       className={styles.gridItem} 
@@ -111,5 +131,5 @@ const ImageGrid: React.FC = () => {
     </div>
   );
 }
-
+}
 export default ImageGrid;

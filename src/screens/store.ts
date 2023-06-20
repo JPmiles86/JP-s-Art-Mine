@@ -55,6 +55,9 @@ export interface Store {
   initialPhotoFetch: boolean;
   selectedSeries: string;
   seriesFilter: string;
+  previousFilter: string;
+  clearPhotos: () => void;
+  setPreviousFilter: (filter: string) => void;
   setSeriesFilter: (series: string) => void;
   setSelectedSeries: (series: string) => void;
   setLoading: (loading: boolean) => void;
@@ -92,7 +95,7 @@ const useStore = create<Store>((set, get) => ({
   photos: [],
   sortedPhotos: [],
   selectedPhoto: null,
-  loading: true,
+  loading: false,
   gridHeaderData: null,
   exhibitionHeaderData: null,
   initialLoad: true,
@@ -100,13 +103,21 @@ const useStore = create<Store>((set, get) => ({
   initialPhotoFetch: false,
   selectedSeries: '',
   seriesFilter: '',
+  previousFilter: '',
+  clearPhotos: () => set({ sortedPhotos: [] }),
+  setPreviousFilter: (filter: string) => set({ previousFilter: filter }),
   setSelectedSeries: (series) => set({ selectedSeries: series }),
   setLoading: (loading) => set({ loading }),
   setInitialLoad: (load: boolean) => set({ initialLoad: load }),
   setSeriesFilter: (series) => {
+    console.log('setSeriesFilter called with:', series);
+    console.log('Setting seriesFilter to:', series);
+    if (!series) {
+      console.error('Trying to set seriesFilter to undefined or null');
+      console.trace();
+    }
     set({ seriesFilter: series });
-    get().fetchPhotos();
-  },
+  },  
 // Modify setSelectedPhoto to find the photo based on photoID
 setSelectedPhoto: (photoID: string | null) => {
   if (photoID !== null) {
@@ -132,12 +143,18 @@ setSelectedPhoto: (photoID: string | null) => {
     const data = await dataService.getHeaderDataForPhoto(get().photos, photoID);
     set({ exhibitionHeaderData: data });
   }, 
-// Define fetchPhotos here, inside the object that create is called with
 fetchPhotos: async () => {
+  console.log('fetchPhotos called');
   set({ loading: true });
   
   // Parse the URL to get the filter and photoID
   const { filter: urlFilter, photoID } = urlService.parseUrl();
+
+  // If the seriesFilter state is empty or different from the URL, set it from the URL
+  const seriesCodeFromUrl = window.location.pathname.split('/')[1];
+  if (!get().seriesFilter || get().seriesFilter !== seriesCodeFromUrl) {
+    set({ seriesFilter: seriesCodeFromUrl });
+  }
   
   // Fetch the photos
   const fetchedPhotos = await dataService.fetchPhotos(urlFilter, get().seriesFilter);
@@ -150,7 +167,9 @@ fetchPhotos: async () => {
    // Sort the photos by date and set the sortedPhotos in the store
    let sortedPhotos = sortPhotos(fetchedPhotos, get().sortValue);
 
+   set({ loading: false });
    set({ sortedPhotos });
+
 
   // If there's a photoID in the URL, find the corresponding photo and set it as the selected photo
   if (photoID) {
