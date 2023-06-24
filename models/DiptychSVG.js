@@ -18,6 +18,10 @@ DiptychSVG.init({
     },
     allowNull: false,
   },
+  fused: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   FrameId: {
     type: DataTypes.INTEGER,
     references: {
@@ -27,6 +31,10 @@ DiptychSVG.init({
     allowNull: false,
   },
   aspectRatio: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  orientation: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -51,6 +59,10 @@ DiptychSVG.init({
     allowNull: false,
   },
   shapeAtTopEdge: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  shapeCode: {
     type: DataTypes.STRING,
     allowNull: false,
   },

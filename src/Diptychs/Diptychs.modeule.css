@@ -1,0 +1,10 @@
+:root {
+    --restricted-vw: 1vw;
+  }
+  
+  
+  @media screen and (min-width: 1080px) {
+    :root {
+      --restricted-vw: calc(1080px / 100);
+    }
+  }

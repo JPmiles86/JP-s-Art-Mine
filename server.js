@@ -254,6 +254,34 @@ app.get('/api/series', async (req, res) => {
   }
 });
 
+app.get('/api/diptychsvgs/filter', async (req, res) => {
+  const {
+    aspectRatio,
+    frameId,
+    fused,
+    shapeInCenterEdge,
+    shapeAtTopEdge,
+    shapeCode
+  } = req.query;
+
+  try {
+    const diptychSVGs = await DiptychSVGs.findAll({
+      where: {
+        aspectRatio,
+        frameId,
+        fused,
+        shapeInCenterEdge,
+        shapeAtTopEdge,
+        shapeCode
+      }
+    });
+    res.json(diptychSVGs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
