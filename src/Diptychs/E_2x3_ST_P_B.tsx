@@ -11,7 +11,7 @@ const E_2x3_ST_P_B = () => {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2vw' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5vw' }}>
       <svg style={{ border: '0.75vw solid black', boxShadow: '0px 5px 10px rgba(0, 0, 0, 0.3)' }} viewBox="0 0 200 300" preserveAspectRatio="xMidYMid meet">
         <image href={imageUrl} x="0" y="0" height="300" width="200" transform="rotate(180, 100, 150)" preserveAspectRatio="xMidYMid meet" />
       </svg>

@@ -11,7 +11,7 @@ const E_3x4_CT_P_B = () => {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2vw' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5vw' }}>
       <svg style={{ border: '0.75vw solid black', boxShadow: '0px 5px 10px rgba(0, 0, 0, 0.3)' }} viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet">
         <image href={imageUrl} x="0" y="0" height="400" width="300" preserveAspectRatio="xMidYMid meet" />
       </svg>

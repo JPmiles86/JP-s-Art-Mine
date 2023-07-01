@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
 import useStore from './store';
-import useDiptychStore from './diptychStore';
+// import useDiptychStore from './diptychStore';
 import * as diptychs from '../Diptychs';
 
 
@@ -24,23 +24,16 @@ interface Photograph {
 const ExhibitionSpace = () => {
   const navigate = useNavigate();
   const { photos, fetchPhotos, selectedPhoto, setSelectedPhoto } = useStore((state) => state);
-  const { diptychs, selectedDiptych, selectDiptych } = useDiptychStore((state) => state);
+ // const { diptychs, selectedDiptych, selectDiptych } = useDiptychStore((state) => state);
   const { photoID } = useParams<{ photoID: string }>();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [originalRotation, setOriginalRotation] = useState(0);
-  const [mirroredRotation, setMirroredRotation] = useState(0);
-  const [leftArtwork, setLeftArtwork] = useState('original');
-  const [rightArtwork, setRightArtwork] = useState('mirrored');
   const [galleryBackground, setGalleryBackground] = useState('/assets/images/gallerybg/Gallery-2.png');
   const [error] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [frameVisible, setFrameVisible] = useState(true);
   const location = useLocation();
   const currentFilter = location.pathname.split('/')[1];
   const currentPhotoID = location.pathname.split('/')[2];
   const { sortedPhotos, setPreviousFilter } = useStore();
-  const [isOriginalFlipped, setIsOriginalFlipped] = useState(false);
-  const [isMirroredFlipped, setIsMirroredFlipped] = useState(true);
   const [DiptychComponent, setDiptychComponent] = useState<React.ComponentType<any> | null>(null);
   const [frameColor, setFrameColor] = useState<number>(1);
   const [isMerged, setIsMerged] = useState<string>('entangled');
@@ -100,14 +93,14 @@ const ExhibitionSpace = () => {
     // Here we replace ":" with "x"
     let normalizedAspectRatio = selectedPhoto.aspectRatio.replace(':', 'x');
     let orientation = ['C', 'S'].includes(shapeCode.charAt(0)) ? 'P' : 'L';
-    let diptychCode;
+    let DiptychIdCode;
     if (isMerged === 'entangled') {
-      diptychCode = `E_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
+      DiptychIdCode = `E_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
     } else { // This handles the case when isMerged is 'fused', you can adjust the code according to your need
-      diptychCode = `F_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
+      DiptychIdCode = `F_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
     }
   
-    import(`../Diptychs/${diptychCode}`).then(module => {
+    import(`../Diptychs/${DiptychIdCode}`).then(module => {
       console.log('Setting DiptychComponent', module.default);
       setDiptychComponent(() => module.default);
     }).catch(err => {

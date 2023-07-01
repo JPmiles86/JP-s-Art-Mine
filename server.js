@@ -7,8 +7,13 @@ const Photo = require('./models/Photo');
 const Series = require('./models/Series');
 const Dates = require('./models/Dates');
 const ImageNumbers = require('./models/ImageNumbers');
-const DiptychSVG = require('./models/DiptychSVG');
 const Artwork = require('./models/Artwork');
+const Diptych = require('./models/Diptych');
+const DiptychSVG = require('./models/DiptychSVG');
+const Frame = require('./models/Frame');
+const Pricing = require('./models/Pricing');
+const PrintSizes = require('./models/PrintSizes');
+const SizeCategories = require('./models/SizeCategories');
 const cors = require('cors');
 
 app.use(cors({
@@ -218,21 +223,20 @@ app.get('/api/photo/:photoID', async (req, res) => {
   }
 });
 
-app.get('/api/diptychsvgs/:diptychID', async (req, res) => {
-  const { diptychID } = req.params;
+app.get('/api/series', async (req, res) => {
   try {
-    const diptychSVGs = await DiptychSVGs.findAll({ where: { diptychID } });
-    res.json(diptychSVGs);
+    const series = await Series.findAll();
+    res.json(series);
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');
   }
 });
 
-app.get('/api/diptychsvgs/:id', async (req, res) => {
-  const { id } = req.params;
+app.get('/api/diptychsvgs/:DiptychIdCode', async (req, res) => {
+  const { DiptychIdCode } = req.params;
   try {
-    const diptychSVG = await DiptychSVGs.findOne({ where: { id } });
+    const diptychSVG = await DiptychSVG.findOne({ where: { DiptychIdCode } });
     if (diptychSVG) {
       res.json(diptychSVG);
     } else {
@@ -244,43 +248,6 @@ app.get('/api/diptychsvgs/:id', async (req, res) => {
   }
 });
 
-app.get('/api/series', async (req, res) => {
-  try {
-    const series = await Series.findAll();
-    res.json(series);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
-  }
-});
-
-app.get('/api/diptychsvgs/filter', async (req, res) => {
-  const {
-    aspectRatio,
-    frameId,
-    fused,
-    shapeInCenterEdge,
-    shapeAtTopEdge,
-    shapeCode
-  } = req.query;
-
-  try {
-    const diptychSVGs = await DiptychSVGs.findAll({
-      where: {
-        aspectRatio,
-        frameId,
-        fused,
-        shapeInCenterEdge,
-        shapeAtTopEdge,
-        shapeCode
-      }
-    });
-    res.json(diptychSVGs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
-  }
-});
 
 
 app.listen(port, () => {

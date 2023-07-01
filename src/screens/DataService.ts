@@ -8,6 +8,19 @@ export interface Series {
   // other properties...
 }
 
+export interface DiptychSVG {
+  fusedOrEntangled: string;
+  leftSide: string;
+  rightSide: string;
+  leftRotation: string;
+  rightRotation: string;
+  shapeInCenterEdge: string;
+  shapeAtTopEdge: string;
+  DiptychIdCode: string;
+  DiptychIdName: string;
+  // other properties...
+}
+
 export class DataService {
   private urlService = new UrlService();
 
@@ -86,7 +99,7 @@ export class DataService {
       return null; // Return null if an error occurs
     }
   }
-
+  
   getHeaderDataForPhoto(photos: Photograph[], photoID: string): ExhibitionHeaderData | null {
     const photo = photos.find(photo => photo.photoID === photoID);
     if (photo) {

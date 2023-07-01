@@ -4,6 +4,8 @@ module.exports = {
     CameraModel: require('./CameraModel'),
     Dates: require('./Dates'),
     Diptych: require('./Diptych'),
+    DiptychSVG: require('./DiptychSVG'),
+    Frame: require('./Frame'),
     ImageNumbers: require('./ImageNumbers'),
     Photo: require('./Photo'),
     Pricing: require('./Pricing'),

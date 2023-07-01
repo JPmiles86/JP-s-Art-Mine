@@ -77,7 +77,7 @@ DiptychSVG.init({
 }, {
   sequelize,
   modelName: 'DiptychSVG',
-  tableName: 'DiptychSVGs',  // Specify the correct table name
+  tableName: 'DiptychSVGs',  
 });
 
 module.exports = DiptychSVG;
