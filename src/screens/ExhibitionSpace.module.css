@@ -31,11 +31,22 @@
 
 .centerColumn {
   width: 60%;
+  display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: center; /* changed from top */
-  flex-wrap: wrap; 
+  align-items: center;
   text-align: center;
+  margin: 0; /* Remove any existing margin */
+  padding: 0; /* Remove any existing padding */
+}
+
+.centerColumn strong {
+  margin-right: 5px; /* Add a small margin between the strong tag and the text */
+}
+
+.centerColumn p {
+  margin: 0;
+  padding: 0;
 }
 
 .rightColumn {
@@ -180,4 +191,14 @@
 .merged::before,
 .merged::after {
   display: none;
+}
+
+.linkButton {
+  color: #000; /* Black color */
+  text-decoration: underline; /* Add underline */
+  cursor: pointer; /* Add the pointer cursor */
+}
+
+.linkButton:hover {
+  color: #555; /* Change to a different color on hover, such as a dark grey (#888) */
 }
