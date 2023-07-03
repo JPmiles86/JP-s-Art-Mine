@@ -14,11 +14,8 @@ const createDiptychSVGsTable = async () => {
     // Parse the CSV data
     const { data } = Papa.parse(csvData, { header: true });
 
-    // Remove the header row
-    const dataWithoutHeader = data.slice(1);
-
     // Insert the parsed data into the DiptychSVGs table
-    await DiptychSVG.bulkCreate(dataWithoutHeader);
+    await DiptychSVG.bulkCreate(data);
     console.log('Data imported successfully!');
   } catch (error) {
     console.log('Error occurred while creating DiptychSVGs table and importing data:', error);

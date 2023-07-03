@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
 import useStore from './store';
+import ExhibitionHeader from './ExhibitionHeader';
+import GalleryBackgroundSelector from './GalleryBackgroundSelector';
+import useKeyboardNavigation from './useKeyboardNavigation';
 import * as diptychs from '../Diptychs';
 
 interface Photograph {
@@ -17,7 +20,6 @@ interface Photograph {
   seriesName: string;
   seriesCode: string;
 }
-
 
 const ExhibitionSpace = () => {
   const navigate = useNavigate();
@@ -37,6 +39,7 @@ const ExhibitionSpace = () => {
   const [aspectRatio, setAspectRatio] = useState<string>('');
   const [shapeCode, setShapeCode] = useState<string>('CD');
   const [diptychInfo, setDiptychInfo] = useState<any>(null);
+  const [diptychLoading, setDiptychLoading] = useState(true);
 
   const swapMapping: { [key: string]: string } = {
     'CD': 'SD',
@@ -83,42 +86,55 @@ const ExhibitionSpace = () => {
   }, [photoID, sortedPhotos]);
 
   useEffect(() => {
-    if (!selectedPhoto) return;
+    if (selectedPhoto) {
+      setAspectRatio(selectedPhoto.aspectRatio);
   
-    setAspectRatio(selectedPhoto.aspectRatio);
+      // Here we replace ":" with "x"
+      let normalizedAspectRatio = selectedPhoto.aspectRatio.replace(':', 'x');
+      let orientation = ['C', 'S'].includes(shapeCode.charAt(0)) ? 'P' : 'L';
   
-    // Here we replace ":" with "x"
-    let normalizedAspectRatio = selectedPhoto.aspectRatio.replace(':', 'x');
-    let orientation = ['C', 'S'].includes(shapeCode.charAt(0)) ? 'P' : 'L';
+      let DiptychIdCode: string;
+      if (isMerged === 'entangled') {
+        DiptychIdCode = `E_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
+      } else {
+        DiptychIdCode = `F_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
+      }
   
-    let DiptychIdCode: string;
-    if (isMerged === 'entangled') {
-      DiptychIdCode = `E_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
-    } else {
-      DiptychIdCode = `F_${normalizedAspectRatio}_${shapeCode}_${orientation}_${frameColor === 1 ? 'W' : 'B'}`;
+      setDiptychLoading(true); // Set loading state to true
+  
+      import(`../Diptychs/${DiptychIdCode}`)
+        .then((module) => {
+          console.log('Setting DiptychComponent', module.default);
+          setDiptychComponent(() => module.default);
+  
+          // Fetch the diptych info using the DiptychIdCode from the correct API endpoint
+          const fetchDiptychInfo = async (diptychIdCode: string) => {
+            try {
+              const response = await fetch(`/api/diptychsvgs/${diptychIdCode}`); 
+              const data = await response.json();
+              setDiptychInfo(data);
+              setDiptychLoading(false); // Set loading state to false after data is fetched
+            } catch (error) {
+              console.error('Error fetching diptych info:', error);
+              setDiptychLoading(false); // Set loading state to false in case of an error
+            }
+          };
+  
+          fetchDiptychInfo(DiptychIdCode);
+        })
+        .catch((err) => {
+          console.log(err);
+          setDiptychLoading(false); // Set loading state to false in case of an error
+        });
     }
-  
-    import(`../Diptychs/${DiptychIdCode}`).then((module) => {
-      console.log('Setting DiptychComponent', module.default);
-      setDiptychComponent(() => module.default);
-  
-      // Fetch the diptych info using the DiptychIdCode from the correct API endpoint
-      const fetchDiptychInfo = async (diptychIdCode: string) => {
-        try {
-          const response = await fetch(`/api/diptychsvgs/${diptychIdCode}`); 
-          const data = await response.json();
-          setDiptychInfo(data);
-        } catch (error) {
-          console.error('Error fetching diptych info:', error);
-        }
-      };
-  
-      fetchDiptychInfo(DiptychIdCode);
-    }).catch((err) => {
-      console.log(err);
-    });
   }, [selectedPhoto, isMerged, frameColor, shapeCode]);
   
+  
+  useEffect(() => {
+    if (selectedPhoto && diptychInfo) {
+      setIsLoading(false);
+    }
+  }, [selectedPhoto, diptychInfo]);  
 
   const handleBackToImageGrid = () => {
     setPreviousFilter(currentFilter);
@@ -159,45 +175,10 @@ const ExhibitionSpace = () => {
     setShapeCode((prevCode) => rotateMapping[prevCode]);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowRight':
-          handleNextPhoto();
-          break;
-        case 'ArrowLeft':
-          handlePrevPhoto();
-          break;
-        case 'ArrowUp':
-        case 's':
-        case 'S':
-          swapShape();
-          break;
-        case 'ArrowDown':
-        case 'r':
-        case 'R':
-          rotateShape();
-          break;
-        case '0':
-        case 'm':
-        case 'M':
-        case ' ':
-          toggleMergeStatus();
-          break;
-        default:
-          break;
-      }
-    };
+  useKeyboardNavigation(handleNextPhoto, handlePrevPhoto, swapShape, rotateShape, toggleMergeStatus);
 
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleNextPhoto, handlePrevPhoto, rotateShape, swapShape, toggleMergeStatus]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setGalleryBackground(`/assets/images/gallerybg/${event.target.value}`);
+  const handleChangeGalleryBackground = (backgroundImage: string) => {
+    setGalleryBackground(backgroundImage);
   };
 
   if (!selectedPhoto || !DiptychComponent) {
@@ -208,7 +189,7 @@ const ExhibitionSpace = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  if (isLoading) {
+  if (isLoading || diptychLoading) {
     return <div>Loading Exhibition... (if this persists, there may be an issue with the photo data)</div>;
   }
 
@@ -216,64 +197,13 @@ const ExhibitionSpace = () => {
 
   return (
     <div className={styles.exhibitionSpace}>
-      <header className={styles.header}>
-        <div className={styles.leftColumn}>
-          <button className={styles.navButton} onClick={handleBackToImageGrid}>
-            &larr; Back to Image Grid
-          </button>
-        </div>
-        <div className={styles.centerColumn}>
-          <p>
-            <strong>Artwork ID:&nbsp;</strong>
-            <span
-              className={`${styles.idButton} ${styles.linkButton}`}
-              onClick={() => navigate(`/${selectedPhoto.date}`)}
-            >
-              {selectedPhoto.date}
-            </span>
-            <strong> - </strong>
-            <span
-              className={`${styles.idButton} ${styles.linkButton}`}
-              onClick={() => navigate(`/${selectedPhoto.number}`)}
-            >
-              {selectedPhoto.number}
-            </span>
-            <br />
-            <strong>From the Series:&nbsp;</strong>
-            <span
-              className={`${styles.idButton} ${styles.linkButton}`}
-              onClick={() => navigate(`/${selectedPhoto.seriesCode}`)}
-            >
-              {selectedPhoto.seriesName}
-            </span>
-            <br />
-            <strong>Diptych Variation: </strong>
-              {diptychInfo ? ( <> {diptychInfo.fused === 'Fused' ? `${diptychInfo.fused} - ${diptychInfo.shapeInCenterEdge}` : diptychInfo.fused}
-                </> ) : ( 'Loading...' )}
-              <br />
-            <strong>Shape in center: </strong>
-            {diptychInfo ? diptychInfo.shapeInCenterEdge : 'Loading...'} &nbsp;&nbsp;&nbsp;
-            <strong>Shape on top: </strong>
-            {diptychInfo ? diptychInfo.shapeAtTopEdge : 'Loading...'}
-            <br />
-            <strong>Left Side: </strong>
-            {diptychInfo ? diptychInfo.leftSide : 'Loading...'} &nbsp;&nbsp;&nbsp;
-            <strong>Right Side: </strong>
-            {diptychInfo ? diptychInfo.rightSide : 'Loading...'}
-            <br />
-          </p>
-        </div>
-        <div className={styles.rightColumn}>
-          <button className={styles.idButton} onClick={handlePrevPhoto}>
-            &larr; Previous
-          </button>
-          <strong> &nbsp;&nbsp;-&nbsp;&nbsp;Photo&nbsp;&nbsp;-&nbsp;&nbsp; </strong>
-          <button className={styles.idButton} onClick={handleNextPhoto}>
-            Next &rarr;
-          </button>
-        </div>
-      </header>
-
+      <ExhibitionHeader
+        currentFilter={currentFilter}
+        selectedPhoto={selectedPhoto}
+        diptychInfo={diptychInfo}
+        handlePrevPhoto={handlePrevPhoto}
+        handleNextPhoto={handleNextPhoto}
+      />
       <div
         className={`${styles.gallery} ${isMerged ? styles.merged : ''}`}
         style={{
@@ -291,7 +221,7 @@ const ExhibitionSpace = () => {
             margin: '0 auto',
           }}
         >
-          {selectedPhoto ? <DiptychComponent photo={selectedPhoto} /> : <div>No photo selected.</div>}
+          {selectedPhoto ? <DiptychComponent photo={selectedPhoto} diptychInfo={diptychInfo} /> : <div>No photo selected.</div>}
         </div>
       </div>
 
@@ -311,13 +241,7 @@ const ExhibitionSpace = () => {
         <button className={styles.swapButton} onClick={() => navigate(`/${currentFilter}/${currentPhotoID}/inquire`)}>
           Inquire
         </button>
-        <select className={styles.gallerySelector} onChange={handleChange}>
-          <option value="Gallery-2.png">Gallery 1</option>
-          <option value="Gallery-1.png">Gallery 2</option>
-          <option value="Room-1.png">Living Room 1</option>
-          <option value="Room-2.png">Living Room 2</option>
-          <option value="Room-3.png">Living Room 3</option>
-        </select>
+        <GalleryBackgroundSelector onChange={handleChangeGalleryBackground} />
       </div>
     </div>
   );

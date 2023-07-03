@@ -92,9 +92,9 @@ const Inquiry: React.FC = () => {
           <Grid item xs={12} md={9}>
           <Entangled aspectRatio={selectedPhoto.aspectRatio} frameOption={frameOption} FrameId={FrameId} images={photos} />
           <div style={{ marginBottom: '25px', marginTop: '25px' }}>
-            <diptychs.F_3x4_SD_P_W />
+            <diptychs.E_3x4_CT_P_U />
             <Typography style={{ textAlign: 'center' }}>
-              Diptych: F_3x4_SD_P_W
+              Diptych: E_3x4_CT_P_U
             </Typography>
             <Typography variant="h5">{selectedPhoto.DiptychIdName}</Typography>
           </div>

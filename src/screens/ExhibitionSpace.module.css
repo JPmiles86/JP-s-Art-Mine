@@ -98,18 +98,6 @@
   margin-left: 20px;
 }
 
-.gallerySelector{
-  background-color: #ffffff;
-  border: 1px solid #000;
-  color: #000;
-  margin-left: 20px;
-  font-family: 'EB Garamond', serif;
-  width: 150px; /* adjust as necessary */
-  height: 40px; /* adjust as necessary */
-  text-align: center;
-  font-size: 16px;
-}
-
 .buttonContainer {
   display: flex;
   justify-content: space-around;
@@ -195,10 +183,9 @@
 
 .linkButton {
   color: #000; /* Black color */
-  text-decoration: underline; /* Add underline */
   cursor: pointer; /* Add the pointer cursor */
 }
 
 .linkButton:hover {
-  color: #555; /* Change to a different color on hover, such as a dark grey (#888) */
+  text-decoration: underline; /* Add underline */
 }
