@@ -85,3 +85,33 @@ body, html {
   max-width: 1200px;
   margin: auto;
 }
+
+.scrollToTopButton {
+  position: fixed;
+  bottom: 20px;
+  right: 15px;
+  width: 35px; /* Set width and height to create a circle */
+  height: 35px;
+  font-size: 20px;
+  font-weight: bold; /* Attempt to make the arrow bold */
+  background-color: white;
+  color: black; /* Color of the arrow */
+  border: 3px solid black; /* Inner border around the button */
+  box-shadow: 0 0 0 3px white; /* Outer border */
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 50%; /* This is what makes it a circle */
+  display: flex; /* Below three lines center the arrow in the button */
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 8px; /* Move the arrow up by adding padding at the bottom */
+  transition: 0.3s; /* Smooth transition for hover effect */
+}
+
+.scrollToTopButton:hover {
+  background-color: black;
+  color: white; /* Arrow color changes on hover */
+  border-color: white; /* Inner border color changes on hover */
+  box-shadow: 0 0 0 3px black; /* Outer border color changes on hover */
+}
+

@@ -1,5 +1,5 @@
 // ImageGrid.tsx
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
 import { DataService, Series } from './DataService';
@@ -12,18 +12,19 @@ interface RouteParams {
 }
 
 const ImageGrid: React.FC = () => {
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [series, setSeries] = useState<Series[]>([]);
   const [loading, setLoading] = useState(false);
   const { filter } = useParams<RouteParams>();
   const { previousFilter, setPreviousFilter, seriesFilter, setSeriesFilter, gridHeaderData, setSortValue, fetchGridHeaderData, fetchPhotos, sortValue, sortedPhotos, clearPhotos } = useStore();
   const navigate = useNavigate();  
   const [scrollPos, setScrollPos] = useState(0);  
-  const { handleScroll } = useContext(ScrollContext);  // Access handleScroll
+  const { handleScroll, scrollToTop } = useContext(ScrollContext);  // Access handleScroll
   const { loadedPhotos, loadMorePhotos } = useStore((state) => ({
    loadedPhotos: state.loadedPhotos,
    loadMorePhotos: state.loadMorePhotos,
      }));
-
+     
   useEffect(() => {
     const dataService = new DataService();
     dataService.fetchAllSeries()
@@ -76,7 +77,7 @@ const ImageGrid: React.FC = () => {
   if (loading) {
     return <div>Loading...</div>; // Replace this with your actual loading component
   } else {return (
-   <div id="scrollable-container">
+    <div id="scrollable-container" ref={scrollContainerRef}>
    <header className={styles.header}>
      <div className={styles.headerContent}>
        {gridHeaderData && (
@@ -134,6 +135,9 @@ const ImageGrid: React.FC = () => {
         The Art Mine
         <a href="#top" className={styles.arrowLink}>↑</a>
       </footer>
+      <button onClick={scrollToTop} className={styles.scrollToTopButton}>
+        ↑
+      </button>
     </div>
   );
 }

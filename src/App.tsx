@@ -10,6 +10,10 @@ import Inquire from './screens/Inquire';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import useStore from './screens/store';  // Import useStore
+import smoothscroll from 'smoothscroll-polyfill';
+
+// kick off the polyfill!
+smoothscroll.polyfill();
 
 const App: React.FC = () => {
   const scrollableElement = useRef<HTMLDivElement>(null);
@@ -29,6 +33,13 @@ const App: React.FC = () => {
     }
   };   
 
+  const scrollToTop = () => {
+    const current = scrollableElement.current;
+    if (current) {
+      current.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  };  
+
   useEffect(() => {
     const current = scrollableElement.current;
     if (current) {
@@ -41,7 +52,7 @@ const App: React.FC = () => {
     <div ref={scrollableElement} style={{ height: '100vh', overflow: 'auto' }}>
       <Router>
       <Container maxWidth="lg" style={{margin: '0 auto'}}>
-        <ScrollContext.Provider value={{ handleScroll }}> 
+      <ScrollContext.Provider value={{ handleScroll, scrollToTop }}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/:filter" element={<ImageGrid />} />
