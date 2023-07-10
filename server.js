@@ -248,6 +248,20 @@ app.get('/api/diptychsvgs/:DiptychIdCode', async (req, res) => {
   }
 });
 
+app.get('/api/diptychsvgs/:DiptychId', async (req, res) => {
+  const { DiptychId } = req.params;
+  try {
+    const diptychSVGs = await DiptychSVG.findAll({ where: { DiptychId } });
+    if (diptychSVGs) {
+      res.json(diptychSVGs);
+    } else {
+      res.status(404).json({ error: 'DiptychSVGs not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
 
 
 app.listen(port, () => {

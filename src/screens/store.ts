@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { DataService } from './DataService';
 import { UrlService } from './UrlService';
 import { DiptychSVG } from '../Diptychs/DiptychFilter';
+import { useState, useEffect } from 'react';
+
 
 const dataService = new DataService();
 const urlService = new UrlService();
@@ -40,22 +42,32 @@ export interface Photograph extends DiptychSVG {
   shapeInCenterEdge: string;
   shapeAtTopEdge: string;
   DiptychIdName: string;
+  DiptychIdCode: string;
   diptcyhName: string;
   artworkID: string;
 }
 
 export interface Store {
   photos: Photograph[];
+  loadedPhotos: Photograph[];
+  loadIndex: number;
   sortedPhotos: Photograph[];
   selectedPhoto: Photograph | null;
   gridHeaderData: GridHeaderData | null;
   exhibitionHeaderData: ExhibitionHeaderData | null;
   initialLoad: boolean;
-  loading: boolean; 
   initialPhotoFetch: boolean;
   selectedSeries: string;
   seriesFilter: string;
   previousFilter: string;
+  loading: {
+    photos: boolean;
+    diptychSVG: boolean;
+    diptychInfo: boolean;
+    galleryBackground: boolean;
+  };
+  frameColor: 'white' | 'black' | 'unframed'; // add frameColor to the store
+  setFrameColor: (color: 'white' | 'black' | 'unframed') => void; // add setFrameColor function to the store
   clearPhotos: () => void;
   setPreviousFilter: (filter: string) => void;
   setSeriesFilter: (series: string) => void;
@@ -71,6 +83,7 @@ export interface Store {
   fetchPhotos: () => Promise<void>;
   sortValue: 'newest' | 'oldest' | 'random';
   setSortValue: (value: 'newest' | 'oldest' | 'random') => void;
+  loadMorePhotos: () => void;
 }
 
 // Define a separate function for sorting photos
@@ -93,9 +106,16 @@ function sortPhotos(photos: Photograph[], sortValue: 'newest' | 'oldest' | 'rand
 
 const useStore = create<Store>((set, get) => ({
   photos: [],
+  loadedPhotos: [], // Initialized loadedPhotos to an empty array
+  loadIndex: 0, // Initialized loadIndex to 0
   sortedPhotos: [],
   selectedPhoto: null,
-  loading: false,
+  loading: {
+    photos: false,
+    diptychSVG: false,
+    diptychInfo: false,
+    galleryBackground: false,
+  },
   gridHeaderData: null,
   exhibitionHeaderData: null,
   initialLoad: true,
@@ -104,10 +124,12 @@ const useStore = create<Store>((set, get) => ({
   selectedSeries: '',
   seriesFilter: '',
   previousFilter: '',
+  frameColor: 'white', 
+  setFrameColor: (color) => set({ frameColor: color }), 
   clearPhotos: () => set({ sortedPhotos: [] }),
   setPreviousFilter: (filter: string) => set({ previousFilter: filter }),
   setSelectedSeries: (series) => set({ selectedSeries: series }),
-  setLoading: (loading) => set({ loading }),
+  setLoading: (loading: boolean) => set({ loading: { ...get().loading, photos: loading, diptychSVG: loading, diptychInfo: loading, galleryBackground: loading } }),
   setInitialLoad: (load: boolean) => set({ initialLoad: load }),
   setSeriesFilter: (series) => {
     console.log('setSeriesFilter called with:', series);
@@ -132,8 +154,27 @@ setSelectedPhoto: (photoID: string | null) => {
   setExhibitionHeaderData: (data) => set({ exhibitionHeaderData: data }),
   setSortValue: (value) => {
     const sortedPhotos = sortPhotos(get().photos, value);
-    set({ sortValue: value, sortedPhotos });
-  },
+    const firstSet = sortedPhotos.slice(0, 51); // Get the first set of sorted photos
+    set({ sortValue: value, sortedPhotos, loadedPhotos: firstSet, loadIndex: 51 }); // Set the sorted photos, load the first set into loadedPhotos, and set loadIndex to 51
+},
+loadMorePhotos: () => {
+  const currentLoadIndex = get().loadIndex;
+  const sortedPhotosLength = get().sortedPhotos.length;
+
+  // If all photos have already been loaded, don't try to load more
+  if (currentLoadIndex >= sortedPhotosLength) {
+    console.log('All photos are loaded');
+    return;
+  }
+
+  const newLoadIndex = currentLoadIndex + 51;
+  const newLoadedPhotos = get().sortedPhotos.slice(0, newLoadIndex);
+  console.log('loadIndex:', newLoadIndex);
+  console.log('loadedPhotos length:', newLoadedPhotos.length);
+  console.log('sortedPhotos length:', sortedPhotosLength);
+  set({ loadIndex: newLoadIndex, loadedPhotos: newLoadedPhotos });
+},
+
   fetchGridHeaderData: async (filter) => {
     const data = await dataService.fetchGridHeaderData(filter);
     set({ gridHeaderData: data });
@@ -145,7 +186,8 @@ setSelectedPhoto: (photoID: string | null) => {
   }, 
 fetchPhotos: async () => {
   console.log('fetchPhotos called');
-  set({ loading: true });
+  set({ loading: { ...get().loading, photos: true } });
+
   
   // Parse the URL to get the filter and photoID
   const { filter: urlFilter, photoID } = urlService.parseUrl();
@@ -157,19 +199,27 @@ fetchPhotos: async () => {
   }
   
   // Fetch the photos
-  const fetchedPhotos = await dataService.fetchPhotos(urlFilter, get().seriesFilter);
-  console.log('Fetched photos:', fetchedPhotos);
-  console.log(fetchedPhotos.map(photo => photo.photoID));
-  
-  // Update the state with the new photos
-  set({ photos: fetchedPhotos });
+const fetchedPhotos = await dataService.fetchPhotos(urlFilter, get().seriesFilter);
+console.log('Fetched photos:', fetchedPhotos);
+console.log(fetchedPhotos.map(photo => photo.photoID));
 
-   // Sort the photos by date and set the sortedPhotos in the store
-   let sortedPhotos = sortPhotos(fetchedPhotos, get().sortValue);
+// Update the state with the new photos
+set({ photos: fetchedPhotos });
 
-   set({ loading: false });
-   set({ sortedPhotos });
+// Sort the photos by date
+let sortedPhotos = sortPhotos(fetchedPhotos, get().sortValue);
 
+// Update the state with the sorted photos
+set({ sortedPhotos });
+
+// Mark the photos as loaded
+set({ loading: { ...get().loading, photos: false } });
+
+// After fetching and sorting all photos, load the first set
+set((state) => {
+  const firstSet = state.sortedPhotos.slice(0, 51);
+  return { ...state, loadedPhotos: firstSet, loadIndex: 51 };
+});
 
   // If there's a photoID in the URL, find the corresponding photo and set it as the selected photo
   if (photoID) {
@@ -185,7 +235,7 @@ fetchPhotos: async () => {
   const headerData = await dataService.fetchGridHeaderData(urlFilter);
   set({ gridHeaderData: headerData });
   set({ initialPhotoFetch: true });
-  set({ loading: false });
+  set({ loading: { ...get().loading, photos: false, diptychSVG: false, diptychInfo: false, galleryBackground: false } });
 },
 }));
 

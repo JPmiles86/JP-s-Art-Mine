@@ -1,8 +1,9 @@
 // ImageGrid.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
 import { DataService, Series } from './DataService';
+import ScrollContext from '../ScrollContext'; 
 import useStore, { Store, GridHeaderData, Photograph } from './store';
 
 interface RouteParams {
@@ -16,6 +17,12 @@ const ImageGrid: React.FC = () => {
   const { filter } = useParams<RouteParams>();
   const { previousFilter, setPreviousFilter, seriesFilter, setSeriesFilter, gridHeaderData, setSortValue, fetchGridHeaderData, fetchPhotos, sortValue, sortedPhotos, clearPhotos } = useStore();
   const navigate = useNavigate();  
+  const [scrollPos, setScrollPos] = useState(0);  
+  const { handleScroll } = useContext(ScrollContext);  // Access handleScroll
+  const { loadedPhotos, loadMorePhotos } = useStore((state) => ({
+   loadedPhotos: state.loadedPhotos,
+   loadMorePhotos: state.loadMorePhotos,
+     }));
 
   useEffect(() => {
     const dataService = new DataService();
@@ -29,8 +36,7 @@ const ImageGrid: React.FC = () => {
   useEffect(() => {
     console.log('seriesFilter changed:', seriesFilter);
   }, [seriesFilter]);
-  
-  
+
   useEffect(() => {
     if (filter && filter !== previousFilter) {
       clearPhotos(); // Clear the old data
@@ -45,7 +51,7 @@ const ImageGrid: React.FC = () => {
       fetchGridHeaderData(filter)
         .catch((error: any) => console.error('Error fetching header data:', error));
       fetchPhotos().then(() => {
-        console.log('Photos after fetch:', sortedPhotos);
+        console.log('Photos after fetch:', loadedPhotos);
         setLoading(false); // Set loading to false after fetching new data
       });
       setPreviousFilter(filter);
@@ -53,8 +59,8 @@ const ImageGrid: React.FC = () => {
   }, [filter, previousFilter, setPreviousFilter, setSeriesFilter, fetchPhotos, clearPhotos]);  
   
   useEffect(() => {
-    console.log('sortedPhotos after fetch:', sortedPhotos);
-  }, [sortedPhotos]);  
+    console.log('loadedPhotos after fetch:', loadedPhotos);
+  }, [loadedPhotos]);  
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortOrder = event.target.value as 'newest' | 'oldest' | 'random';
@@ -70,48 +76,48 @@ const ImageGrid: React.FC = () => {
   if (loading) {
     return <div>Loading...</div>; // Replace this with your actual loading component
   } else {return (
-    <div className={styles.seriesPage}>
-      <header className={styles.header}>
-  <div className={styles.headerContent}>
-    {gridHeaderData && (
-      <>
-        <img src={gridHeaderData.imageUrl} alt="Header" className={styles.circularImage} />
-        <div className={styles.titleAndText}>
-          <h1>{gridHeaderData.title}</h1>
-          <p>{gridHeaderData.description}</p>
-          <div className={styles.websiteLink}>
-            <a href="https://www.jpmilesfineart.com/" target="_blank" rel="noopener noreferrer">jpmilesfineart.com</a>
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-</header>
-<div style={{ display: 'flex', alignItems: 'center' }}>
-        <p style={{ marginRight: '10px' }}>Sort By:</p> 
-        <select value={sortValue} onChange={handleSortChange} style={{ fontFamily: 'EB Garamond' }}>
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="random">Random</option>
-        </select>
-        {filter && filter.length <= 3 && (
-          <>
+   <div id="scrollable-container">
+   <header className={styles.header}>
+     <div className={styles.headerContent}>
+       {gridHeaderData && (
+         <>
+           <img src={gridHeaderData.imageUrl} alt="Header" className={styles.circularImage} />
+           <div className={styles.titleAndText}>
+             <h1>{gridHeaderData.title}</h1>
+             <p>{gridHeaderData.description}</p>
+             <div className={styles.websiteLink}>
+               <a href="https://www.jpmilesfineart.com/" target="_blank" rel="noopener noreferrer">jpmilesfineart.com</a>
+             </div>
+           </div>
+         </>
+       )}
+     </div>
+     <div style={{ display: 'flex', alignItems: 'center' }}>
+       <p style={{ marginRight: '10px' }}>Sort By:</p> 
+       <select value={sortValue} onChange={handleSortChange} style={{ fontFamily: 'EB Garamond' }}>
+         <option value="newest">Newest</option>
+         <option value="oldest">Oldest</option>
+         <option value="random">Random</option>
+       </select>
+       {filter && filter.length <= 3 && (
+         <>
            <p style={{ marginRight: '10px', marginLeft: '30px' }}>Sort By Series:</p> 
            <select value={seriesFilter} onChange={handleSeriesChange} style={{ fontFamily: 'EB Garamond' }}>
              {series.map((series: Series) => <option value={series.seriesCode}>{series.seriesName}</option>)}
            </select>
-          </>
-         )}
-        </div>
+         </>
+       )}
+     </div>
+   </header>
       <div style={{ marginBottom: '20px' }} /> {/* Add this line for a gap */}
       <div className={styles.grid}>
-      {!loading && sortedPhotos.map((photo: Photograph, index: number) => (
+      {!loading && loadedPhotos.map((photo: Photograph, index: number) => (
     <div
       key={photo.photoID}
       className={styles.gridItem} 
       onClick={() => { 
-        console.log('Navigating with state:', { data: { sortedPhotos } }); 
-        navigate(`/${filter}/${photo.photoID}`, { state: { data: { sortedPhotos } }});
+        console.log('Navigating with state:', { data: { loadedPhotos } }); 
+        navigate(`/${filter}/${photo.photoID}`, { state: { data: { loadedPhotos } }});
       }}      
     >
       {photo.imagePath && 

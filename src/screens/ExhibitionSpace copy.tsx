@@ -1,4 +1,3 @@
-// ExhibitionSpace.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
@@ -24,7 +23,7 @@ interface Photograph {
 
 const ExhibitionSpace = () => {
   const navigate = useNavigate();
-  const { photos, fetchPhotos, selectedPhoto, setSelectedPhoto, loading } = useStore((state) => state);
+  const { photos, fetchPhotos, selectedPhoto, setSelectedPhoto } = useStore((state) => state);
   const { photoID } = useParams<{ photoID: string }>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [galleryBackground, setGalleryBackground] = useState('/assets/images/gallerybg/Gallery-2.png');
@@ -41,8 +40,6 @@ const ExhibitionSpace = () => {
   const [shapeCode, setShapeCode] = useState<string>('CD');
   const [diptychInfo, setDiptychInfo] = useState<any>(null);
   const [diptychLoading, setDiptychLoading] = useState(true);
-  const [diptychInfoLoading, setDiptychInfoLoading] = useState(true);
-  const [galleryBackgroundLoading, setGalleryBackgroundLoading] = useState(true);
 
   const swapMapping: { [key: string]: string } = {
     'CD': 'SD',
@@ -104,7 +101,6 @@ const ExhibitionSpace = () => {
       }
 
       setDiptychLoading(true); // Set loading state to true
-      setDiptychInfoLoading(true); // Set loading state for diptych info to true
 
       import(`../Diptychs/${DiptychIdCode}`)
         .then((module) => {
@@ -117,11 +113,9 @@ const ExhibitionSpace = () => {
               const response = await fetch(`/api/diptychsvgs/${diptychIdCode}`);
               const data = await response.json();
               setDiptychInfo(data);
-              setDiptychInfoLoading(false); // Set loading state for diptych info to false after data is fetched
               setDiptychLoading(false); // Set loading state to false after data is fetched
             } catch (error) {
               console.error('Error fetching diptych info:', error);
-              setDiptychInfoLoading(false); // Set loading state for diptych info to false in case of an error
               setDiptychLoading(false); // Set loading state to false in case of an error
             }
           };
@@ -131,28 +125,15 @@ const ExhibitionSpace = () => {
         .catch((err) => {
           console.log(err);
           setDiptychLoading(false); // Set loading state to false in case of an error
-          setDiptychInfoLoading(false); // Set loading state for diptych info to false in case of an error
         });
     }
   }, [selectedPhoto, isMerged, frameColor, shapeCode]);
 
   useEffect(() => {
-    if (selectedPhoto && diptychInfo && !loading.diptychInfo) {
+    if (selectedPhoto && diptychInfo) {
       setIsLoading(false);
     }
-  }, [selectedPhoto, diptychInfo, loading.diptychInfo]);
-
-  useEffect(() => {
-    if (!loading.galleryBackground) {
-      setIsLoading(false);
-    }
-  }, [loading.galleryBackground]);
-
-  useEffect(() => {
-    if (galleryBackgroundLoading === false) {
-      setIsLoading(false);
-    }
-  }, [galleryBackgroundLoading]);
+  }, [selectedPhoto, diptychInfo]);
 
   const handleBackToImageGrid = () => {
     setPreviousFilter(currentFilter);
@@ -160,45 +141,37 @@ const ExhibitionSpace = () => {
   };
 
   const handlePrevPhoto = useCallback(() => {
-    if (sortedPhotos && currentIndex > 0 && !isLoading && !diptychInfoLoading) {
+    if (sortedPhotos && currentIndex > 0) {
       const newIndex = currentIndex - 1;
       const previousPhoto = sortedPhotos[newIndex];
       navigate(`/${currentFilter}/${previousPhoto.photoID}`);
       console.log(`Navigating to previous photo with index ${newIndex}`);
     }
-  }, [currentIndex, sortedPhotos, navigate, isLoading, diptychInfoLoading]);
+  }, [currentIndex, sortedPhotos, navigate]);
 
   const handleNextPhoto = useCallback(() => {
-    if (sortedPhotos && currentIndex < sortedPhotos.length - 1 && !isLoading && !diptychInfoLoading) {
+    if (sortedPhotos && currentIndex < sortedPhotos.length - 1) {
       const newIndex = currentIndex + 1;
       const nextPhoto = sortedPhotos[newIndex];
       navigate(`/${currentFilter}/${nextPhoto.photoID}`);
       console.log(`Navigating to next photo with index ${newIndex}`);
     }
-  }, [currentIndex, sortedPhotos, navigate, isLoading, diptychInfoLoading]);
+  }, [currentIndex, sortedPhotos, navigate]);
 
   const changeFrameColor = () => {
-    if (!isLoading && !diptychInfoLoading) {
-      setFrameColor((prevColor) => (prevColor === 1 ? 2 : 1));
-    }
+    setFrameColor((prevColor) => (prevColor === 1 ? 2 : 1));
   };
 
   const toggleMergeStatus = () => {
-    if (!isLoading && !diptychInfoLoading) {
-      setIsMerged((prevState) => (prevState === 'entangled' ? 'fused' : 'entangled'));
-    }
+    setIsMerged((prevState) => (prevState === 'entangled' ? 'fused' : 'entangled'));
   };
 
   const swapShape = () => {
-    if (!isLoading && !diptychInfoLoading) {
-      setShapeCode((prevCode) => swapMapping[prevCode]);
-    }
+    setShapeCode((prevCode) => swapMapping[prevCode]);
   };
 
   const rotateShape = () => {
-    if (!isLoading && !diptychInfoLoading) {
-      setShapeCode((prevCode) => rotateMapping[prevCode]);
-    }
+    setShapeCode((prevCode) => rotateMapping[prevCode]);
   };
 
   useKeyboardNavigation(handleNextPhoto, handlePrevPhoto, swapShape, rotateShape, toggleMergeStatus);
@@ -215,8 +188,8 @@ const ExhibitionSpace = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galleryBackground) {
-    return <div>Loading Exhibition...</div>;
+  if (isLoading || diptychLoading) {
+    return <div>Loading Exhibition... (if this persists, there may be an issue with the photo data)</div>;
   }
 
   console.log('Selected photo in ExhibitionSpace: ', selectedPhoto);

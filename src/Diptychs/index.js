@@ -121,4 +121,6 @@ export { default as F_3x4_ST_P_B } from './F_3x4_ST_P_B';
 export { default as F_3x4_TC_L_B } from './F_3x4_TC_L_B';
 export { default as F_3x4_TS_L_B } from './F_3x4_TS_L_B';
 
-export { getImagesForDiptychType } from './DiptychFilter';
+// console.log('Diptych keys:', Object.keys(diptychs));
+
+// export { getImagesForDiptychType } from './DiptychFilter';

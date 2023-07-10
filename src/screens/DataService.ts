@@ -50,7 +50,7 @@ export class DataService {
   
       const response = await fetch(dataUrl);
       const data = await response.json();
-      data.sort((a: Photograph, b: Photograph) => Number(a.photoID) - Number(b.photoID));
+     // data.sort((a: Photograph, b: Photograph) => Number(a.photoID) - Number(b.photoID));
       return data;
     } catch (error) {
       console.error('Error fetching photos:', error);
