@@ -4,7 +4,9 @@ import { DataService } from './DataService';
 import { UrlService } from './UrlService';
 import { DiptychSVG } from '../Diptychs/DiptychFilter';
 import { useState, useEffect } from 'react';
-
+import { fabric } from 'fabric';
+import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
+import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
 
 const dataService = new DataService();
 const urlService = new UrlService();
@@ -47,6 +49,11 @@ export interface Photograph extends DiptychSVG {
   artworkID: string;
 }
 
+// Add this new interface for managing download URLs
+export interface DownloadURLs {
+  [diptychIdCode: string]: string;
+}
+
 export interface Store {
   photos: Photograph[];
   loadedPhotos: Photograph[];
@@ -67,6 +74,17 @@ export interface Store {
     galleryBackground: boolean;
   };
   frameColor: 'white' | 'black' | 'unframed'; // add frameColor to the store
+  downloadURLs: DownloadURLs;
+  canvasRefs: Map<string, React.RefObject<HTMLCanvasElement>>;
+  fabricCanvasRefs: Map<string, fabric.Canvas>;
+  layoutSpecsMap: Map<string, LayoutSpecs>;
+  diptychConfigurations: typeof diptychConfigurations;
+  setLayoutSpecs: (diptychIdCode: string, specs: LayoutSpecs) => void;
+  setFabricCanvasRef: (diptychIdCode: string, canvas: fabric.Canvas) => void;
+  clearFabricCanvasRef: (diptychIdCode: string) => void;
+  setCanvasRef: (diptychIdCode: string, ref: React.RefObject<HTMLCanvasElement>) => void;
+  clearCanvasRef: (diptychIdCode: string) => void;
+  setDownloadURL: (diptychIdCode: string, url: string) => void;
   setFrameColor: (color: 'white' | 'black' | 'unframed') => void; // add setFrameColor function to the store
   clearPhotos: () => void;
   setPreviousFilter: (filter: string) => void;
@@ -125,6 +143,46 @@ const useStore = create<Store>((set, get) => ({
   seriesFilter: '',
   previousFilter: '',
   frameColor: 'white', 
+  downloadURLs: {},
+  canvasRefs: new Map(),
+  fabricCanvasRefs: new Map(),
+  layoutSpecsMap: new Map(),
+  diptychConfigurations,
+    setLayoutSpecs: (diptychIdCode, specs) => set(state => {
+    console.log(`Before setting layout specs for ${diptychIdCode}`);
+    const newMap = new Map(state.layoutSpecsMap);
+    newMap.set(diptychIdCode, specs);
+    console.log(`Setting layout specs for ${diptychIdCode}:`, specs);
+    return { layoutSpecsMap: newMap };
+  }),  
+  setFabricCanvasRef: (diptychIdCode, canvas) => set((state) => {
+    const newRefs = new Map(state.fabricCanvasRefs);
+    newRefs.set(diptychIdCode, canvas);
+    return { fabricCanvasRefs: newRefs };
+  }),  
+  clearFabricCanvasRef: (diptychIdCode) => set((state) => {
+    const newRefs = new Map(state.fabricCanvasRefs);
+    newRefs.delete(diptychIdCode);
+    return { fabricCanvasRefs: newRefs };
+  }),
+  setCanvasRef: (diptychIdCode, ref) => set((state) => {
+    const newRefs = new Map(state.canvasRefs);
+    newRefs.set(diptychIdCode, ref);
+    return { canvasRefs: newRefs };
+  }),
+  clearCanvasRef: (diptychIdCode) => set((state) => {
+    const newRefs = new Map(state.canvasRefs);
+    newRefs.delete(diptychIdCode);
+    return { canvasRefs: newRefs };
+  }),
+  setDownloadURL: (diptychIdCode: string, url: string) => {
+    set((state) => ({
+      downloadURLs: {
+        ...state.downloadURLs,
+        [diptychIdCode]: url,
+      },
+    }));
+  },
   setFrameColor: (color) => set({ frameColor: color }), 
   clearPhotos: () => set({ sortedPhotos: [] }),
   setPreviousFilter: (filter: string) => set({ previousFilter: filter }),
@@ -140,11 +198,12 @@ const useStore = create<Store>((set, get) => ({
     }
     set({ seriesFilter: series });
   },  
-// Modify setSelectedPhoto to find the photo based on photoID
+// Modify setSelectedPhoto to find the photo based on photoID and generate download URL
 setSelectedPhoto: (photoID: string | null) => {
   if (photoID !== null) {
-    const selectedPhoto = get().photos.find(photo => photo.photoID === photoID);
+    const selectedPhoto = get().photos.find((photo) => photo.photoID === photoID);
     set({ selectedPhoto });
+    // Remove the dynamic import and data URL generation from here
   } else {
     set({ selectedPhoto: null });
   }
@@ -240,4 +299,3 @@ set((state) => {
 }));
 
 export default useStore;
-

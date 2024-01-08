@@ -1,0 +1,10 @@
+// SVGEnhancedDiptychs.tsx
+import transformImageUrl from '../utils/transformImageUrl';
+import * as OriginalDiptychs from '../Diptychs';
+
+export const EnhancedDiptychs: { [key: string]: React.FC<{ dataUrl: string | null }> } = {};
+
+for (const [key, Component] of Object.entries(OriginalDiptychs)) {
+  console.log("Transforming component:", key);
+  EnhancedDiptychs[key] = transformImageUrl(Component);
+}

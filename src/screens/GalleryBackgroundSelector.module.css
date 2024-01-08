@@ -2,10 +2,11 @@
     background-color: #ffffff;
   border: 1px solid #000;
   color: #000;
-  margin-left: 20px;
   font-family: 'EB Garamond', serif;
   width: 150px; /* adjust as necessary */
   height: 40px; /* adjust as necessary */
+  padding: 5px 5px;
+  margin: 5px;
   text-align: center;
   font-size: 16px;
   }

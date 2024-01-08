@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const sequelize = require('./config/database');
 const app = express();
@@ -21,7 +20,6 @@ app.use(cors({
 }));
 
 app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals'));
-
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
@@ -78,8 +76,20 @@ app.get('/api/photos/:photoID', async (req, res) => {
         seriesName: photo.seriesName,
         date: photo.date,
         number: photo.number,
-        shutterSpeed: photo.shutterSpeed
-        // add other required fields here
+        shutterSpeed: photo.shutterSpeed,
+        model: photo.model,
+        lens: photo.lens,
+        focalLength: photo.focalLength,
+        aperture: photo.aperture,
+        iso: photo.iso,
+        dimensions: photo.dimensions,
+        aspectRatio: photo.aspectRatio,
+        dateOriginal: photo.dateOriginal,
+        imagePath: photo.imagePath,
+        uniqueKey: photo.uniqueKey,
+        createdAt: photo.createdAt,
+        updatedAt: photo.updatedAt,
+        // Add any other fields you need
       });
     } else {
       res.status(404).send('Photo not found');
@@ -89,7 +99,6 @@ app.get('/api/photos/:photoID', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
 
 
 app.get('/api/series/:seriesCode', async (req, res) => {
@@ -262,7 +271,6 @@ app.get('/api/diptychsvgs/:DiptychId', async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

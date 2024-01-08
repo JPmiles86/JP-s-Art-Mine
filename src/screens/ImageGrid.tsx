@@ -5,6 +5,7 @@ import styles from './ImageGrid.module.css';
 import { DataService, Series } from './DataService';
 import ScrollContext from '../ScrollContext'; 
 import useStore, { Store, GridHeaderData, Photograph } from './store';
+import urlConfig from './urlConfig';  // Add this line
 
 interface RouteParams {
   filter?: string;
@@ -82,7 +83,15 @@ const ImageGrid: React.FC = () => {
      <div className={styles.headerContent}>
        {gridHeaderData && (
          <>
-           <img src={gridHeaderData.imageUrl} alt="Header" className={styles.circularImage} />
+           {
+    gridHeaderData && (
+        <>
+            {console.log(gridHeaderData.imageUrl)}
+            {console.log('Image URL:', gridHeaderData.imageUrl)}
+            <img src={`${urlConfig.baseURL}${gridHeaderData.imageUrl.slice(gridHeaderData.imageUrl.indexOf('originals') + 'originals'.length)}`} alt="Header" className={styles.circularImage} />
+        </>
+    )
+}
            <div className={styles.titleAndText}>
              <h1>{gridHeaderData.title}</h1>
              <p>{gridHeaderData.description}</p>
@@ -104,7 +113,7 @@ const ImageGrid: React.FC = () => {
          <>
            <p style={{ marginRight: '10px', marginLeft: '30px' }}>Sort By Series:</p> 
            <select value={seriesFilter} onChange={handleSeriesChange} style={{ fontFamily: 'EB Garamond' }}>
-             {series.map((series: Series) => <option value={series.seriesCode}>{series.seriesName}</option>)}
+           {series.map((series: Series) => <option key={series.seriesCode} value={series.seriesCode}>{series.seriesName}</option>)}
            </select>
          </>
        )}
@@ -123,7 +132,7 @@ const ImageGrid: React.FC = () => {
     >
       {photo.imagePath && 
         <img 
-          src={`http://localhost:4000/images${photo.imagePath.slice(photo.imagePath.indexOf('originals') + 'originals'.length)}`} 
+          src={`${urlConfig.baseURL}${photo.imagePath.slice(photo.imagePath.indexOf('originals') + 'originals'.length)}`} 
           alt="Grid Item" 
           className={styles.image} 
         />

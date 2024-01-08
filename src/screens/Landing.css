@@ -61,6 +61,11 @@ body {
   padding: 0.2rem;
   border: 0px solid #ccc;
   border-radius: 50%;
+  transition: transform 0.2s ease-in-out;  /* Add a transition for the transform property */
+}
+
+.series img:hover {
+  transform: rotate(180deg);  /* Rotate the image 90 degrees on hover */
 }
 
 .series p {

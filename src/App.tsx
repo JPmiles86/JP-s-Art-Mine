@@ -26,8 +26,6 @@ const App: React.FC = () => {
     const { scrollTop, scrollHeight, clientHeight } = current;
     const isBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight * 0.9;
     
-    console.log('Scroll position:', scrollTop, 'Scroll height:', scrollHeight, 'Client height:', clientHeight, 'Is bottom:', isBottom);
-  
     if (isBottom && scrollTop > 0) {
       loadMorePhotos();
     }
@@ -51,17 +49,17 @@ const App: React.FC = () => {
   return (
     <div ref={scrollableElement} style={{ height: '100vh', overflow: 'auto' }}>
       <Router>
-      <Container maxWidth="lg" style={{margin: '0 auto'}}>
-      <ScrollContext.Provider value={{ handleScroll, scrollToTop }}>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/:filter" element={<ImageGrid />} />
-            <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />
-            <Route path="/:filter/:photoID/inquire" element={<Inquire />} />
-            {/* Other routes go here */}
-            </Routes>
-          </ScrollContext.Provider>
-        </Container>
+          <Container maxWidth="lg" style={{margin: '0 auto'}}>
+            <ScrollContext.Provider value={{ handleScroll, scrollToTop }}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/:filter" element={<ImageGrid />} />
+                <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />
+                <Route path="/:filter/:photoID/inquire" element={<Inquire />} />
+                {/* Other routes go here */}
+              </Routes>
+            </ScrollContext.Provider>
+          </Container>
       </Router>
     </div>
   );

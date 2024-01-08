@@ -67,7 +67,6 @@
   background-size: cover;
   background-position: center center;
   width: 100%;
-  min-height: 300px; /* Adjust the value as needed */
 }
 
 .backButton,
@@ -195,13 +194,22 @@
   background: none;
 }
 
-.enlarged .gallery > div {
-  width: 100%;
-  height: 100%;
+.enlarged .diptychSVG {
+  /* Increase the size of the diptych SVGs as desired */
+  width: 80%;
+  height: 80%;
 }
 
-/* Adjust the styling for the diptych SVGs as needed */
-.diptychSVG {
-  width: 100%;
-  height: 100%;
+.invisible {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
 }
+
+.galleryBackground {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-image 0.5s ease; /* Smooth transition for background changes */
+}
+

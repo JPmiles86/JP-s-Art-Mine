@@ -1,3 +1,5 @@
+// my-gallery/src/screens/useKeyboardNavigation.ts
+
 import { useEffect } from 'react';
 
 const useKeyboardNavigation = (

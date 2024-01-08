@@ -85,15 +85,15 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
             'Loading...'
           )}
           <br />
-          <strong>Shape in center: </strong>
-          {diptychInfo ? diptychInfo.shapeInCenterEdge : 'Loading...'} &nbsp;&nbsp;&nbsp;
-          <strong>Shape on top: </strong>
-          {diptychInfo ? diptychInfo.shapeAtTopEdge : 'Loading...'}
-          <br />
           <strong>Left Side: </strong>
           {diptychInfo ? diptychInfo.leftSide : 'Loading...'} &nbsp;&nbsp;&nbsp;
           <strong>Right Side: </strong>
           {diptychInfo ? diptychInfo.rightSide : 'Loading...'}
+          <br />
+          <strong>Shape in center: </strong>
+          {diptychInfo ? diptychInfo.shapeInCenterEdge : 'Loading...'} &nbsp;&nbsp;&nbsp;
+          <strong>Shape on top: </strong>
+          {diptychInfo ? diptychInfo.shapeAtTopEdge : 'Loading...'}
           <br />
         </p>
       </div>

@@ -1,36 +1,10 @@
+// Landing.tsx
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Landing.css';
 
 const Landing: React.FC = () => {
-  useEffect(() => {
-    const hoverImages = [
-      `${process.env.PUBLIC_URL}/assets/images/TST-Dip.jpg`,
-      `${process.env.PUBLIC_URL}/assets/images/TLS-Dip.jpg`,
-      `${process.env.PUBLIC_URL}/assets/images/CST-Dip.jpg`,
-      `${process.env.PUBLIC_URL}/assets/images/MFI-Dip.jpg`,
-    ];
-
-    const originalImages = [
-      `${process.env.PUBLIC_URL}/assets/images/TST.jpg`,
-      `${process.env.PUBLIC_URL}/assets/images/TLS.jpg`,
-      `${process.env.PUBLIC_URL}/assets/images/CST.jpg`,
-      `${process.env.PUBLIC_URL}/assets/images/MFI.jpg`,
-    ];
-
-    const seriesImages = document.querySelectorAll('.series img');
-
-    seriesImages.forEach((img, index) => {
-      img.addEventListener('mouseenter', () => {
-        (img as HTMLImageElement).src = hoverImages[index];
-      });
-
-      img.addEventListener('mouseleave', () => {
-        (img as HTMLImageElement).src = originalImages[index];
-      });
-    });
-  }, []);
-
+  
   return (
     <div className="landing">
       <h1 className="header">THE ART MINE</h1>
@@ -46,24 +20,24 @@ const Landing: React.FC = () => {
       <div className="landing-series-grid">
         <Link to="/TST" className="series">
           <img
-            src={`${process.env.PUBLIC_URL}/assets/images/TST.jpg`}
+            src={`${process.env.PUBLIC_URL}/assets/images/TST-dip.jpg`}
             alt="Transforming Space Time"
           />
           <p>Transforming Space Time</p>
         </Link>
         <Link to="/TLS" className="series">
-          <img src={`${process.env.PUBLIC_URL}/assets/images/TLS.jpg`} alt="Time Lines" />
+          <img src={`${process.env.PUBLIC_URL}/assets/images/TLS-dip.jpg`} alt="Time Lines" />
           <p>Time Lines</p>
         </Link>
         <Link to="/CST" className="series">
           <img
-            src={`${process.env.PUBLIC_URL}/assets/images/CST.jpg`}
+            src={`${process.env.PUBLIC_URL}/assets/images/CST-dip.jpg`}
             alt="Chromatic Shades of Time"
           />
           <p>Chromatic Shades of Time</p>
         </Link>
         <Link to="/MFI" className="series">
-          <img src={`${process.env.PUBLIC_URL}/assets/images/MFI.jpg`} alt="My Flippin’ iPhone" />
+          <img src={`${process.env.PUBLIC_URL}/assets/images/MFI-dip.jpg`} alt="My Flippin’ iPhone" />
           <p>My Flippin’ iPhone</p>
         </Link>
       </div>

@@ -99,6 +99,20 @@ export class DataService {
       return null; // Return null if an error occurs
     }
   }
+   // fetchPhotoDetails method inside the DataService class
+ async fetchPhotoDetails(photoId: string): Promise<Photograph | null> {
+  try {
+    const response = await fetch(`/api/photos/${photoId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching photo details:', error);
+    return null;
+  }
+}
   
   getHeaderDataForPhoto(photos: Photograph[], photoID: string): ExhibitionHeaderData | null {
     const photo = photos.find(photo => photo.photoID === photoID);
@@ -112,3 +126,6 @@ export class DataService {
     return null;
   }
 }
+
+// Export an instance of DataService
+export const dataService = new DataService();
