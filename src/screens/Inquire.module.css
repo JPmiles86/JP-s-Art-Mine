@@ -1,13 +1,29 @@
-button {
-    background-color: transparent;
-    border: 1px solid #000;
+/* Inquire.module.css */
+
+.diptychContainer {
+  margin-top: 20px;
+  max-width: 1000px;
+  width: 100%;
+  height: auto;
+}
+
+
+.button {
+  background-color: transparent;
+  border: 1px solid #000;
   cursor: pointer;
   color: black;
   font-size: 16px;
   padding: 5px 10px;
   font-family: 'EB Garamond', serif;
-  width: 150px; /* adjust as necessary */
-  height: 40px; /* adjust as necessary */
+  width: 150px;
+  height: 40px;
   text-align: center;
-  }
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
+}
+  
+.button:hover {
+  background-color: black; /* Background color on hover */
+  color: white; /* Text color on hover */
+}
   

@@ -69,65 +69,6 @@
   width: 100%;
 }
 
-.backButton,
-.swapButton,
-.rotateButton,
-.mergeButton,
-.frameColorButton,
-.buyButton {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  color: black;
-  font-size: 16px;
-  padding: 5px 10px;
-  font-family: 'EB Garamond', serif;
-  width: 150px; /* adjust as necessary */
-  height: 40px; /* adjust as necessary */
-  text-align: center;
-}
-
-.swapButton,
-.rotateButton,
-.mergeButton,
-.frameColorButton,
-.buyButton {
-  background-color: #ffffff;
-  border: 1px solid #000;
-  color: #000;
-  margin-left: 20px;
-}
-
-.buttonContainer {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px 0;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
-  margin-bottom: 20px;
-}
-
-.swapButton, 
-.rotateButton,
-.mergeButton, 
-.frameColorButton, 
-.buyButton {
-  padding: 10px 20px;
-  border: 1px solid #000;
-  background-color: #fff;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.swapButton:hover, 
-.rotateButton:hover,
-.mergeButton:hover, 
-.frameColorButton:hover, 
-.buyButton:hover {
-  background-color: #000;
-  color: #fff;
-}
-
 .navButton {
   background-color: transparent;
   border: none;

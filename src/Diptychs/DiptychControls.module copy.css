@@ -1,0 +1,37 @@
+.buttonContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center align the buttons */
+  align-items: center; /* Vertically align items */
+  padding: 5px 0;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  margin-bottom: 5px;
+}
+
+.button.small {
+  background-color: #ffffff;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 16px;
+  font-family: 'EB Garamond', serif;
+  padding: 5px 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex-grow: 0; /* Prevent stretching */
+  text-align: center;
+  margin: 5px;
+  max-width: 125px; /* Max width for buttons */
+  flex-basis: calc(20% - 10px); /* Adjust based on total number of buttons */
+}
+
+@media (max-width: 600px) { /* Adjust breakpoint as needed */
+  .button, .gallerySelector {
+    flex-basis: calc(50% - 10px); /* Larger flex-basis for smaller screens */
+  }
+}
+
+.button:hover {
+  background-color: #000;
+  color: #fff;
+}

@@ -10,6 +10,9 @@ import './Inquire.module.css';
 import useGalleryNavigation from '../utils/useGalleryNavigation'; // Import the hook
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { useNavigate } from 'react-router-dom';
+import styles from './Inquire.module.css';
+import buttonStyles from './ButtonStyles.module.css';
 
 
  // Update the SetPhotoIdProps to match with DiptychComponent prop types
@@ -27,6 +30,7 @@ interface DownloadButtonProps {
 }
 
 const Inquiry: React.FC = () => {
+  const navigate = useNavigate();
   const { photoID } = useParams<{ photoID: string }>();
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null); 
@@ -48,27 +52,8 @@ const Inquiry: React.FC = () => {
     }
   }, [photoID, setSelectedPhoto, photos]);
 
-   // Add a style object for the SVG containers
-const svgContainerStyle = {
-  marginTop: '20px',
-  maxWidth: '1000px',
-  width: '100%', // Makes sure it scales based on the parent's width
-  height: 'auto', // Maintains aspect ratio
-};
-
-const buttonStyle = {
-  backgroundColor: 'transparent',
-  border: '1px solid #000',
-  borderRadius: 0, // Making corners square
-  cursor: 'pointer',
-  color: 'black',
-  fontSize: '16px',
-  padding: '5px 10px',
-  fontFamily: "'EB Garamond', serif",
-  width: '150px',
-  height: '40px',
-  textAlign: 'center' as 'center', 
-  textTransform: 'none' as 'none',
+const handleReturnToGallery = () => {
+  navigate(`/${currentFilter}/${photoID}`);
 };
 
     // Function to handle canvas ready from Diptych component
@@ -83,7 +68,7 @@ const buttonStyle = {
       const effectivePhotoId = photoId || selectedPhoto?.photoID || '';
     
       return (
-        <div style={svgContainerStyle}>
+        <div className={styles.diptychContainer}>
           <DynamicDiptychComponent
             photoId={effectivePhotoId}
             containerRef={containerRef}
@@ -129,35 +114,36 @@ useEffect(() => {
         Thanks for inquiring about purchasing my art, which Diptych are you interested in purchasing?
       </Typography>
       <div>
-        <Button sx={{ ...buttonStyle, marginRight: '10px' }} onClick={() => handlePrevPhoto(selectedPhoto ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID) : 0)}>Previous Photo</Button>
-        <Button sx={buttonStyle} onClick={() => handleNextPhoto(selectedPhoto ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID) : 0)}>Next Photo</Button>
+        <button className={buttonStyles.button} onClick={handleReturnToGallery}>Return to Gallery</button>
+        <button className={buttonStyles.button} onClick={() => handlePrevPhoto(selectedPhoto ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID) : 0)}>Previous Photo</button>
+        <button className={buttonStyles.button} onClick={() => handleNextPhoto(selectedPhoto ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID) : 0)}>Next Photo</button>
       </div>
       {selectedPhoto ? (
         <Box>
           {renderDiptych('E_2x3_CD_P_B', selectedPhoto.photoID)}
           <Typography style={{ textAlign: 'center' }}>Description for E_2x3_CD_P_B</Typography>
           {renderDownloadButton(selectedPhoto.photoID, 'E_2x3_CD_P_B')}
-          <button style={buttonStyle} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
           {renderDiptych('E_2x3_DC_L_W', "230330-3890")}
           <Typography style={{ textAlign: 'center' }}>Description for E_2x3_DC_L_W</Typography>
           {renderDownloadButton("230330-3890", 'E_2x3_DC_L_W')}
-          <button style={buttonStyle} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
           {renderDiptych('F_2x3_CD_P_B', "230330-3890")} 
           <Typography style={{ textAlign: 'center' }}>Description for F_2x3_CD_P_B</Typography>
           {renderDownloadButton("230330-3890", 'F_2x3_CD_P_B')}
-          <button style={buttonStyle} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
           {renderDiptych('E_2x3_CD_P_U', "230330-3890")} 
           <Typography style={{ textAlign: 'center' }}>Description for E_2x3_CD_P_U</Typography>
           {renderDownloadButton("230330-3890", 'E_2x3_CD_P_U')} 
-          <button style={buttonStyle} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
           {renderDiptych('F_2x3_CD_P_U', "230330-3890")} 
           <Typography style={{ textAlign: 'center' }}>Description for F_2x3_CD_P_U</Typography>
           {renderDownloadButton("230330-3890", 'F_2x3_CD_P_U')} 
-          <button style={buttonStyle} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
         </Box>
 
       ) : (

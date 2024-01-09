@@ -1,3 +1,24 @@
+.button {
+  background-color: transparent;
+  border: 1px solid #000;
+  color: black;
+  font-size: 16px;
+  padding: 5px 5px;
+  margin-left: 5px;
+  margin-right: 5px; 
+  font-family: 'EB Garamond', serif;
+  width: 150px;
+  height: 40px;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.button:last-child {
+  margin-right: 0; /* Remove margin for the last button */
+}
+
 .buttonContainer {
   display: flex;
   flex-wrap: wrap;
@@ -9,7 +30,7 @@
   margin-bottom: 5px;
 }
 
-.button {
+.button.small {
   background-color: #ffffff;
   border: 1px solid #000;
   color: #000;

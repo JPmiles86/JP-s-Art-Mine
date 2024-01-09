@@ -1,9 +1,9 @@
  // my-gallery/src/Diptychs/DiptychControls.js
 
  import React from 'react';
- import styles from './DiptychControls.module.css';
  import DownloadButton from './DownloadButton';
  import { LayoutSpecs } from './LayoutSpecs'; // Adjust the path if necessary
+ import buttonStyles from '../screens/ButtonStyles.module.css';
  
  const DiptychControls = ({
      frameColor, 
@@ -22,21 +22,22 @@
      children
  }) => {
      return (
-         <div className={styles.buttonContainer}>
-             <button className={styles.button} onClick={() => setFrameColor(frameColor === 1 ? 2 : 1)}>Frame in {frameColor === 1 ? 'Black' : 'White'}</button>
-             <button className={styles.button} onClick={toggleMergeStatus}>{isMerged === 'entangled' ? 'Merge' : 'Unmerge'}</button>
-             <button className={styles.button} onClick={swapShape}>Swap</button>
-             <button className={styles.button} onClick={rotateShape}>Rotate</button>
-             <button className={styles.button} onClick={toggleShapesVisibility}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}</button>
-             <button className={styles.button} onClick={navigateToInquiry}>Inquire</button>
+         <div className={buttonStyles.buttonContainer}>
+             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={() => setFrameColor(frameColor === 1 ? 2 : 1)}>Frame in {frameColor === 1 ? 'Black' : 'White'}</button>
+             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={toggleMergeStatus}>{isMerged === 'entangled' ? 'Merge' : 'Unmerge'}</button>
+             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={swapShape}>Swap</button>
+             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={rotateShape}>Rotate</button>
+             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={toggleShapesVisibility}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}</button>
+             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={navigateToInquiry}>Inquire</button>
              <DownloadButton
                  photoId={photoId}
                  DiptychIdCode={DiptychIdCode}
                  fabricCanvasRef={fabricCanvasRef}
                  layoutSpecs={layoutSpecs} 
                  areShapesVisible={areShapesVisible}
+                 size="small"
              />
-             <div className={styles.gallerySelector}>
+             <div className={buttonStyles.gallerySelector}>
                  {children}
              </div>
          </div>

@@ -4,7 +4,8 @@ import { fabric } from 'fabric';
 import { downloadDiptych, generateFilename } from './downloadDiptych';
 import { LayoutSpecs } from './LayoutSpecs'; // Import LayoutSpecs
 import { createOffScreenCanvas } from './createOffScreenCanvas';
-import styles from './DiptychControls.module.css';
+import buttonStyles from '../screens/ButtonStyles.module.css';
+
 
 interface DownloadButtonProps {
   photoId: string;
@@ -12,9 +13,12 @@ interface DownloadButtonProps {
   fabricCanvasRef: fabric.Canvas | null; // Adjusted type
   layoutSpecs: LayoutSpecs;
   areShapesVisible: boolean; // Add this line
+  size?: string;
 }
 
-const DownloadButton: React.FC<DownloadButtonProps> = ({ photoId, DiptychIdCode, fabricCanvasRef, layoutSpecs, areShapesVisible}) => {
+const DownloadButton: React.FC<DownloadButtonProps> = ({ photoId, DiptychIdCode, fabricCanvasRef, layoutSpecs, areShapesVisible, size}) => {
+  const buttonClass = size === 'small' ? `${buttonStyles.button} ${buttonStyles.small}` : buttonStyles.button;
+
   console.log('DownloadButton Props:', { photoId, DiptychIdCode, fabricCanvasRef, layoutSpecs });
   const handleDownload = async () => {
     if (!fabricCanvasRef || !layoutSpecs) return;
@@ -37,8 +41,9 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ photoId, DiptychIdCode,
     downloadDiptych(fullSizeDataURL, photoId, DiptychIdCode);
   };
 
+  
   return (
-    <button className={styles.button} onClick={handleDownload}>Download Art</button>
+    <button className={buttonClass} onClick={handleDownload}>Download Art</button>
   );
 };
 
