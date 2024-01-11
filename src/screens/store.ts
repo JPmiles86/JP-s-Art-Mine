@@ -79,6 +79,9 @@ export interface Store {
   fabricCanvasRefs: Map<string, fabric.Canvas>;
   layoutSpecsMap: Map<string, LayoutSpecs>;
   diptychConfigurations: typeof diptychConfigurations;
+  selectedDiptychIdCode: string | null;
+  setSelectedDiptychIdCode: (diptychIdCode: string | null) => void;
+  clearSelectedDiptychIdCode: () => void;
   setLayoutSpecs: (diptychIdCode: string, specs: LayoutSpecs) => void;
   setFabricCanvasRef: (diptychIdCode: string, canvas: fabric.Canvas) => void;
   clearFabricCanvasRef: (diptychIdCode: string) => void;
@@ -155,6 +158,9 @@ const useStore = create<Store>((set, get) => ({
     console.log(`Setting layout specs for ${diptychIdCode}:`, specs);
     return { layoutSpecsMap: newMap };
   }),  
+  selectedDiptychIdCode: null,
+  setSelectedDiptychIdCode: (diptychIdCode) => set({ selectedDiptychIdCode: diptychIdCode }),
+  clearSelectedDiptychIdCode: () => set({ selectedDiptychIdCode: null }),
   setFabricCanvasRef: (diptychIdCode, canvas) => set((state) => {
     const newRefs = new Map(state.fabricCanvasRefs);
     newRefs.set(diptychIdCode, canvas);

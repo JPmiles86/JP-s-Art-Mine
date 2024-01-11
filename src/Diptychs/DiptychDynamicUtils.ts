@@ -2,7 +2,8 @@
 
 import { fabric } from 'fabric';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
-import React from 'react'; // Import React
+import React from 'react'; 
+import useStore from '../screens/store';
 
 interface Photograph {
   photoID: string;
@@ -27,6 +28,23 @@ export const generateDiptychIdCode = ( photo: Photograph, mergedStatus: string, 
   
   return `${mergePrefix}_${normalizedAspectRatio}_${shape}_${orientation}_${frameColorSuffix}`;
 };
+
+export const parseDiptychIdCode = (diptychIdCode: string) => {
+  const parts = diptychIdCode.split('_');
+  let colorCode = parts[4];
+
+  // If the color code is 'U' (unframed), default it to 'W' (white frame)
+  if (colorCode === 'U') {
+    colorCode = 'W';
+  }
+
+  return {
+    mergedStatus: parts[0] === 'E' ? 'entangled' : 'fused',
+    color: colorCode === 'W' ? 1 : 2, // 'W' for white frame (1), 'B' for black frame (2)
+    shape: parts[2]
+  };
+};
+
 
 export const loadComponent = (
   diptychIdCode: string, 

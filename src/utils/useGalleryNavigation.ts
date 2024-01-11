@@ -25,20 +25,20 @@ const useGalleryNavigation = (
     const navigate = useNavigate();
 
     const navigateToPhoto = useCallback((photoIndex: number) => {
-        if (photoIndex >= 0 && photoIndex < sortedPhotos.length) {
-            const photo = sortedPhotos[photoIndex];
-            setSelectedPhoto(photo.photoID);
-            navigate(`/${currentFilter}/${photo.photoID}${pathSuffix}`); // Use pathSuffix here
-        }
+        // Wrap around if index is out of bounds
+        const validIndex = (photoIndex + sortedPhotos.length) % sortedPhotos.length;
+        const photo = sortedPhotos[validIndex];
+        setSelectedPhoto(photo.photoID);
+        navigate(`/${currentFilter}/${photo.photoID}${pathSuffix}`);
     }, [sortedPhotos, navigate, setSelectedPhoto, currentFilter, pathSuffix]);
 
     const handlePrevPhoto = useCallback((currentIndex: number) => {
-        navigateToPhoto(currentIndex - 1);
-    }, [navigateToPhoto]);
+        navigateToPhoto((currentIndex - 1 + sortedPhotos.length) % sortedPhotos.length);
+    }, [navigateToPhoto, sortedPhotos.length]);
 
     const handleNextPhoto = useCallback((currentIndex: number) => {
-        navigateToPhoto(currentIndex + 1);
-    }, [navigateToPhoto]);
+        navigateToPhoto((currentIndex + 1) % sortedPhotos.length);
+    }, [navigateToPhoto, sortedPhotos.length]);
 
     return { handlePrevPhoto, handleNextPhoto };
 };

@@ -6,7 +6,7 @@ import useStore from './store';
 import ExhibitionHeader from './ExhibitionHeader';
 import GalleryBackgroundSelector from './GalleryBackgroundSelector';
 import useKeyboardNavigation from './useKeyboardNavigation';
-import { generateDiptychIdCode, loadComponent } from '../Diptychs/DiptychDynamicUtils';
+import { generateDiptychIdCode, loadComponent, parseDiptychIdCode } from '../Diptychs/DiptychDynamicUtils';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
 import DiptychControls from '../Diptychs/DiptychControls';
 import { swapMapping, rotateMapping } from '../Diptychs/DiptychIdCodeMapping';
@@ -41,21 +41,36 @@ const ExhibitionSpace = () => {
   const currentPhotoID = location.pathname.split('/')[2];
   const { sortedPhotos, setPreviousFilter } = useStore();
   const [DiptychComponent, setDiptychComponent] = useState<React.ComponentType<any> | null>(null);
-  const [frameColor, setFrameColor] = useState<number>(1);
-  const [isMerged, setIsMerged] = useState<string>('entangled');
-  const [shapeCode, setShapeCode] = useState<string>('CD');
+  const [frameColor, setFrameColor] = useState<number>();
+  const [isMerged, setIsMerged] = useState<string>();
+  const [shapeCode, setShapeCode] = useState<string>();
   const [isContainerReady, setIsContainerReady] = useState(false);
   const galleryRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter);
-  const diptychIdCode = selectedPhoto ? generateDiptychIdCode(selectedPhoto, isMerged, frameColor, shapeCode) : null;
+  const diptychIdCode = useMemo(() => {
+    if (selectedPhoto && isMerged !== undefined && frameColor !== undefined && shapeCode !== undefined) {
+      // Call the function only when all parameters are defined
+      return generateDiptychIdCode(selectedPhoto, isMerged, frameColor, shapeCode);
+    }
+    return null; // Return null if any of the parameters are not defined
+  }, [selectedPhoto, isMerged, frameColor, shapeCode]);const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter);
   const { diptychInfo, isLoading: diptychInfoLoading } = useDiptychInfo(diptychIdCode);
   const layoutSpecsMap = useStore(state => state.layoutSpecsMap);
   const fabricCanvasMap = useStore(state => state.fabricCanvasRefs);
   const [areShapesVisible, setAreShapesVisible] = useState(false);
+  const { selectedDiptychIdCode, setSelectedDiptychIdCode } = useStore(state => ({
+    selectedDiptychIdCode: state.selectedDiptychIdCode,
+    setSelectedDiptychIdCode: state.setSelectedDiptychIdCode
+  }));
+  
 
   const onCanvasReady = useCallback((canvasRef: fabric.Canvas, diptychIdCode: string) => {
     console.log(`Canvas ready for ${diptychIdCode}`, canvasRef);
+  
+    // Set the diptychIdCode as the selectedDiptychIdCode in the global state
+    setSelectedDiptychIdCode(diptychIdCode); // This updates the state in your Zustand store
+  
+    // Set the fabric canvas reference in the global state
     useStore.getState().setFabricCanvasRef(diptychIdCode, canvasRef);
   
     // Retrieve the layout specs from the store
@@ -63,8 +78,27 @@ const ExhibitionSpace = () => {
     if (!currentLayoutSpecs) {
       console.log(`Layout specs not found for ${diptychIdCode}`);
     }
-  }, [layoutSpecsMap]);
+  }, [layoutSpecsMap, setSelectedDiptychIdCode]); // Make sure to include setSelectedDiptychIdCode in the dependency array
+  
 
+  useEffect(() => {
+    // Check if a selectedDiptychIdCode exists in the store
+    if (selectedDiptychIdCode) {
+      // Use the parseDiptychIdCode function to get the actual values
+      const { mergedStatus, color, shape } = parseDiptychIdCode(selectedDiptychIdCode);
+      
+      // Set the state with the parsed values
+      setFrameColor(color); // Assuming the color is returned as the expected number
+      setIsMerged(mergedStatus); // Assuming the merged status is returned as the expected string
+      setShapeCode(shape); // Assuming the shape is returned as the expected string
+    } else {
+      // Set the state with default values
+      setFrameColor(1); // Assuming 1 corresponds to 'white' frame color in your system
+      setIsMerged('entangled');
+      setShapeCode('CD');
+    }
+  }, [selectedDiptychIdCode, setFrameColor, setIsMerged, setShapeCode]);
+  
 // Fetch photos from the backend when the component mounts or the 'photos' array changes
   useEffect(() => {
     if (photos.length === 0) {
@@ -90,7 +124,7 @@ const ExhibitionSpace = () => {
   }, [photoID, sortedPhotos]);
 
   useEffect(() => {
-    if (selectedPhoto) {
+    if (selectedPhoto && typeof isMerged === 'string' && typeof frameColor === 'number' && typeof shapeCode === 'string') {
       const diptychIdCode = generateDiptychIdCode(selectedPhoto, isMerged, frameColor, shapeCode);
       loadComponent(diptychIdCode, setDiptychComponent);
       // Retrieve the layoutSpecs and fabricCanvasRef
@@ -99,7 +133,9 @@ const ExhibitionSpace = () => {
       
       // Here you need to ensure that these are set in the state or used to pass as props
     }
-  }, [selectedPhoto, isMerged, frameColor, shapeCode]);
+//  }, [selectedPhoto, isMerged, frameColor, shapeCode]);
+ }, [selectedPhoto, isMerged, frameColor, shapeCode, loadComponent, setDiptychComponent]);
+
   
 
   useEffect(() => {
@@ -227,20 +263,20 @@ const ExhibitionSpace = () => {
         handleNextPhoto={wrappedHandleNextPhoto}
       />
       <div ref={galleryRef} className={styles.gallery} style={galleryBackgroundStyle}>
-        <div style={{
-         width: ['C', 'S'].includes(shapeCode.charAt(0)) ? '45%' : '64%',
-         height: ['C', 'S'].includes(shapeCode.charAt(0)) ? '45%' : '64%',
+      <div style={{
+         width: shapeCode && ['C', 'S'].includes(shapeCode.charAt(0)) ? '45%' : '64%',
+         height: shapeCode && ['C', 'S'].includes(shapeCode.charAt(0)) ? '45%' : '64%',
          maxWidth: '800px',
          margin: '0 auto',
        }}
           >
             <div className={styles.diptychWrapper}>
-            {isContainerReady && selectedPhoto && DiptychComponent ? (
+            { isContainerReady && selectedPhoto && DiptychComponent && diptychIdCode ? (
               <DynamicDiptychComponent 
               photoId={selectedPhoto.photoID}
               containerRef={containerRef}
               onCanvasReady={onCanvasReady}
-              DiptychIdCode={generateDiptychIdCode(selectedPhoto, isMerged, frameColor, shapeCode)}
+              DiptychIdCode={diptychIdCode}
               areShapesVisible={areShapesVisible}
             />
             ) : (
