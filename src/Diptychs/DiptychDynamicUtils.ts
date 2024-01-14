@@ -24,9 +24,9 @@ export const generateDiptychIdCode = ( photo: Photograph, mergedStatus: string, 
   const normalizedAspectRatio = photo.aspectRatio.replace(':', 'x');
   const orientation = ['C', 'S'].includes(shape.charAt(0)) ? 'P' : 'L';
   const mergePrefix = mergedStatus === 'entangled' ? 'E' : 'F';
-  const frameColorSuffix = color === 1 ? 'W' : 'B';
+  const FrameIdSuffix = color === 1 ? 'W' : 'B';
   
-  return `${mergePrefix}_${normalizedAspectRatio}_${shape}_${orientation}_${frameColorSuffix}`;
+  return `${mergePrefix}_${normalizedAspectRatio}_${shape}_${orientation}_${FrameIdSuffix}`;
 };
 
 export const parseDiptychIdCode = (diptychIdCode: string) => {

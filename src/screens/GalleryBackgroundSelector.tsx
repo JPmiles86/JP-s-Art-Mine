@@ -13,7 +13,7 @@ const GalleryBackgroundSelector: React.FC<GalleryBackgroundSelectorProps> = ({ o
   };
 
   return (
-    <select className={styles.gallerySelector} onChange={handleChange}>
+    <select className={styles.dropdownSelector} onChange={handleChange}>
       <option value="Gallery-2.png">Gallery 1</option>
       <option value="Gallery-1.png">Gallery 2</option>
       <option value="Room-1.png">Living Room 1</option>

@@ -1,17 +1,23 @@
 // DiptychFilter.tsx
 export type DiptychSVG = {
-  DiptchId: string;
-  aspectRatio: string;
+  id: number;
+  DiptychId: number;
+  fused: string;
   FrameId: string;
-  imagePath: string;
-  photoID: string;
+  aspectRatio: string;
+  orientation: string;
   leftSide: string;
   leftRotation: string;
   rightSide: string;
   rightRotation: string;
   shapeInCenterEdge: string;
   shapeAtTopEdge: string;
+  shapeCode: string;
   DiptychIdName: string;
+  DiptychIdCode: string;
+  DiptchId: string;
+  imagePath: string;
+  photoID: string;
   diptcyhName: string;
   artworkID: string;
 };

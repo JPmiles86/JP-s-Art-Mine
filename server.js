@@ -272,6 +272,37 @@ app.get('/api/diptychsvgs/:DiptychId', async (req, res) => {
   }
 });
 
+app.get('/api/diptychsvgs/frame/:frameId', async (req, res) => {
+  const { frameId } = req.params;
+  try {
+    const diptychSVGs = await DiptychSVG.findAll({ where: { FrameId: frameId } });
+    res.json(diptychSVGs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// New API endpoint to fetch DiptychSVGs by aspectRatio and frameId
+app.get('/api/diptychsvgs/aspectratio/:aspectRatio/frameid/:frameId/fused/:fused/shapeCode/:shapeCode', async (req, res) => {
+  const { aspectRatio, frameId, fused, shapeCode } = req.params;
+  try {
+    const diptychSVGs = await DiptychSVG.findAll({
+      where: {
+        aspectRatio,
+        FrameId: frameId, // assuming FrameId in the database is case-sensitive
+        fused,
+        shapeCode
+      }
+    });
+    res.json(diptychSVGs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

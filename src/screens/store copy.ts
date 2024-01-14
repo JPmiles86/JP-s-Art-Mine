@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { DataService } from './DataService';
 import { UrlService } from './UrlService';
+import { DiptychSVG } from '../Diptychs/DiptychFilter';
 import { useState, useEffect } from 'react';
 import { fabric } from 'fabric';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
@@ -53,35 +54,6 @@ export interface DownloadURLs {
   [diptychIdCode: string]: string;
 }
 
-// Add Frame interface
-export interface Frame {
-  id: number;
-  frameType: string;
-}
-
-export interface DiptychSVG {
-  id: number;
-  DiptychId: number;
-  fused: string;
-  FrameId: string;
-  aspectRatio: string;
-  orientation: string;
-  leftSide: string;
-  leftRotation: string;
-  rightSide: string;
-  rightRotation: string;
-  shapeInCenterEdge: string;
-  shapeAtTopEdge: string;
-  shapeCode: string;
-  DiptychIdName: string;
-  DiptychIdCode: string;
-  DiptchId: string;
-  imagePath: string;
-  photoID: string;
-  diptcyhName: string;
-  artworkID: string;
-}
-
 export interface Store {
   photos: Photograph[];
   loadedPhotos: Photograph[];
@@ -101,23 +73,13 @@ export interface Store {
     diptychInfo: boolean;
     galleryBackground: boolean;
   };
-  // FrameId: number | 'white' | 'black' | 'unframed';
+  FrameId: 'white' | 'black' | 'unframed'; // add FrameId to the store
   downloadURLs: DownloadURLs;
   canvasRefs: Map<string, React.RefObject<HTMLCanvasElement>>;
   fabricCanvasRefs: Map<string, fabric.Canvas>;
   layoutSpecsMap: Map<string, LayoutSpecs>;
   diptychConfigurations: typeof diptychConfigurations;
   selectedDiptychIdCode: string | null;
-  diptychSVGs: DiptychSVG[]; // Add a new state property to hold the diptych data
-  isMerged: string;
-  shapeCode: string;
-  FrameId: number; 
-  frames: Frame[];
-  fetchFrames: () => void;
-  setIsMerged: (isMerged: string) => void;
-  setShapeCode: (shapeCode: string) => void;
-  setFrameId: (FrameId: number) => void;
-  fetchDiptychComponentsByAspectRatioAndFrame: (aspectRatio: string, frameId: number) => Promise<void>;
   setSelectedDiptychIdCode: (diptychIdCode: string | null) => void;
   clearSelectedDiptychIdCode: () => void;
   setLayoutSpecs: (diptychIdCode: string, specs: LayoutSpecs) => void;
@@ -126,7 +88,7 @@ export interface Store {
   setCanvasRef: (diptychIdCode: string, ref: React.RefObject<HTMLCanvasElement>) => void;
   clearCanvasRef: (diptychIdCode: string) => void;
   setDownloadURL: (diptychIdCode: string, url: string) => void;
-  // setFrameId: (color: number | 'white' | 'black' | 'unframed') => void;
+  setFrameId: (color: 'white' | 'black' | 'unframed') => void; // add setFrameId function to the store
   clearPhotos: () => void;
   setPreviousFilter: (filter: string) => void;
   setSeriesFilter: (series: string) => void;
@@ -183,7 +145,7 @@ const useStore = create<Store>((set, get) => ({
   selectedSeries: '',
   seriesFilter: '',
   previousFilter: '',
-  // FrameId: 'white', 
+  FrameId: 'white', 
   downloadURLs: {},
   canvasRefs: new Map(),
   fabricCanvasRefs: new Map(),
@@ -197,53 +159,7 @@ const useStore = create<Store>((set, get) => ({
     return { layoutSpecsMap: newMap };
   }),  
   selectedDiptychIdCode: null,
-  diptychSVGs: [], // Initialize the state
-  isMerged: 'Entangled', // default value
-  shapeCode: 'CD', // default value
-  FrameId: 1, // default value 'white'
-   // Initialize frames state
-   frames: [
-    { id: 1, frameType: 'White' },
-    { id: 2, frameType: 'Black' },
-    { id: 3, frameType: 'Unframed' },
-  ],
-  
-  // Implement fetchFrames function
-  fetchFrames: async () => {
-    try {
-      // Replace this with your API call if needed
-      const framesFromApi = [
-        { id: 1, frameType: 'White' },
-        { id: 2, frameType: 'Black' },
-        { id: 3, frameType: 'Unframed' },
-      ];
-      set({ frames: framesFromApi });
-    } catch (error) {
-      console.error('Failed to fetch frames:', error);
-    }
-  },
-  setIsMerged: (isMerged) => set({ isMerged }),
-  setShapeCode: (shapeCode) => set({ shapeCode }),
-  setFrameId: (FrameId) => set({ FrameId }),
-  fetchDiptychComponentsByAspectRatioAndFrame: async (aspectRatio, frameId) => {
-    const { isMerged, shapeCode } = get(); // Get current global state values for isMerged and shapeCode
-    try {
-      const response = await fetch(`http://localhost:4000/api/diptychsvgs/aspect-ratio/${aspectRatio}/frame/${frameId}/fused/${isMerged}/shapeCode/${shapeCode}`);
-      if (!response.ok) {
-        throw new Error('Problem fetching diptych components');
-      }
-      const diptychComponents = await response.json();
-      if (diptychComponents.length > 0) {
-        set({ selectedDiptychIdCode: diptychComponents[0].DiptychIdCode });
-      }
-    } catch (error) {
-      console.error('Failed to fetch diptych components', error);
-    }
-  },  
-  setSelectedDiptychIdCode: (diptychIdCode) => {
-      console.log(`Updating selectedDiptychIdCode to: ${diptychIdCode}`);
-  set({ selectedDiptychIdCode: diptychIdCode });
-  },
+  setSelectedDiptychIdCode: (diptychIdCode) => set({ selectedDiptychIdCode: diptychIdCode }),
   clearSelectedDiptychIdCode: () => set({ selectedDiptychIdCode: null }),
   setFabricCanvasRef: (diptychIdCode, canvas) => set((state) => {
     const newRefs = new Map(state.fabricCanvasRefs);
@@ -273,6 +189,7 @@ const useStore = create<Store>((set, get) => ({
       },
     }));
   },
+  setFrameId: (color) => set({ FrameId: color }), 
   clearPhotos: () => set({ sortedPhotos: [] }),
   setPreviousFilter: (filter: string) => set({ previousFilter: filter }),
   setSelectedSeries: (series) => set({ selectedSeries: series }),

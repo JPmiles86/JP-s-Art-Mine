@@ -1,12 +1,12 @@
-// my-gallery/src/Diptychs/DiptychControls.js
+ // my-gallery/src/Diptychs/DiptychControls.js
 
-import React, { useEffect, useState } from 'react';
-import DownloadButton from './DownloadButton';
-import buttonStyles from '../screens/ButtonStyles.module.css';
-import useStore from '../screens/store'; 
-import { swapMapping, rotateMapping } from './DiptychIdCodeMapping'; 
-
-const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children }) => {
+ import React, { useEffect } from 'react';
+ import DownloadButton from './DownloadButton';
+ import buttonStyles from '../screens/ButtonStyles.module.css';
+ import useStore from '../screens/store'; 
+ import { swapMapping, rotateMapping } from './DiptychIdCodeMapping'; 
+ 
+ const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children }) => {
     const { FrameId, isMerged, shapeCode, selectedDiptychIdCode, setFrameId, setIsMerged, setShapeCode, setSelectedDiptychIdCode } = useStore(state => ({
         FrameId: state.FrameId,
         isMerged: state.isMerged,
@@ -17,23 +17,6 @@ const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, la
         setShapeCode: state.setShapeCode,
         setSelectedDiptychIdCode: state.setSelectedDiptychIdCode
     }));
-
-    // State to track if an update is needed
-    const [updateNeeded, setUpdateNeeded] = useState(false);
-
-    useEffect(() => {
-        // Check if selectedPhoto and its aspectRatio are available
-        if (selectedPhoto?.aspectRatio && !selectedDiptychIdCode) {
-            // Use the aspectRatio of the selectedPhoto, and default values for other parameters if they are not set
-            const initialFrameId = FrameId || 1;
-            const initialIsMerged = isMerged || 'Entangled';
-            const initialShapeCode = shapeCode || 'CD';
-    
-            // Call handleUpdate with the initial values
-            handleUpdate(initialFrameId, initialIsMerged, initialShapeCode);
-        }
-    }, [selectedPhoto, selectedDiptychIdCode, FrameId, isMerged, shapeCode]);
-    
 
     const updateDiptychIdCode = async () => {
         // Use state values directly here
@@ -57,34 +40,29 @@ const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, la
             }
         } catch (error) {
             console.error('Failed to update DiptychIdCode:', error);
-}
-// Reset updateNeeded after updating
-setUpdateNeeded(false);
-};
-
-// Batch update function
-const handleUpdate = (newFrameId, newIsMerged, newShapeCode) => {
-    setFrameId(newFrameId);
-    setIsMerged(newIsMerged);
-    setShapeCode(newShapeCode);
-    setUpdateNeeded(true); // Set flag to indicate update is needed
-};
-
-// Button handlers
-const handleFrameIdChange = () => handleUpdate(FrameId === 1 ? 2 : 1, isMerged, shapeCode);
-const handleToggleMergeStatus = () => handleUpdate(FrameId, isMerged === 'Entangled' ? 'Fused' : 'Entangled', shapeCode);
-const handleSwapShape = () => handleUpdate(FrameId, isMerged, swapMapping[shapeCode] || shapeCode);
-const handleRotateShape = () => handleUpdate(FrameId, isMerged, rotateMapping[shapeCode] || shapeCode);
-
-useEffect(() => {
-    // Update DiptychIdCode when necessary
-    if (updateNeeded) {
-        updateDiptychIdCode();
-    }
-}, [updateNeeded]);
+        }
+    };
 
 
+    const handleFrameIdChange = () => { setFrameId(FrameId === 1 ? 2 : 1); updateDiptychIdCode(); };
+    const handleToggleMergeStatus = () => { setIsMerged(isMerged === 'Entangled' ? 'Fused' : 'Entangled'); updateDiptychIdCode(); };
+    const handleSwapShape = () => { setShapeCode(swapMapping[shapeCode] || shapeCode); updateDiptychIdCode(); };
+    const handleRotateShape = () => { setShapeCode(rotateMapping[shapeCode] || shapeCode); updateDiptychIdCode(); };
 
+    useEffect(() => {
+  // The effect should run if there is a selected photo and no selectedDiptychIdCode
+  if (selectedPhoto && !selectedDiptychIdCode) {
+    // Set default values if needed, otherwise use existing state
+    const defaultFrameId = FrameId || 1;
+    const defaultIsMerged = isMerged || 'Entangled';
+    const defaultShapeCode = shapeCode || 'CD';
+    // Trigger the update with either selectedPhoto's aspect ratio or a default one
+    const aspectRatioToUse = selectedPhoto.aspectRatio || 'defaultAspectRatio'; // Replace 'defaultAspectRatio' with an actual default if necessary
+    updateDiptychIdCode(aspectRatioToUse, defaultFrameId, defaultIsMerged, defaultShapeCode);
+  }
+}, [selectedPhoto, selectedDiptychIdCode, FrameId, isMerged, shapeCode, updateDiptychIdCode]);
+
+    
     return (
         <div className={buttonStyles.buttonContainer}>
             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={handleFrameIdChange}>

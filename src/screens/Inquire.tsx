@@ -8,8 +8,6 @@ import DownloadButton from '../Diptychs/DownloadButton';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs'; 
 import './Inquire.module.css'; 
 import useGalleryNavigation from '../utils/useGalleryNavigation'; // Import the hook
-import { Carousel } from 'react-responsive-carousel';
-import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
 import buttonStyles from './ButtonStyles.module.css';
@@ -34,7 +32,7 @@ const Inquiry: React.FC = () => {
   const { photoID } = useParams<{ photoID: string }>();
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null); 
-  const {photos, fetchPhotos, setSelectedPhoto, selectedPhoto, sortedPhotos, selectedDiptychIdCode,} = useStore(state => ({
+  const {photos, fetchPhotos, fetchFrames, setSelectedPhoto, selectedPhoto, sortedPhotos, selectedDiptychIdCode,} = useStore(state => ({
     ...state,
     selectedDiptychIdCode: state.selectedDiptychIdCode
   }));
@@ -42,6 +40,54 @@ const Inquiry: React.FC = () => {
   const layoutSpecsMap = useStore((state) => state.layoutSpecsMap);
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter, '/inquire');
   const [areShapesVisible, setAreShapesVisible] = useState(false);
+
+// Fetch frames and photos when the component mounts
+useEffect(() => {
+  fetchFrames();
+  if (photos.length === 0) {
+    fetchPhotos();
+  }
+}, [fetchFrames, fetchPhotos, photos.length]);
+
+useEffect(() => {
+  if (photoID) {
+    setSelectedPhoto(photoID);
+  }
+}, [photoID, setSelectedPhoto]);
+
+useEffect(() => {
+  // Check if there's a selected photo and no selectedDiptychIdCode
+  if (selectedPhoto && !selectedDiptychIdCode) {
+    const defaultFrameType = useStore.getState().frames[useStore.getState().FrameId - 1]?.frameType;
+    const defaultDiptychIdCode = `E_${selectedPhoto.aspectRatio.replace(':', 'x')}_CD_P_${defaultFrameType.charAt(0).toUpperCase()}`;
+    useStore.getState().setSelectedDiptychIdCode(defaultDiptychIdCode);
+}
+}, [selectedPhoto, selectedDiptychIdCode]);
+
+// Function to update DiptychIdCode based on frame color
+const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
+  let newFrameId;
+  switch (frameType) {
+    case 'White':
+      newFrameId = 1;
+      break;
+    case 'Black':
+      newFrameId = 2;
+      break;
+    case 'Unframed':
+      newFrameId = 3;
+      break;
+    default:
+      newFrameId = 1; // Default to white if no match
+  }
+  useStore.getState().setFrameId(newFrameId);
+
+  // Update selectedDiptychIdCode for the top diptych based on new frame color
+  if (selectedPhoto) {
+    const newDiptychIdCode = `E_${selectedPhoto.aspectRatio.replace(':', 'x')}_CD_P_${frameType.charAt(0).toUpperCase()}`;
+    useStore.getState().setSelectedDiptychIdCode(newDiptychIdCode);
+  }
+}, [selectedPhoto]);
 
   useEffect(() => {
     if (photos.length === 0) {
@@ -55,16 +101,7 @@ const Inquiry: React.FC = () => {
     }
   }, [photoID, setSelectedPhoto, photos]);
 
-  // Determine the Diptych ID Code to use
-  useEffect(() => {
-    if (!selectedDiptychIdCode && selectedPhoto) {
-      // Set a default Diptych ID Code based on the selected photo's aspect ratio
-      const defaultDiptychIdCode = `E_${selectedPhoto.aspectRatio.replace(':', 'x')}_CD_P_W`;
-      useStore.getState().setSelectedDiptychIdCode(defaultDiptychIdCode);
-    }
-  }, [selectedPhoto, selectedDiptychIdCode]);  
-
-  const handleReturnToGallery = () => {
+    const handleReturnToGallery = () => {
     // Update the selectedDiptychIdCode in the global store before navigating
     useStore.getState().setSelectedDiptychIdCode(selectedDiptychIdCode);
     navigate(`/${currentFilter}/${photoID}`);
@@ -129,6 +166,18 @@ const Inquiry: React.FC = () => {
         <button className={buttonStyles.button} onClick={handleReturnToGallery}>Return to Gallery</button>
         <button className={buttonStyles.button} onClick={() => handlePrevPhoto(selectedPhoto ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID) : 0)}>Previous Photo</button>
         <button className={buttonStyles.button} onClick={() => handleNextPhoto(selectedPhoto ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID) : 0)}>Next Photo</button>
+        <div className={buttonStyles.dropdownSelector}>
+          <Typography variant="h6" gutterBottom>Frame Color:</Typography>
+          <select
+            className={buttonStyles.button} // Apply the button class to the select element
+            onChange={(e) => updateDiptychIdCodeForFrame(e.target.value)}
+            value={useStore.getState().frames[useStore.getState().FrameId - 1]?.frameType}
+          >
+            <option value="White">White</option>
+            <option value="Black">Black</option>
+            <option value="Unframed">Unframed</option>
+          </select>
+        </div>
       </div>
       {selectedPhoto ? (
         <Box>

@@ -26,7 +26,7 @@
 }
 
 @media (max-width: 600px) { /* Adjust breakpoint as needed */
-  .button, .gallerySelector {
+  .button, .dropdownSelector {
     flex-basis: calc(50% - 10px); /* Larger flex-basis for smaller screens */
   }
 }
