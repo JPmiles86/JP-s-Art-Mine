@@ -302,6 +302,23 @@ app.get('/api/diptychsvgs/aspectratio/:aspectRatio/frameid/:frameId/fused/:fused
   }
 });
 
+app.get('/api/diptychsvgs/aspectratio/:aspectRatio/frameid/:frameId/diptychid/:diptychId', async (req, res) => {
+  const { aspectRatio, frameId, diptychId } = req.params;
+  try {
+    const filteredDiptychSVGs = await DiptychSVG.findAll({
+      where: {
+        aspectRatio,
+        FrameId: frameId,
+        DiptychId: diptychId
+      }
+    });
+    res.json(filteredDiptychSVGs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

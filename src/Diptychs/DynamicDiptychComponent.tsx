@@ -20,6 +20,7 @@ interface SetPhotoIdProps {
   onCanvasReady: (canvasRef: fabric.Canvas, DiptychIdCode: string) => void;
   DiptychIdCode: string;
   areShapesVisible?: boolean;
+  updateHeight?: (height: number, diptychIdCode: string) => void;  // Update here
 }
 
 interface Placement {
@@ -44,7 +45,7 @@ interface LayoutSpecs {
     mirroredPhotoPlacement: Placement;
   }
 
-  const DynamicDiptychComponent: React.FC<SetPhotoIdProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible }) => {
+  const DynamicDiptychComponent: React.FC<SetPhotoIdProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight }) => {
     const { selectedPhoto, setFabricCanvasRef, clearFabricCanvasRef, diptychConfigurations } = useStore();
     const [isCanvasReady, setIsCanvasReady] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -104,7 +105,10 @@ interface LayoutSpecs {
         // Call layoutDiptych with the areShapesVisible prop
         await layoutDiptych(fabricCanvas.current, layoutSpecs, false, areShapesVisible);
 
-        scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, () => {
+        scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, (calculatedHeight: number) => {
+          if (updateHeight) {
+            updateHeight(calculatedHeight, DiptychIdCode);  // Pass DiptychIdCode here
+          }
           if (isMounted) setIsCanvasReady(true);
         });
       }
@@ -128,13 +132,18 @@ interface LayoutSpecs {
     const handleResize = () => {
       if (fabricCanvas.current && containerRef.current) {
         const config = diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations];
-        scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current);
+        scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {
+          if (updateHeight) {
+            updateHeight(newHeight, DiptychIdCode);  
+          }
+        });
       }
     };
-
+  
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [containerRef, DiptychIdCode]);
+  
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>

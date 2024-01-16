@@ -11,6 +11,7 @@ import useGalleryNavigation from '../utils/useGalleryNavigation'; // Import the 
 import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
 import buttonStyles from './ButtonStyles.module.css';
+import DiptychCarousel from '../Diptychs/DiptychCarousel';
 
 
  // Update the SetPhotoIdProps to match with DiptychComponent prop types
@@ -40,6 +41,7 @@ const Inquiry: React.FC = () => {
   const layoutSpecsMap = useStore((state) => state.layoutSpecsMap);
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter, '/inquire');
   const [areShapesVisible, setAreShapesVisible] = useState(false);
+  const [selectedCarouselDiptychIdCode, setSelectedCarouselDiptychIdCode] = useState('');
 
 // Fetch frames and photos when the component mounts
 useEffect(() => {
@@ -151,11 +153,21 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
     return null;
   };
       
+  // Add a callback function to update the selected code
+  const handleCarouselDiptychIdCodeChange = (code: string) => {
+    console.log("Updating Carousel DiptychIdCode:", code);
+    setSelectedCarouselDiptychIdCode(code);
+  };
     
   console.log(`Container actual width: ${containerRef.current?.offsetWidth}`);
   useEffect(() => {
     console.log(`Container actual width after render: ${containerRef.current?.offsetWidth}`);
   }, []);
+
+  console.log('Carousel DiptychIdCode:', selectedCarouselDiptychIdCode);
+
+{selectedCarouselDiptychIdCode && 
+ renderDownloadButton(selectedPhoto!.photoID, selectedCarouselDiptychIdCode)}
 
   return (
     <Box>
@@ -184,6 +196,19 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
           {renderDiptych(selectedDiptychIdCode || '', selectedPhoto.photoID)}
           <Typography style={{ textAlign: 'center' }}>Description for {selectedDiptychIdCode}</Typography>
           {renderDownloadButton(selectedPhoto.photoID, selectedDiptychIdCode || '')}
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+
+          <DiptychCarousel
+            photoId={selectedPhoto.photoID}
+            frameId={useStore.getState().FrameId}
+            diptychId={1}
+            aspectRatio={selectedPhoto.aspectRatio}
+            areShapesVisible={areShapesVisible}
+            containerRef={containerRef}
+            handleCanvasReady={handleCanvasReady}
+            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+          />
+          {renderDownloadButton(selectedPhoto.photoID, selectedCarouselDiptychIdCode)}
           <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
           {renderDiptych('E_2x3_DC_L_W', "230330-3890")}

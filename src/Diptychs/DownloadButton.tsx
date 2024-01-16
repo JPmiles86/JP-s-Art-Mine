@@ -21,7 +21,10 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ photoId, DiptychIdCode,
 
   console.log('DownloadButton Props:', { photoId, DiptychIdCode, fabricCanvasRef, layoutSpecs });
   const handleDownload = async () => {
-    if (!fabricCanvasRef || !layoutSpecs) return;
+    if (!fabricCanvasRef || !layoutSpecs) {
+      console.log("DownloadButton missing data:", { fabricCanvasRef, layoutSpecs });
+      return null;
+    }
 
     // Create off-screen canvas with full-resolution layout specs
     const offScreenCanvas = await createOffScreenCanvas(layoutSpecs, layoutSpecs.originalWidth, layoutSpecs.originalHeight, areShapesVisible);

@@ -1,3 +1,5 @@
+// my-gallery/src/Diptychs/scaleCanvas.js
+
 export function scaleCanvas(canvas, originalWidth, originalHeight, container, callback) {
   console.log('scaleCanvas called with container:', container);
 
@@ -33,11 +35,8 @@ export function scaleCanvas(canvas, originalWidth, originalHeight, container, ca
   console.log('Canvas dimensions after scaling:', canvas.getWidth(), canvas.getHeight());
   canvas.renderAll();
 
-  // Removed setting the container's height post-scaling
-
   // Execute the callback function after scaling is complete
   if (callback && typeof callback === 'function') {
-    callback();
+    callback(canvas.getHeight()); // This sends the height back up to the component
   }
 }
-
