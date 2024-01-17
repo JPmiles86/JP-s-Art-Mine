@@ -21,13 +21,30 @@ export interface DiptychSVG {
   // other properties...
 }
 
+interface PhotoDetailsCache {
+  [photoId: string]: Photograph | undefined;
+}
+
+interface PhotosBySeriesCache {
+  [seriesCode: string]: Photograph[] | undefined;
+}
+
 export class DataService {
   private urlService = new UrlService();
+  private photoDetailsCache: PhotoDetailsCache = {};
+  private photosBySeriesCache: PhotosBySeriesCache = {};
+
 
   async fetchPhotos(filter: string, series?: string): Promise<Photograph[]> {
-    if (!filter) {
-      throw new Error('Filter is undefined');
+    // Use the series code as the cache key if available
+    const cacheKey = series || filter;
+    
+    // Return cached photos if available
+    if (this.photosBySeriesCache[cacheKey]) {
+      return this.photosBySeriesCache[cacheKey]!;
     }
+
+    // If not in the cache, fetch from the API
     try {
       let dataUrl;
       const urlService = new UrlService();
@@ -50,7 +67,7 @@ export class DataService {
   
       const response = await fetch(dataUrl);
       const data = await response.json();
-     // data.sort((a: Photograph, b: Photograph) => Number(a.photoID) - Number(b.photoID));
+      this.photosBySeriesCache[cacheKey] = data; // Cache the result
       return data;
     } catch (error) {
       console.error('Error fetching photos:', error);
@@ -99,20 +116,30 @@ export class DataService {
       return null; // Return null if an error occurs
     }
   }
+  
    // fetchPhotoDetails method inside the DataService class
- async fetchPhotoDetails(photoId: string): Promise<Photograph | null> {
-  try {
-    const response = await fetch(`/api/photos/${photoId}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+   async fetchPhotoDetails(photoId: string): Promise<Photograph | null> {
+    // Check the cache first
+    const cachedPhoto = this.photoDetailsCache[photoId];
+    if (cachedPhoto !== undefined) { // explicitly check for undefined
+      return cachedPhoto; // this will return null if cachedPhoto is null
     }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching photo details:', error);
-    return null;
+  
+    // If not in the cache, fetch from the API
+    try {
+      const response = await fetch(`/api/photos/${photoId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json() as Photograph; // assert the correct type
+      this.photoDetailsCache[photoId] = data; // cache the result
+      return data;
+    } catch (error) {
+      console.error('Error fetching photo details:', error);
+      return null; // explicitly return null on error
+    }
   }
-}
+  
   
   getHeaderDataForPhoto(photos: Photograph[], photoID: string): ExhibitionHeaderData | null {
     const photo = photos.find(photo => photo.photoID === photoID);

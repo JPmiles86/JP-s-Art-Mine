@@ -323,16 +323,24 @@ loadMorePhotos: () => {
   set({ loadIndex: newLoadIndex, loadedPhotos: newLoadedPhotos });
 },
 
-  fetchGridHeaderData: async (filter) => {
-    const data = await dataService.fetchGridHeaderData(filter);
-    set({ gridHeaderData: data });
-    return data;
-  },
-  fetchExhibitionHeaderData: async (photoID) => {
-    const data = await dataService.getHeaderDataForPhoto(get().photos, photoID);
-    set({ exhibitionHeaderData: data });
-  }, 
+fetchGridHeaderData: async (filter) => {
+  const data = await dataService.fetchGridHeaderData(filter);
+  set({ gridHeaderData: data });
+  return data;
+},
+
+fetchExhibitionHeaderData: async (photoID) => {
+  const data = await dataService.getHeaderDataForPhoto(get().photos, photoID);
+  set({ exhibitionHeaderData: data });
+}, 
+
 fetchPhotos: async () => {
+   // Check if initial fetch has already been done
+   if (get().initialPhotoFetch) {
+    console.log("Initial fetch of photos already completed.");
+    return;
+  }
+
   console.log('fetchPhotos called');
   set({ loading: { ...get().loading, photos: true } });
 
@@ -384,6 +392,8 @@ set((state) => {
   set({ gridHeaderData: headerData });
   set({ initialPhotoFetch: true });
   set({ loading: { ...get().loading, photos: false, diptychSVG: false, diptychInfo: false, galleryBackground: false } });
+
+  set({ initialPhotoFetch: true });
 },
 }));
 

@@ -28,7 +28,7 @@ interface Photograph {
 
 const ExhibitionSpace = () => {
   const navigate = useNavigate();
-  const { photos, fetchPhotos, selectedPhoto, setSelectedPhoto, loading, shapeCode } = useStore((state) => state);
+  const { photos, fetchPhotos, selectedPhoto, setSelectedPhoto, loading, shapeCode, initialPhotoFetch } = useStore((state) => state);
   const { photoID } = useParams<{ photoID: string }>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [galleryBackground, setGalleryBackground] = useState('/assets/images/gallerybg/Gallery-2.png');
@@ -75,10 +75,11 @@ const ExhibitionSpace = () => {
 
   // Fetch photos from the backend when the component mounts or the 'photos' array changes
   useEffect(() => {
-    if (photos.length === 0) {
+    if (!initialPhotoFetch) {
       fetchPhotos();
     }
-  }, [photos, fetchPhotos]);
+  }, [initialPhotoFetch, fetchPhotos]);
+  
 
   useEffect(() => {
     if (photoID) {

@@ -17,14 +17,16 @@ const ImageGrid: React.FC = () => {
   const [series, setSeries] = useState<Series[]>([]);
   const [loading, setLoading] = useState(false);
   const { filter } = useParams<RouteParams>();
-  const { previousFilter, setPreviousFilter, seriesFilter, setSeriesFilter, gridHeaderData, setSortValue, fetchGridHeaderData, fetchPhotos, sortValue, sortedPhotos, clearPhotos } = useStore();
+  const { previousFilter, setPreviousFilter, seriesFilter, setSeriesFilter, gridHeaderData, setSortValue, fetchGridHeaderData, sortValue, sortedPhotos, clearPhotos } = useStore();
   const navigate = useNavigate();  
   const [scrollPos, setScrollPos] = useState(0);  
   const { handleScroll, scrollToTop } = useContext(ScrollContext);  // Access handleScroll
-  const { loadedPhotos, loadMorePhotos } = useStore((state) => ({
-   loadedPhotos: state.loadedPhotos,
-   loadMorePhotos: state.loadMorePhotos,
-     }));
+  const { loadedPhotos, loadMorePhotos, fetchPhotos, photos } = useStore((state) => ({
+    loadedPhotos: state.loadedPhotos,
+    loadMorePhotos: state.loadMorePhotos,
+    fetchPhotos: state.fetchPhotos,
+    photos: state.photos,
+  }));
      
   useEffect(() => {
     const dataService = new DataService();
@@ -38,6 +40,16 @@ const ImageGrid: React.FC = () => {
   useEffect(() => {
     console.log('seriesFilter changed:', seriesFilter);
   }, [seriesFilter]);
+
+  useEffect(() => {
+    // If there are no loaded photos and the photos array is empty, fetch new photos
+    if (loadedPhotos.length === 0 && photos.length === 0) {
+      fetchPhotos();
+    }
+    // If there are loaded photos, use them directly
+    else if (loadedPhotos.length > 0) {
+    }
+  }, [loadedPhotos, fetchPhotos, photos]);
 
   useEffect(() => {
     if (filter && filter !== previousFilter) {

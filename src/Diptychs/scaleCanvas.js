@@ -36,7 +36,9 @@ export function scaleCanvas(canvas, originalWidth, originalHeight, container, ca
   canvas.renderAll();
 
   // Execute the callback function after scaling is complete
+  console.log('Canvas dimensions after scaling:', canvas.getWidth(), canvas.getHeight());
   if (callback && typeof callback === 'function') {
+    console.log('Calling callback with height:', canvas.getHeight());
     callback(canvas.getHeight()); // This sends the height back up to the component
   }
 }
