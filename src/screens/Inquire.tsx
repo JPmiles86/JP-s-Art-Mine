@@ -33,7 +33,7 @@ const Inquiry: React.FC = () => {
   const { photoID } = useParams<{ photoID: string }>();
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null); 
-  const {photos, initialPhotoFetch, fetchPhotos, fetchFrames, setSelectedPhoto, selectedPhoto, sortedPhotos, selectedDiptychIdCode,} = useStore(state => ({
+  const {photos, initialPhotoFetch, fetchPhotos, setSelectedPhoto, selectedPhoto, sortedPhotos, selectedDiptychIdCode,} = useStore(state => ({
     ...state,
     selectedDiptychIdCode: state.selectedDiptychIdCode
   }));
@@ -43,20 +43,27 @@ const Inquiry: React.FC = () => {
   const [areShapesVisible, setAreShapesVisible] = useState(false);
   const [selectedCarouselDiptychIdCode, setSelectedCarouselDiptychIdCode] = useState('');
 
+  // Add this useEffect for mounting and unmounting logs
   useEffect(() => {
-    fetchFrames();
-  }, [fetchFrames]);
+    console.log("Inquiry Component Mounted");
+
+    return () => {
+      console.log("Inquiry Component Unmounted");
+    };
+  }, []);
 
   useEffect(() => {
     if (!initialPhotoFetch) {
       fetchPhotos();
     }
+    console.log(`initialPhotoFetch In Inquire Page: initialPhotoFetch = ${initialPhotoFetch}`);
   }, [initialPhotoFetch, fetchPhotos]);
 
   useEffect(() => {
     // Set the selected photo based on URL parameter
     if (photoID && (!selectedPhoto || selectedPhoto.photoID !== photoID)) {
       setSelectedPhoto(photoID);
+      console.log("Setting selected photo in Inquire based on URL:", photoID); // Add this line
     }
   }, [photoID, setSelectedPhoto, selectedPhoto]);
   
@@ -108,6 +115,7 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
 
     // Function to handle canvas ready from Diptych component
   const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, diptychIdCode: string) => {
+    console.log("handleCanvasReady called", { canvasRef, diptychIdCode });
     useStore.getState().setFabricCanvasRef(diptychIdCode, canvasRef);
   }, []); // Add dependencies if needed
 

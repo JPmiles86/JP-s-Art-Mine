@@ -113,11 +113,9 @@ export interface Store {
   shapeCode: string;
   FrameId: number; 
   frames: Frame[];
-  fetchFrames: () => void;
   setIsMerged: (isMerged: string) => void;
   setShapeCode: (shapeCode: string) => void;
   setFrameId: (FrameId: number) => void;
-  fetchDiptychComponentsByAspectRatioAndFrame: (aspectRatio: string, frameId: number) => Promise<void>;
   setSelectedDiptychIdCode: (diptychIdCode: string | null) => void;
   clearSelectedDiptychIdCode: () => void;
   setLayoutSpecs: (diptychIdCode: string, specs: LayoutSpecs) => void;
@@ -207,39 +205,9 @@ const useStore = create<Store>((set, get) => ({
     { id: 2, frameType: 'Black' },
     { id: 3, frameType: 'Unframed' },
   ],
-  
-  // Implement fetchFrames function
-  fetchFrames: async () => {
-    try {
-      // Replace this with your API call if needed
-      const framesFromApi = [
-        { id: 1, frameType: 'White' },
-        { id: 2, frameType: 'Black' },
-        { id: 3, frameType: 'Unframed' },
-      ];
-      set({ frames: framesFromApi });
-    } catch (error) {
-      console.error('Failed to fetch frames:', error);
-    }
-  },
   setIsMerged: (isMerged) => set({ isMerged }),
   setShapeCode: (shapeCode) => set({ shapeCode }),
-  setFrameId: (FrameId) => set({ FrameId }),
-  fetchDiptychComponentsByAspectRatioAndFrame: async (aspectRatio, frameId) => {
-    const { isMerged, shapeCode } = get(); // Get current global state values for isMerged and shapeCode
-    try {
-      const response = await fetch(`http://localhost:4000/api/diptychsvgs/aspect-ratio/${aspectRatio}/frame/${frameId}/fused/${isMerged}/shapeCode/${shapeCode}`);
-      if (!response.ok) {
-        throw new Error('Problem fetching diptych components');
-      }
-      const diptychComponents = await response.json();
-      if (diptychComponents.length > 0) {
-        set({ selectedDiptychIdCode: diptychComponents[0].DiptychIdCode });
-      }
-    } catch (error) {
-      console.error('Failed to fetch diptych components', error);
-    }
-  },  
+  setFrameId: (FrameId) => set({ FrameId }), 
   setSelectedDiptychIdCode: (diptychIdCode) => {
       console.log(`Updating selectedDiptychIdCode to: ${diptychIdCode}`);
   set({ selectedDiptychIdCode: diptychIdCode });
@@ -291,6 +259,7 @@ const useStore = create<Store>((set, get) => ({
 setSelectedPhoto: (photoID: string | null) => {
   if (photoID !== null) {
     const selectedPhoto = get().photos.find((photo) => photo.photoID === photoID);
+    console.log("Setting selected photo in store:", selectedPhoto); // Add this line
     set({ selectedPhoto });
     // Remove the dynamic import and data URL generation from here
   } else {
@@ -335,6 +304,8 @@ fetchExhibitionHeaderData: async (photoID) => {
 }, 
 
 fetchPhotos: async () => {
+  console.log("Initial fetch flag before fetching:", get().initialPhotoFetch); 
+
    // Check if initial fetch has already been done
    if (get().initialPhotoFetch) {
     console.log("Initial fetch of photos already completed.");
@@ -391,9 +362,8 @@ set((state) => {
   const headerData = await dataService.fetchGridHeaderData(urlFilter);
   set({ gridHeaderData: headerData });
   set({ initialPhotoFetch: true });
+  console.log("Initial fetch flag after fetching:", get().initialPhotoFetch); // Add this line
   set({ loading: { ...get().loading, photos: false, diptychSVG: false, diptychInfo: false, galleryBackground: false } });
-
-  set({ initialPhotoFetch: true });
 },
 }));
 

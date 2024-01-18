@@ -54,6 +54,7 @@ const ExhibitionSpace = () => {
   // Function to navigate to the inquiry page
   const navigateToInquiry = () => {
     navigate(`/${currentFilter}/${currentPhotoID}/inquire`);
+    console.log("Navigating to the inquire page.");
   };
 
   const handleChangeGalleryBackground = useCallback((backgroundImage: string) => {
