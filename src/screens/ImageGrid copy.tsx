@@ -29,11 +29,10 @@ const ImageGrid: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
   const { filter } = useParams<RouteParams>();
-  const { currentFilter, setCurrentFilter, setPhotos, setSortedPhotos, selectedPhoto, setSelectedPhoto, gridHeaderData, setGridHeaderData, setSortValue, fetchGridHeaderData, sortValue, sortedPhotos, clearPhotos, initialPhotoFetch, setInitialPhotoFetch, resetLoadIndex } = useStore();
+  const { currentFilter, setCurrentFilter, setPhotos, setSortedPhotos, setSelectedPhoto, gridHeaderData, setGridHeaderData, setSortValue, fetchGridHeaderData, sortValue, sortedPhotos, clearPhotos, initialPhotoFetch, setInitialPhotoFetch, resetLoadIndex } = useStore();
   const navigate = useNavigate();  
   const [scrollPos, setScrollPos] = useState(0);  
   const { handleScroll, scrollToTop } = useContext(ScrollContext);  // Access handleScroll
-  const [needsHeaderImageUpdate, setNeedsHeaderImageUpdate] = useState(false);
   const { loadedPhotos, loadMorePhotos, fetchPhotos, photos } = useStore((state) => ({
     loadedPhotos: state.loadedPhotos,
     loadMorePhotos: state.loadMorePhotos,
@@ -91,59 +90,19 @@ const ImageGrid: React.FC = () => {
       });
 
       fetchGridHeaderData(currentFilter)
-    .then(data => {
-      if (data) {
-        setGridHeaderData(data);
-        // Check if imageUrl is null and if there is a selected photo
-        if (data.imageUrl === null && selectedPhoto) {
-          setNeedsHeaderImageUpdate(true);
-        }
-      }
-      setLoading(false);
-    })
-    .catch(error => {
-      console.error('Error fetching header data:', error);
-      setLoading(false);
-    });
-    }
-  }, [currentFilter, sortValue, loadMorePhotos, selectedPhoto]);
-  
-  // This useEffect will run when needsHeaderImageUpdate is true
-  useEffect(() => {
-    if (needsHeaderImageUpdate && selectedPhoto) {
-      // Determine whether the currentFilter is a date or a number
-      const isDateFilter = /^\d{6}$/.test(currentFilter); // Assuming dates are in the format of YYYYMMDD
-      const endpoint = isDateFilter
-        ? 'http://localhost:4000/api/dates/update-image-url'
-        : 'http://localhost:4000/api/numbers/update-image-url';
-  
-      const body = {
-        [isDateFilter ? 'date' : 'number']: currentFilter,
-        imageUrl: selectedPhoto.imagePath,
-      };
-  
-      fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
-    .then(response => response.json())
-    .then(data => {
-      // After updating the header image, fetch the header data again
-      fetchGridHeaderData(currentFilter)
-        .then(updatedData => {
-          if (updatedData) {
-            setGridHeaderData(updatedData);
+        .then(data => {
+          if (data) {
+            setGridHeaderData(data);
           }
+          setLoading(false);
         })
-        .catch(error => console.error('Error re-fetching header data:', error));
-    })
-    .catch(error => console.error('Error updating header image:', error))
-    .finally(() => setNeedsHeaderImageUpdate(false)); // Reset the state
-  }
-}, [needsHeaderImageUpdate, selectedPhoto, currentFilter]);
+        .catch(error => {
+          console.error('Error fetching header data:', error);
+          setLoading(false);
+        });
+    }
+  }, [currentFilter, sortValue, loadMorePhotos]);
+  
 
   useEffect(() => {
     if (currentFilter) {

@@ -1,3 +1,5 @@
+// my-gallery/models/Dates.js
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 

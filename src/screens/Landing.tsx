@@ -1,10 +1,18 @@
-// Landing.tsx
+// my-gallery/src/screens/Landing.tsx
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Landing.css';
+import useStore from '../utils/store';
 
 const Landing: React.FC = () => {
-  
+  const navigate = useNavigate();
+  const { setCurrentFilter } = useStore();
+
+  const handleSeriesClick = (seriesCode: string) => {
+    setCurrentFilter(seriesCode);
+    navigate(`/${seriesCode}`);
+  };
+
   return (
     <div className="landing">
       <h1 className="header">THE ART MINE</h1>
@@ -18,28 +26,28 @@ const Landing: React.FC = () => {
         beauty to your life, but also contributing to a life-changing cause.  
       </p>
       <div className="landing-series-grid">
-        <Link to="/TST" className="series">
+        <div onClick={() => handleSeriesClick('FJI')} className="series">
           <img
             src={`${process.env.PUBLIC_URL}/assets/images/TST-dip.jpg`}
-            alt="Transforming Space Time"
+            alt="Fuji Tests"
           />
-          <p>Transforming Space Time</p>
-        </Link>
-        <Link to="/TLS" className="series">
-          <img src={`${process.env.PUBLIC_URL}/assets/images/TLS-dip.jpg`} alt="Time Lines" />
-          <p>Time Lines</p>
-        </Link>
-        <Link to="/CST" className="series">
+          <p>Fuji Tests</p>
+        </div>
+        <div onClick={() => handleSeriesClick('ATT')} className="series">
+          <img src={`${process.env.PUBLIC_URL}/assets/images/TLS-dip.jpg`} alt="As Time Turns" />
+          <p>As Time Turns</p>
+        </div>
+        <div onClick={() => handleSeriesClick('CST')} className="series">
           <img
             src={`${process.env.PUBLIC_URL}/assets/images/CST-dip.jpg`}
             alt="Chromatic Shades of Time"
           />
           <p>Chromatic Shades of Time</p>
-        </Link>
-        <Link to="/MFI" className="series">
-          <img src={`${process.env.PUBLIC_URL}/assets/images/MFI-dip.jpg`} alt="My Flippin’ iPhone" />
-          <p>My Flippin’ iPhone</p>
-        </Link>
+        </div>
+        <div onClick={() => handleSeriesClick('TRD')} className="series">
+          <img src={`${process.env.PUBLIC_URL}/assets/images/MFI-dip.jpg`} alt="Traditional" />
+          <p>Traditional</p>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
+import useStore from '../utils/store'; 
 
 interface ExhibitionHeaderProps {
   currentFilter: string;
@@ -35,6 +36,12 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
   handleNextPhoto,
 }) => {
   const navigate = useNavigate();
+  const { setCurrentFilter } = useStore(); // Use the setCurrentFilter from the store
+
+  const handleFilterChange = (filter: string) => {
+    setCurrentFilter(filter); // Set the current filter
+    navigate(`/${filter}`); // Navigate to the updated filter URL
+  };
 
   const handleBackToImageGrid = () => {
     navigate(`/${currentFilter}`);
@@ -56,14 +63,14 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
           <strong>Artwork ID:&nbsp;</strong>
           <span
             className={`${styles.idButton} ${styles.linkButton}`}
-            onClick={() => navigate(`/${selectedPhoto.date}`)}
+            onClick={() => handleFilterChange(selectedPhoto.date)}
           >
             {selectedPhoto.date}
           </span>
           <strong> - </strong>
           <span
             className={`${styles.idButton} ${styles.linkButton}`}
-            onClick={() => navigate(`/${selectedPhoto.number}`)}
+            onClick={() => handleFilterChange(selectedPhoto.number)}
           >
             {selectedPhoto.number}
           </span>
@@ -71,7 +78,7 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
           <strong>From the Series:&nbsp;</strong>
           <span
             className={`${styles.idButton} ${styles.linkButton}`}
-            onClick={() => navigate(`/${selectedPhoto.seriesCode}`)}
+            onClick={() => handleFilterChange(selectedPhoto.seriesCode)}
           >
             {selectedPhoto.seriesName}
           </span>

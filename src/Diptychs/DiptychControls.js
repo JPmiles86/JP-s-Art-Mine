@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import DownloadButton from './DownloadButton';
 import buttonStyles from '../screens/ButtonStyles.module.css';
-import useStore from '../screens/store'; 
+import useStore from '../utils/store'; 
 import { swapMapping, rotateMapping } from './DiptychIdCodeMapping'; 
 
 const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children }) => {

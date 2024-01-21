@@ -2,7 +2,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
-import useStore from './store';
+import useStore from '../utils/store';
 import ExhibitionHeader from './ExhibitionHeader';
 import GalleryBackgroundSelector from './GalleryBackgroundSelector';
 import useKeyboardNavigation from './useKeyboardNavigation';
@@ -69,18 +69,12 @@ const ExhibitionSpace = () => {
     alignItems: 'center',
   }), [galleryBackground]);
 
-  const handleBackToImageGrid = () => {
-    setPreviousFilter(currentFilter);
-    navigate(`/${currentFilter}`);
-  };
-
   // Fetch photos from the backend when the component mounts or the 'photos' array changes
   useEffect(() => {
     if (!initialPhotoFetch) {
       fetchPhotos();
     }
   }, [initialPhotoFetch, fetchPhotos]);
-  
 
   useEffect(() => {
     if (photoID) {

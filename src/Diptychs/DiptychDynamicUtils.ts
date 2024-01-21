@@ -3,7 +3,7 @@
 import { fabric } from 'fabric';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
 import React from 'react'; 
-import useStore from '../screens/store';
+import useStore from '../utils/store';
 
 interface Photograph {
   photoID: string;

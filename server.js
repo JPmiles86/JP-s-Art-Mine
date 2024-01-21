@@ -1,3 +1,5 @@
+// my-gallery/server.js
+
 const express = require('express');
 const sequelize = require('./config/database');
 const app = express();
@@ -18,6 +20,8 @@ const cors = require('cors');
 app.use(cors({
   origin: 'http://localhost:3000', // replace with your client's domain
 }));
+
+app.use(express.json()); // Make sure you have this line to parse JSON body
 
 app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals'));
 
@@ -175,6 +179,28 @@ app.get('/api/dates/:date/header', async (req, res) => {
   }
 });
 
+// POST route to update the imageUrl for a specific date
+app.post('/api/dates/update-image-url', async (req, res) => {
+  const { date, imageUrl } = req.body;
+
+  try {
+    const updatedDateData = await Dates.update(
+      { imageUrl: imageUrl },
+      { where: { date: date }, returning: true }
+    );
+
+    if (updatedDateData) {
+      // Sending back the updated data
+      res.json(updatedDateData);
+    } else {
+      res.status(404).json({ message: 'Date not found or no update required' });
+    }
+  } catch (error) {
+    console.error('Error updating image URL:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
 app.get('/api/numbers/:number/header', async (req, res) => {
   const { number } = req.params;
   try {
@@ -191,6 +217,28 @@ app.get('/api/numbers/:number/header', async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// POST route to update the imageUrl for a specific number
+app.post('/api/numbers/update-image-url', async (req, res) => {
+  const { number, imageUrl } = req.body;
+
+  try {
+    const updatedNumberData = await ImageNumbers.update(
+      { imageUrl: imageUrl },
+      { where: { number: number }, returning: true } // Make sure your database and ORM supports the "returning" option
+    );
+
+    if (updatedNumberData) {
+      // Sending back the updated data
+      res.json(updatedNumberData);
+    } else {
+      res.status(404).json({ message: 'Number not found or no update required' });
+    }
+  } catch (error) {
+    console.error('Error updating image URL:', error);
     res.status(500).send('Server Error');
   }
 });

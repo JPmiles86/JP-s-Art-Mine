@@ -9,7 +9,7 @@ import ExhibitionSpace from './screens/ExhibitionSpace';
 import Inquire from './screens/Inquire';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import useStore from './screens/store';  // Import useStore
+import useStore from './utils/store';  // Import useStore
 import smoothscroll from 'smoothscroll-polyfill';
 
 // kick off the polyfill!

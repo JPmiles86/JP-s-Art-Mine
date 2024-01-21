@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { fabric } from 'fabric';
-import useStore from '../screens/store';
+import useStore from '../utils/store';
 import urlConfig from '../screens/urlConfig';
-import { dataService } from '../screens/DataService';
+import { dataService } from '../utils/DataService';
 import { scaleCanvas } from './scaleCanvas';
 import initializeCanvas from './initializeCanvas';
 import applyLayoutAndScaling from './applyLayoutAndScaling';

@@ -1,14 +1,14 @@
 // store.ts
 import { create } from 'zustand';
 import { DataService } from './DataService';
-import { UrlService } from './UrlService';
+import { parseUrlService } from './parseUrlService';
 import { useState, useEffect } from 'react';
 import { fabric } from 'fabric';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
 import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
 
 const dataService = new DataService();
-const urlService = new UrlService();
+const urlService = new parseUrlService();
 
 export interface GridHeaderData {
   title: string;

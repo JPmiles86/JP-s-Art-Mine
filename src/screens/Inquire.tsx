@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useLocation, useParams } from 'react-router-dom';
-import useStore from './store';
+import useStore from '../utils/store';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
 import DownloadButton from '../Diptychs/DownloadButton'; 
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs'; 
@@ -193,6 +193,19 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
           {renderDiptych(selectedDiptychIdCode || '', selectedPhoto.photoID)}
           <Typography style={{ textAlign: 'center' }}>Description for {selectedDiptychIdCode}</Typography>
           {renderDownloadButton(selectedPhoto.photoID, selectedDiptychIdCode || '')}
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+
+          <DiptychCarousel
+            photoId={selectedPhoto.photoID}
+            frameId={useStore.getState().FrameId}
+            diptychId={1}
+            aspectRatio={selectedPhoto.aspectRatio}
+            areShapesVisible={areShapesVisible}
+            containerRef={containerRef}
+            handleCanvasReady={handleCanvasReady}
+            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+          />
+          {renderDownloadButton(selectedPhoto.photoID, selectedCarouselDiptychIdCode)}
           <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
         </Box>
