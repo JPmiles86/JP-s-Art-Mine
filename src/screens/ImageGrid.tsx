@@ -59,6 +59,13 @@ const ImageGrid: React.FC = () => {
   }, []);  
 
   useEffect(() => {
+    // If sortedPhotos is populated but loadedPhotos is empty, load the initial photos
+    if (sortedPhotos.length > 0 && loadedPhotos.length === 0) {
+      loadMorePhotos();
+    }
+  }, [sortedPhotos, loadedPhotos, loadMorePhotos]);  
+
+  useEffect(() => {
     console.log("useEffect - handleScroll");
     const handleScroll = () => {
       if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight) return;
@@ -70,20 +77,18 @@ const ImageGrid: React.FC = () => {
   }, [loadMorePhotos]);
 
   useEffect(() => {
-    console.log("useEffect - currentFilter and parseUrlService");
-    if (!currentFilter) {
-      console.log("currentFilter is not set, calling parseUrlService");
-      handleUrlParsing(); // Call this function on component mount if currentFilter is not set
-      console.log("After parseUrlService call");
-    } else {
-      console.log("currentFilter is already set:", currentFilter);
+    if (!currentFilter && sortedPhotos.length === 0) {
+      console.log("ImageGrid URL parsing required", { currentFilter, sortedPhotosLength: sortedPhotos.length });
+      handleUrlParsing();
     }
-
-    if (currentFilter) {
-      console.log("currentFilter is set, fetching new photos");
-      clearPhotos(); // Clear the old data
+  }, [currentFilter, sortedPhotos.length, handleUrlParsing]);
+  
+  useEffect(() => {
+    if (currentFilter && sortedPhotos.length === 0) {
+      console.log("ImageGrid fetching new photos", { currentFilter, sortedPhotosLength: sortedPhotos.length });
+      clearPhotos();
       setLoading(true);
-      resetLoadIndex(); // Reset load index to load photos from the start
+      resetLoadIndex();
       fetchPhotosService(
         setPhotosError,
         setLoading,
@@ -94,24 +99,29 @@ const ImageGrid: React.FC = () => {
         sortValue,
         false
       ).then(() => {
-        loadMorePhotos(); // Load the initial set of photos
+        loadMorePhotos();
       });
-
-        setLoading(true);
-        fetchGridHeaderData(currentFilter)
-          .then(data => {
-            setGridHeaderData(data); // Update state directly with fetched data
-            if (data?.imageUrl === null && selectedPhoto) {
-              setNeedsHeaderImageUpdate(true);
-            }
-            setLoading(false);
-          })
-          .catch(error => {
-            console.error('Error fetching header data:', error);
-            setLoading(false);
-          });
-      }
-  }, [currentFilter, sortValue, loadMorePhotos, selectedPhoto]);
+    }
+  }, [currentFilter, sortValue, loadMorePhotos, sortedPhotos.length]);
+  
+  useEffect(() => {
+    if (currentFilter) {
+      setLoading(true);
+      fetchGridHeaderData(currentFilter)
+        .then(data => {
+          setGridHeaderData(data);
+          if (data?.imageUrl === null && selectedPhoto) {
+            setNeedsHeaderImageUpdate(true);
+          }
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching header data:', error);
+          setLoading(false);
+        });
+    }
+  }, [currentFilter, selectedPhoto]);
+  
   
   // This useEffect will run when needsHeaderImageUpdate is true
   useEffect(() => {

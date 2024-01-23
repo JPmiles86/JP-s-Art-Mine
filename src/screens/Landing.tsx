@@ -6,10 +6,10 @@ import useStore from '../utils/store';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
-  const { setCurrentFilter } = useStore();
+  //const { setCurrentFilter } = useStore();
 
   const handleSeriesClick = (seriesCode: string) => {
-    setCurrentFilter(seriesCode);
+    //setCurrentFilter(seriesCode);
     navigate(`/${seriesCode}`);
   };
 

@@ -275,7 +275,11 @@ setSelectedPhoto: (photoID: string | null) => {
   }
 },
   setPhotos: (photos: Photograph[]) => set({ photos }),
-  setSortedPhotos: (sortedPhotos: Photograph[]) => set({ sortedPhotos }),
+  setSortedPhotos: (sortedPhotos: Photograph[]) => {
+    console.log("Setting sorted photos in store", sortedPhotos);
+    set({ sortedPhotos });
+  },
+  
   setInitialPhotoFetch: (value: boolean) => set({ initialPhotoFetch: value }),
   setGridHeaderData: (data) => set({ gridHeaderData: data }),
   setExhibitionHeaderData: (data) => set({ exhibitionHeaderData: data }),
@@ -290,22 +294,17 @@ resetLoadIndex: () => set((state) => {
 }),
 
 loadMorePhotos: () => {
-  const currentLoadIndex = get().loadIndex;
-  const sortedPhotosLength = get().sortedPhotos.length;
+  const { loadIndex, sortedPhotos, loadedPhotos } = get();
 
-  console.log("loadMorePhotos called", { currentLoadIndex, sortedPhotosLength });
+  console.log("loadMorePhotos called", { loadIndex, sortedPhotosLength: sortedPhotos.length });
 
-  // If all photos have already been loaded, don't try to load more
-  if (currentLoadIndex >= sortedPhotosLength) {
+  if (loadIndex >= sortedPhotos.length) {
     console.log('All photos are loaded');
     return;
   }
 
-  const newLoadIndex = currentLoadIndex + 33;
-  const newLoadedPhotos = get().sortedPhotos.slice(0, newLoadIndex);
-  console.log('loadIndex:', newLoadIndex);
-  console.log('loadedPhotos length:', newLoadedPhotos.length);
-  console.log('sortedPhotos length:', sortedPhotosLength);
+  const newLoadIndex = loadIndex + 33; // Assuming 33 is the batch size
+  const newLoadedPhotos = sortedPhotos.slice(0, newLoadIndex);
   set({ loadIndex: newLoadIndex, loadedPhotos: newLoadedPhotos });
 },
 

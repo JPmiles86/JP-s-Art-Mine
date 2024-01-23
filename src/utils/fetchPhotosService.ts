@@ -16,6 +16,7 @@ export async function fetchPhotosService(
     initialPhotoFetch: boolean
 ) {
     console.log("fetchPhotosService called", { currentFilter, initialPhotoFetch });
+    console.log("Before fetching photos", { currentFilter, initialPhotoFetch, sortValue });
 
     if (initialPhotoFetch) {
         console.log("Initial fetch of photos already completed.");
@@ -37,7 +38,7 @@ export async function fetchPhotosService(
         console.log("Photos set in store");
 
         setSortedPhotos(sortedPhotos);
-        console.log("Sorted photos set in store");
+        console.log("Sorted photos set in store", sortedPhotos);
 
         setInitialPhotoFetch(true);
         console.log("Initial photo fetch set to true");
