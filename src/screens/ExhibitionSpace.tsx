@@ -3,6 +3,8 @@ import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
 import useStore from '../utils/store';
+import { fetchPhotosService } from '../utils/fetchPhotosService';
+import { parseUrlService } from '../utils/parseUrlService';
 import ExhibitionHeader from './ExhibitionHeader';
 import GalleryBackgroundSelector from './GalleryBackgroundSelector';
 import useKeyboardNavigation from './useKeyboardNavigation';
@@ -11,6 +13,7 @@ import DiptychControls from '../Diptychs/DiptychControls';
 import useDiptychInfo from '../Diptychs/useDiptychInfo';
 import useGalleryNavigation from '../utils/useGalleryNavigation';
 import { fabric } from 'fabric';
+
 
 interface Photograph {
   photoID: string;
@@ -28,15 +31,18 @@ interface Photograph {
 
 const ExhibitionSpace = () => {
   const navigate = useNavigate();
-  const { photos, fetchPhotos, selectedPhoto, setSelectedPhoto, loading, shapeCode, initialPhotoFetch } = useStore((state) => state);
+  const { photos } = useStore((state) => state);
+  const {
+    currentFilter, setCurrentFilter, sortedPhotos, setSortedPhotos, 
+    selectedPhoto, setSelectedPhoto, loading, setLoading, shapeCode, 
+    initialPhotoFetch, setInitialPhotoFetch, sortValue, setPhotos
+  } = useStore((state) => state);
   const { photoID } = useParams<{ photoID: string }>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [galleryBackground, setGalleryBackground] = useState('/assets/images/gallerybg/Gallery-2.png');
   const [error] = useState<Error | null>(null);
   const location = useLocation();
-  const currentFilter = location.pathname.split('/')[1];
-  const currentPhotoID = location.pathname.split('/')[2];
-  const { sortedPhotos, setPreviousFilter } = useStore();
+  const {  } = useStore();
   const { selectedDiptychIdCode, setSelectedDiptychIdCode } = useStore(state => ({
     selectedDiptychIdCode: state.selectedDiptychIdCode,
     setSelectedDiptychIdCode: state.setSelectedDiptychIdCode
@@ -50,12 +56,17 @@ const ExhibitionSpace = () => {
   const { diptychInfo, isLoading: diptychInfoLoading } = useDiptychInfo(selectedDiptychIdCode);
   const [isLoading, setIsLoading] = useState(true);
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter);
-  
+  const [photosError, setPhotosError] = useState<string | null>(null);
+
   // Function to navigate to the inquiry page
-  const navigateToInquiry = () => {
-    navigate(`/${currentFilter}/${currentPhotoID}/inquire`);
+const navigateToInquiry = () => {
+  if (selectedPhoto) {
+    navigate(`/${currentFilter}/${selectedPhoto.photoID}/inquire`);
     console.log("Navigating to the inquire page.");
-  };
+  } else {
+    console.log("No photo selected, unable to navigate to the inquiry page.");
+  }
+};
 
   const handleChangeGalleryBackground = useCallback((backgroundImage: string) => {
     setGalleryBackground(backgroundImage);
@@ -69,12 +80,30 @@ const ExhibitionSpace = () => {
     alignItems: 'center',
   }), [galleryBackground]);
 
-  // Fetch photos from the backend when the component mounts or the 'photos' array changes
-  useEffect(() => {
-    if (!initialPhotoFetch) {
-      fetchPhotos();
+ // Replace the useEffect hook for fetching photos
+ useEffect(() => {
+  if (sortedPhotos.length === 0 || !selectedPhoto) {
+    const parsedUrl = new parseUrlService().parseUrl();
+
+    if (sortedPhotos.length === 0) {
+      fetchPhotosService(
+        setPhotosError, 
+        setLoading, 
+        setPhotos,
+        setSortedPhotos,
+        setInitialPhotoFetch,
+        parsedUrl.filter,
+        sortValue || 'random',
+        initialPhotoFetch
+      );
     }
-  }, [initialPhotoFetch, fetchPhotos]);
+    
+    // Set selected photo from URL
+    if (!selectedPhoto && parsedUrl.photoID) {
+      setSelectedPhoto(parsedUrl.photoID);
+    }
+  }
+}, [selectedPhoto, sortedPhotos, sortValue, setPhotos, setSortedPhotos, setInitialPhotoFetch, setSelectedPhoto]);
 
   useEffect(() => {
     if (photoID) {

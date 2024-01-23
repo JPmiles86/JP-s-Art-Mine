@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
 import buttonStyles from './ButtonStyles.module.css';
 import DiptychCarousel from '../Diptychs/DiptychCarousel';
+import { fetchPhotosService } from '../utils/fetchPhotosService';
+import { parseUrlService } from '../utils/parseUrlService';
 
 
  // Update the SetPhotoIdProps to match with DiptychComponent prop types
@@ -33,7 +35,9 @@ const Inquiry: React.FC = () => {
   const { photoID } = useParams<{ photoID: string }>();
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null); 
-  const {photos, initialPhotoFetch, fetchPhotos, setSelectedPhoto, selectedPhoto, sortedPhotos, selectedDiptychIdCode,} = useStore(state => ({
+  const {photos, initialPhotoFetch, sortValue, setSelectedPhoto, 
+    setPhotos, setSortedPhotos, setInitialPhotoFetch, selectedPhoto, 
+    sortedPhotos, selectedDiptychIdCode } = useStore(state => ({
     ...state,
     selectedDiptychIdCode: state.selectedDiptychIdCode
   }));
@@ -42,6 +46,8 @@ const Inquiry: React.FC = () => {
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter, '/inquire');
   const [areShapesVisible, setAreShapesVisible] = useState(false);
   const [selectedCarouselDiptychIdCode, setSelectedCarouselDiptychIdCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [photosError, setPhotosError] = useState<string | null>(null);
 
   // Add this useEffect for mounting and unmounting logs
   useEffect(() => {
@@ -53,19 +59,27 @@ const Inquiry: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!initialPhotoFetch) {
-      fetchPhotos();
-    }
-    console.log(`initialPhotoFetch In Inquire Page: initialPhotoFetch = ${initialPhotoFetch}`);
-  }, [initialPhotoFetch, fetchPhotos]);
+    if (sortedPhotos.length === 0 || !selectedPhoto) {
+      // Parse the URL and fetch photos if needed
+      const parsedUrl = new parseUrlService().parseUrl();
+      if (!selectedPhoto && parsedUrl.photoID) {
+        setSelectedPhoto(parsedUrl.photoID);
+      }
 
-  useEffect(() => {
-    // Set the selected photo based on URL parameter
-    if (photoID && (!selectedPhoto || selectedPhoto.photoID !== photoID)) {
-      setSelectedPhoto(photoID);
-      console.log("Setting selected photo in Inquire based on URL:", photoID); // Add this line
+      if (sortedPhotos.length === 0) {
+        fetchPhotosService(
+          setPhotosError, 
+          setLoading, 
+          setPhotos,
+          setSortedPhotos,
+          setInitialPhotoFetch,
+          parsedUrl.filter,
+          sortValue || 'random', // Use 'random' or other default sort value
+          initialPhotoFetch
+        );
+      }
     }
-  }, [photoID, setSelectedPhoto, selectedPhoto]);
+  }, [selectedPhoto, sortedPhotos, sortValue, setPhotos, setSortedPhotos, setInitialPhotoFetch, setSelectedPhoto]);
   
 useEffect(() => {
   // Check if there's a selected photo and no selectedDiptychIdCode

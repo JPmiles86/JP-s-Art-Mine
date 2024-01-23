@@ -1,10 +1,10 @@
 // my-gallery/src/Diptychs/DynamicDiptychComponent.tsx
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { fabric } from 'fabric';
 import useStore from '../utils/store';
 import urlConfig from '../screens/urlConfig';
-import { dataService } from '../utils/DataService';
+// import { dataService } from '../utils/DataService';
 import { scaleCanvas } from './scaleCanvas';
 import initializeCanvas from './initializeCanvas';
 import applyLayoutAndScaling from './applyLayoutAndScaling';
@@ -51,6 +51,20 @@ interface LayoutSpecs {
     const [isCanvasReady, setIsCanvasReady] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvas = useRef<fabric.Canvas | null>(null);
+
+    const fetchPhotoDetails = useCallback(async (photoId: string) => {
+      try {
+        const response = await fetch(`/api/photos/${photoId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching photo details:', error);
+        return null;
+      }
+    }, []);
   
     useEffect(() => {
       let isMounted = true;
@@ -71,7 +85,7 @@ interface LayoutSpecs {
         fabricCanvas.current = initializeCanvas(canvasRef, config);
         if (!fabricCanvas.current) return;
       
-        const photoDetails = photoId ? await dataService.fetchPhotoDetails(photoId) : selectedPhoto;
+        const photoDetails = photoId ? await fetchPhotoDetails(photoId) : selectedPhoto;
         if (!photoDetails) return;
       
         // Type assertion to LayoutSpecs
@@ -104,7 +118,7 @@ interface LayoutSpecs {
         clearFabricCanvasRef(DiptychIdCode);
         fabricCanvas.current?.dispose();
       };
-    }, [photoId, selectedPhoto, DiptychIdCode, areShapesVisible]);
+    }, [photoId, selectedPhoto, DiptychIdCode, areShapesVisible, fetchPhotoDetails]);
 
   useEffect(() => {
     const handleResize = () => {

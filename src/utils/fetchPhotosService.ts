@@ -1,14 +1,11 @@
 // my-gallery/src/utils/fetchPhotosService.ts
 
 import { determineFilter } from './determineFilterUtils';
-import { parseUrlService } from './parseUrlService';
 import { Photograph } from './store';
 import { fetchPhotosFromAPI } from './fetchPhotosFromAPI';
 import { sortPhotos } from './sortPhotos';
 
 export async function fetchPhotosService(
-    setCurrentFilter: (filter: string) => void,
-    setSelectedPhoto: (filter: string) => void,
     setPhotosError: (error: string | null) => void,
     setLoadingPhotos: (loading: boolean) => void,
     setPhotos: (photos: Photograph[]) => void,
@@ -29,18 +26,8 @@ export async function fetchPhotosService(
     console.log("Loading photos set to true");
 
     try {
-        let filter = currentFilter;
-        if (!filter) {
-          const { filter: urlFilter, photoID } = new parseUrlService().parseUrl();
-          filter = urlFilter;
-          setCurrentFilter(filter);
-          if (photoID) {
-            setSelectedPhoto(photoID);
-          }
-        }
-
-        const filterType = determineFilter(filter);
-        const fetchedPhotos = await fetchPhotosFromAPI(filterType, filter);
+        const filterType = determineFilter(currentFilter);
+        const fetchedPhotos = await fetchPhotosFromAPI(filterType, currentFilter);
         const sortedPhotos = sortPhotos(fetchedPhotos, sortValue);
 
         console.log("Fetched photos:", fetchedPhotos);
@@ -54,7 +41,6 @@ export async function fetchPhotosService(
 
         setInitialPhotoFetch(true);
         console.log("Initial photo fetch set to true");
-
 
     } catch (error) {
         if (error instanceof Error) {

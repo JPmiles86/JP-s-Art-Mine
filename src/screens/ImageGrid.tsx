@@ -2,7 +2,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
-// import { DataService, Series } from '../utils/DataService';
 import ScrollContext from '../ScrollContext'; 
 import useStore, { Store, GridHeaderData, Photograph } from '../utils/store';
 import urlConfig from './urlConfig';  
@@ -29,19 +28,29 @@ const ImageGrid: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
   const { filter } = useParams<RouteParams>();
-  const { currentFilter, setCurrentFilter, setPhotos, setSortedPhotos, selectedPhoto, setSelectedPhoto, gridHeaderData, setGridHeaderData, setSortValue, fetchGridHeaderData, sortValue, sortedPhotos, clearPhotos, initialPhotoFetch, setInitialPhotoFetch, resetLoadIndex } = useStore();
+  const { 
+    currentFilter, setCurrentFilter, setSelectedPhoto,
+    setPhotos, setSortedPhotos, selectedPhoto, setSortValue, 
+    sortValue, sortedPhotos, clearPhotos, initialPhotoFetch, 
+    setInitialPhotoFetch, resetLoadIndex
+  } = useStore();
   const navigate = useNavigate();  
   const [scrollPos, setScrollPos] = useState(0);  
-  const { handleScroll, scrollToTop } = useContext(ScrollContext);  // Access handleScroll
+  const { handleScroll, scrollToTop } = useContext(ScrollContext);  
+  const [gridHeaderData, setGridHeaderData] = useState<GridHeaderData | null>(null);
   const [needsHeaderImageUpdate, setNeedsHeaderImageUpdate] = useState(false);
-  const { loadedPhotos, loadMorePhotos, fetchPhotos, photos } = useStore((state) => ({
+  const [urlParsed, setUrlParsed] = useState(false); 
+  const { loadedPhotos, loadMorePhotos, photos } = useStore((state) => ({
     loadedPhotos: state.loadedPhotos,
     loadMorePhotos: state.loadMorePhotos,
-    fetchPhotos: state.fetchPhotos,
     photos: state.photos,
   }));
+  const handleUrlParsing = () => {
+    new parseUrlService().parseUrl();
+  };
      
   useEffect(() => {
+    console.log("useEffect - fetchAllSeries");
     fetchAllSeries()
       .then(fetchedSeries => {
         setSeries(fetchedSeries);
@@ -50,6 +59,7 @@ const ImageGrid: React.FC = () => {
   }, []);  
 
   useEffect(() => {
+    console.log("useEffect - handleScroll");
     const handleScroll = () => {
       if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight) return;
       loadMorePhotos();
@@ -60,24 +70,21 @@ const ImageGrid: React.FC = () => {
   }, [loadMorePhotos]);
 
   useEffect(() => {
-    // Ensure currentFilter is set when navigating to the page
+    console.log("useEffect - currentFilter and parseUrlService");
     if (!currentFilter) {
-      const { filter: urlFilter, photoID } = new parseUrlService().parseUrl();
-      if (urlFilter) {
-        setCurrentFilter(urlFilter);
-        if (photoID) {
-          setSelectedPhoto(photoID);
-        }
-      }
+      console.log("currentFilter is not set, calling parseUrlService");
+      handleUrlParsing(); // Call this function on component mount if currentFilter is not set
+      console.log("After parseUrlService call");
+    } else {
+      console.log("currentFilter is already set:", currentFilter);
     }
-    // Fetch new photos whenever currentFilter changes
+
     if (currentFilter) {
+      console.log("currentFilter is set, fetching new photos");
       clearPhotos(); // Clear the old data
       setLoading(true);
       resetLoadIndex(); // Reset load index to load photos from the start
       fetchPhotosService(
-        setCurrentFilter,
-        setSelectedPhoto,
         setPhotosError,
         setLoading,
         setPhotos,
@@ -90,52 +97,53 @@ const ImageGrid: React.FC = () => {
         loadMorePhotos(); // Load the initial set of photos
       });
 
-      fetchGridHeaderData(currentFilter)
-    .then(data => {
-      if (data) {
-        setGridHeaderData(data);
-        // Check if imageUrl is null and if there is a selected photo
-        if (data.imageUrl === null && selectedPhoto) {
-          setNeedsHeaderImageUpdate(true);
-        }
+        setLoading(true);
+        fetchGridHeaderData(currentFilter)
+          .then(data => {
+            setGridHeaderData(data); // Update state directly with fetched data
+            if (data?.imageUrl === null && selectedPhoto) {
+              setNeedsHeaderImageUpdate(true);
+            }
+            setLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching header data:', error);
+            setLoading(false);
+          });
       }
-      setLoading(false);
-    })
-    .catch(error => {
-      console.error('Error fetching header data:', error);
-      setLoading(false);
-    });
-    }
   }, [currentFilter, sortValue, loadMorePhotos, selectedPhoto]);
   
   // This useEffect will run when needsHeaderImageUpdate is true
   useEffect(() => {
-    if (needsHeaderImageUpdate && selectedPhoto) {
-      // Determine whether the currentFilter is a date or a number
-      const isDateFilter = /^\d{6}$/.test(currentFilter); // Assuming dates are in the format of YYYYMMDD
-      const endpoint = isDateFilter
-        ? 'http://localhost:4000/api/dates/update-image-url'
-        : 'http://localhost:4000/api/numbers/update-image-url';
-  
-      const body = {
-        [isDateFilter ? 'date' : 'number']: currentFilter,
-        imageUrl: selectedPhoto.imagePath,
-      };
-  
-      fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
+  if (needsHeaderImageUpdate && selectedPhoto) {
+    console.log("useEffect - needsHeaderImageUpdate");
+    // Determine whether the currentFilter is a date or a number
+    const isDateFilter = /^\d{6}$/.test(currentFilter); // Assuming dates are in the format of YYYYMMDD
+    const endpoint = isDateFilter
+      ? 'http://localhost:4000/api/dates/update-image-url'
+      : 'http://localhost:4000/api/numbers/update-image-url';
+
+    const body = {
+      [isDateFilter ? 'date' : 'number']: currentFilter,
+      imageUrl: selectedPhoto.imagePath,
+    };
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
     .then(response => response.json())
     .then(data => {
       // After updating the header image, fetch the header data again
       fetchGridHeaderData(currentFilter)
+      
         .then(updatedData => {
           if (updatedData) {
             setGridHeaderData(updatedData);
+            console.log("useEffect - needsHeaderImageUpdate - setGridHeaderData");
           }
         })
         .catch(error => console.error('Error re-fetching header data:', error));
@@ -144,24 +152,6 @@ const ImageGrid: React.FC = () => {
     .finally(() => setNeedsHeaderImageUpdate(false)); // Reset the state
   }
 }, [needsHeaderImageUpdate, selectedPhoto, currentFilter]);
-
-  useEffect(() => {
-    if (currentFilter) {
-      clearPhotos(); // Clear the old data
-      setLoading(true); // Set loading to true before fetching new data
-      fetchGridHeaderData(currentFilter)
-        .then(data => {
-          if (data) {
-            setGridHeaderData(data);
-          }
-          setLoading(false); // Set loading to false after fetching new data
-        })
-        .catch(error => {
-          console.error('Error fetching header data:', error);
-          setLoading(false); // Ensure we handle loading state correctly in case of error
-        });
-    }
-  }, [currentFilter]);  
   
   useEffect(() => {
     console.log('loadedPhotos after fetch:', loadedPhotos);
@@ -170,6 +160,7 @@ const ImageGrid: React.FC = () => {
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortOrder = event.target.value as 'newest' | 'oldest' | 'random';
     setSortValue(newSortOrder); // Update the sortValue in the global state when the dropdown changes
+    console.log("handleSortChange and setting new sorting order", newSortOrder);
   };
 
   const handleSeriesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -177,6 +168,7 @@ const ImageGrid: React.FC = () => {
     setCurrentFilter(newSeriesCode);
     setInitialPhotoFetch(false);
     navigate(`/${newSeriesCode}`);
+    console.log("handleSeriesChange and setting new currentFilter", newSeriesCode);
   };  
 
   if (loading) {
@@ -239,6 +231,7 @@ const ImageGrid: React.FC = () => {
       className={styles.gridItem} 
       onClick={() => { 
         console.log('Navigating with state:', { data: { loadedPhotos } }); 
+        setSelectedPhoto(photo.photoID);
         navigate(`/${filter}/${photo.photoID}`, { state: { data: { loadedPhotos } }});
       }}      
     >
