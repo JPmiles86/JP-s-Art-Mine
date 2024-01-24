@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
 import buttonStyles from './ButtonStyles.module.css';
 import DiptychCarousel from '../Diptychs/DiptychCarousel';
-//import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
+import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
 import { fetchPhotosService } from '../utils/fetchPhotosService';
 import { parseUrlService } from '../utils/parseUrlService';
 
@@ -210,7 +210,7 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
           {renderDownloadButton(selectedPhoto.photoID, selectedDiptychIdCode || '')}
           <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
 
-          <DiptychCarousel
+          <DiptychCarouselDynamic
             photoId={selectedPhoto.photoID}
             frameId={useStore.getState().FrameId}
             diptychId={1}
