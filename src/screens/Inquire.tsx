@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
 import buttonStyles from './ButtonStyles.module.css';
 import DiptychCarousel from '../Diptychs/DiptychCarousel';
+//import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
 import { fetchPhotosService } from '../utils/fetchPhotosService';
 import { parseUrlService } from '../utils/parseUrlService';
 
@@ -19,6 +20,8 @@ import { parseUrlService } from '../utils/parseUrlService';
  // Update the SetPhotoIdProps to match with DiptychComponent prop types
 interface SetPhotoIdProps {
   photoId: string;
+  frameId: number;
+  diptychId: number;
   containerRef: React.RefObject<HTMLDivElement>;
   onCanvasReady: (canvasRef: fabric.Canvas, diptychIdCode: string) => void; // Add this prop
 }
@@ -71,15 +74,13 @@ const Inquiry: React.FC = () => {
           setPhotosError, 
           setLoading, 
           setPhotos,
-          setSortedPhotos,
           setInitialPhotoFetch,
           parsedUrl.filter,
-          sortValue || 'random', // Use 'random' or other default sort value
           initialPhotoFetch
         );
       }
     }
-  }, [selectedPhoto, sortedPhotos, sortValue, setPhotos, setSortedPhotos, setInitialPhotoFetch, setSelectedPhoto]);
+  }, [selectedPhoto, sortedPhotos, setPhotos, setInitialPhotoFetch, setSelectedPhoto]);
   
 useEffect(() => {
   // Check if there's a selected photo and no selectedDiptychIdCode
@@ -213,6 +214,58 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
             photoId={selectedPhoto.photoID}
             frameId={useStore.getState().FrameId}
             diptychId={1}
+            aspectRatio={selectedPhoto.aspectRatio}
+            areShapesVisible={areShapesVisible}
+            containerRef={containerRef}
+            handleCanvasReady={handleCanvasReady}
+            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+          />
+          {renderDownloadButton(selectedPhoto.photoID, selectedCarouselDiptychIdCode)}
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+
+          <DiptychCarousel
+            photoId={selectedPhoto.photoID}
+            frameId={useStore.getState().FrameId}
+            diptychId={2}
+            aspectRatio={selectedPhoto.aspectRatio}
+            areShapesVisible={areShapesVisible}
+            containerRef={containerRef}
+            handleCanvasReady={handleCanvasReady}
+            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+          />
+          {renderDownloadButton(selectedPhoto.photoID, selectedCarouselDiptychIdCode)}
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+
+          <DiptychCarousel
+            photoId={selectedPhoto.photoID}
+            frameId={useStore.getState().FrameId}
+            diptychId={3}
+            aspectRatio={selectedPhoto.aspectRatio}
+            areShapesVisible={areShapesVisible}
+            containerRef={containerRef}
+            handleCanvasReady={handleCanvasReady}
+            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+          />
+          {renderDownloadButton(selectedPhoto.photoID, selectedCarouselDiptychIdCode)}
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+
+          <DiptychCarousel
+            photoId={selectedPhoto.photoID}
+            frameId={useStore.getState().FrameId}
+            diptychId={4}
+            aspectRatio={selectedPhoto.aspectRatio}
+            areShapesVisible={areShapesVisible}
+            containerRef={containerRef}
+            handleCanvasReady={handleCanvasReady}
+            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+          />
+          {renderDownloadButton(selectedPhoto.photoID, selectedCarouselDiptychIdCode)}
+          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+
+          <DiptychCarousel
+            photoId={selectedPhoto.photoID}
+            frameId={useStore.getState().FrameId}
+            diptychId={5}
             aspectRatio={selectedPhoto.aspectRatio}
             areShapesVisible={areShapesVisible}
             containerRef={containerRef}

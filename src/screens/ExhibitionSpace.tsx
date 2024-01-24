@@ -90,10 +90,8 @@ const navigateToInquiry = () => {
         setPhotosError, 
         setLoading, 
         setPhotos,
-        setSortedPhotos,
         setInitialPhotoFetch,
         parsedUrl.filter,
-        sortValue || 'random',
         initialPhotoFetch
       );
     }
@@ -103,24 +101,29 @@ const navigateToInquiry = () => {
       setSelectedPhoto(parsedUrl.photoID);
     }
   }
-}, [selectedPhoto, sortedPhotos, sortValue, setPhotos, setSortedPhotos, setInitialPhotoFetch, setSelectedPhoto]);
+}, [selectedPhoto, sortedPhotos, setPhotos, setInitialPhotoFetch, setSelectedPhoto]);
 
-  useEffect(() => {
-    if (photoID) {
-      setSelectedPhoto(photoID);
+useEffect(() => {
+  if (photoID) {
+    setSelectedPhoto(photoID);
+    // Check if the photoID is in the current sortedPhotos
+    const photoExists = sortedPhotos.some(photo => photo.photoID === photoID);
+    if (!photoExists) {
+      // Fetch and sort photos if the current photoID is not in the sortedPhotos
+      // Call fetchPhotosService here if needed
     }
-  }, [photoID, setSelectedPhoto]);
+  }
+}, [photoID, sortedPhotos, setSelectedPhoto]);
+
 
   // Set the current index to the index of the selected photo in the sortedPhotos array
   useEffect(() => {
-    if (sortedPhotos && sortedPhotos.length > 0) {
-    const newIndex = sortedPhotos.findIndex((img: Photograph) => img.photoID === photoID);
-    setCurrentIndex(newIndex);
-    setIsLoading(false);
-    } else {
-      console.log("Photos are not available yet!");
-     }
-    }, [photoID, sortedPhotos]);
+    if (selectedPhoto) {
+      const newIndex = sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID);
+      setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+    }
+  }, [selectedPhoto, sortedPhotos]);
+  
 
 const loadComponent = (
   selectedDiptychIdCode: string, 
@@ -251,7 +254,6 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
             fabricCanvasRef={selectedDiptychIdCode ? fabricCanvasMap.get(selectedDiptychIdCode) : undefined}
             areShapesVisible={areShapesVisible}
             toggleShapesVisibility={toggleShapesVisibility}
-            // aspectRatio={selectedPhoto.aspectRatio}
           >
                     <GalleryBackgroundSelector onChange={handleChangeGalleryBackground} />
                 </DiptychControls>

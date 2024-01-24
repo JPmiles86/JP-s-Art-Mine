@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Slider from 'react-slick';
-import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
+import DynamicDiptychComponent from './DynamicDiptychComponent';
 import './DiptychCarousel.css'; 
 
 const DiptychCarousel = ({ photoId, frameId, diptychId, aspectRatio, areShapesVisible, containerRef, handleCanvasReady, onDiptychIdCodeChange }) => {
@@ -116,6 +116,7 @@ const DiptychCarousel = ({ photoId, frameId, diptychId, aspectRatio, areShapesVi
     arrows: true, 
     prevArrow: <CustomLeftArrow />,
     nextArrow: <CustomRightArrow />,
+    lazyload: true,
     afterChange: (current) => {
       const currentCode = diptychIdCodes[current].DiptychIdCode;
       setSelectedCarouselDiptychIdCode(currentCode);

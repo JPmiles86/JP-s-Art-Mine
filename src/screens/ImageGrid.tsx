@@ -32,7 +32,8 @@ const ImageGrid: React.FC = () => {
     currentFilter, setCurrentFilter, setSelectedPhoto,
     setPhotos, setSortedPhotos, selectedPhoto, setSortValue, 
     sortValue, sortedPhotos, clearPhotos, initialPhotoFetch, 
-    setInitialPhotoFetch, resetLoadIndex
+    setInitialPhotoFetch, resetLoadIndex, previousFilter,
+    setPreviousFilter
   } = useStore();
   const navigate = useNavigate();  
   const [scrollPos, setScrollPos] = useState(0);  
@@ -84,7 +85,8 @@ const ImageGrid: React.FC = () => {
   }, [currentFilter, sortedPhotos.length, handleUrlParsing]);
   
   useEffect(() => {
-    if (currentFilter && sortedPhotos.length === 0) {
+    // Check if the current filter has changed and fetch new photos
+     if (currentFilter && (sortedPhotos.length === 0 || previousFilter !== currentFilter)) {
       console.log("ImageGrid fetching new photos", { currentFilter, sortedPhotosLength: sortedPhotos.length });
       clearPhotos();
       setLoading(true);
@@ -93,14 +95,13 @@ const ImageGrid: React.FC = () => {
         setPhotosError,
         setLoading,
         setPhotos,
-        setSortedPhotos,
         setInitialPhotoFetch,
         currentFilter,
-        sortValue,
         false
       ).then(() => {
         loadMorePhotos();
       });
+      setPreviousFilter(currentFilter); // Update the previous filter
     }
   }, [currentFilter, sortValue, loadMorePhotos, sortedPhotos.length]);
   
@@ -177,9 +178,29 @@ const ImageGrid: React.FC = () => {
     const newSeriesCode = event.target.value;
     setCurrentFilter(newSeriesCode);
     setInitialPhotoFetch(false);
+    clearPhotos();
+    resetLoadIndex();
+    setLoading(true);
+  
+    fetchPhotosService(
+      setPhotosError,
+      setLoading,
+      setPhotos,
+      setInitialPhotoFetch,
+      newSeriesCode,
+      false
+    ).then(() => {
+      // This will now trigger the store to sort the photos after they are fetched
+      setSortValue(sortValue); 
+      loadMorePhotos();
+    });
+  
     navigate(`/${newSeriesCode}`);
     console.log("handleSeriesChange and setting new currentFilter", newSeriesCode);
-  };  
+  };
+  
+  
+  
 
   if (loading) {
     return <div>Loading...</div>; // Replace this with your actual loading component
