@@ -133,11 +133,11 @@ const loadComponent = (
   setDiptychComponent(() => DynamicDiptychComponent);
 };
   
-  useEffect(() => {
-    if (!loading.diptychInfo) {
-      setIsLoading(false);
-    }
-  }, [loading.diptychInfo]);
+  //useEffect(() => {
+  //  if (!loading.diptychInfo) {
+  //    setIsLoading(false);
+  //  }
+  //}, [loading.diptychInfo]);
   
   const wrappedHandlePrevPhoto = useCallback(() => {
     handlePrevPhoto(currentIndex);

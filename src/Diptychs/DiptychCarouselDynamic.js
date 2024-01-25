@@ -62,7 +62,7 @@ const DiptychCarouselDynamic = ({ photoId, frameId, diptychId, aspectRatio, areS
           setCarouselHeight(currentHeight => Math.max(currentHeight, newHeight));
           setDiptychHeights(prevHeights => ({ ...prevHeights, [diptychIdCode]: newHeight }));
           setHeightsUpdated(true); // Set the flag here
-          console.log(`Updating height for ${diptychIdCode}:`, newHeight);
+          //console.log(`Updating height for ${diptychIdCode}:`, newHeight);
         }
       }, [diptychHeights]);
 
@@ -86,7 +86,7 @@ const DiptychCarouselDynamic = ({ photoId, frameId, diptychId, aspectRatio, areS
         const diptychHeight = diptychHeights[code.DiptychIdCode];
         if (diptychHeight && !isNaN(diptychHeight)) {
           newTopMargins[code.DiptychIdCode] = (carouselHeight - diptychHeight) / 2;
-          console.log(`Calculated Top Margin for ${code.DiptychIdCode}:`, newTopMargins[code.DiptychIdCode]);
+          //console.log(`Calculated Top Margin for ${code.DiptychIdCode}:`, newTopMargins[code.DiptychIdCode]);
         }
       });
       setDiptychTopMargins(newTopMargins);
@@ -131,8 +131,8 @@ const DiptychCarouselDynamic = ({ photoId, frameId, diptychId, aspectRatio, areS
         {diptychIdCodes.map(code => {
           const topMargin = diptychTopMargins[code.DiptychIdCode] || 0;
 
-          console.log(`carouselHeight:`, carouselHeight);
-          console.log(`Top Margin for ${code.DiptychIdCode}:`, topMargin);
+          //console.log(`carouselHeight:`, carouselHeight);
+          //console.log(`Top Margin for ${code.DiptychIdCode}:`, topMargin);
 
           return (
             <div key={code.DiptychIdCode} className="diptych-slide" style={{ height: `${carouselHeight}px` }}>

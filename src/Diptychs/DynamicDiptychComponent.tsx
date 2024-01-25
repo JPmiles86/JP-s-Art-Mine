@@ -6,6 +6,7 @@ import useStore from '../utils/store';
 import urlConfig from '../screens/urlConfig';
 // import { dataService } from '../utils/DataService';
 import { scaleCanvas } from './scaleCanvas';
+import { layoutDiptych, LayoutDiptychResult } from './layoutDiptych';
 import initializeCanvas from './initializeCanvas';
 import applyLayoutAndScaling from './applyLayoutAndScaling';
 
@@ -51,8 +52,19 @@ interface LayoutSpecs {
     const [isCanvasReady, setIsCanvasReady] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvas = useRef<fabric.Canvas | null>(null);
+    const shapesVisibilityRef = useRef(areShapesVisible);
+
+    const shapeRefs = useRef<{
+      shapesImg: fabric.Image | null,
+      mirroredShapesImg: fabric.Image | null
+    }>({
+      shapesImg: null,
+      mirroredShapesImg: null
+    });
+    
 
     const fetchPhotoDetails = useCallback(async (photoId: string) => {
+      console.log('fetchPhotoDetails triggered');
       try {
         const response = await fetch(`/api/photos/${photoId}`);
         if (!response.ok) {
@@ -65,63 +77,103 @@ interface LayoutSpecs {
         return null;
       }
     }, []);
+
+  // Function to update shapes visibility on canvas
+  const updateShapesVisibility = useCallback(() => {
+   console.log('Attempting to update shape visibility:', shapesVisibilityRef.current);
+
+    if (fabricCanvas.current && shapeRefs.current.shapesImg && shapeRefs.current.mirroredShapesImg) {
+      console.log('Updating shape visibility to:', shapesVisibilityRef.current);
+      shapeRefs.current.shapesImg.visible = shapesVisibilityRef.current;
+      shapeRefs.current.mirroredShapesImg.visible = shapesVisibilityRef.current;
+      fabricCanvas.current.renderAll();
+    } else {
+      console.log('Canvas or shape references are not ready.');
+    }
+  }, []);
+
+  useEffect(() => {
+    shapesVisibilityRef.current = areShapesVisible;
+    if (isCanvasReady) {
+      // Defer the update to ensure canvas is in a valid state
+      setTimeout(() => updateShapesVisibility(), 0);
+    }
+  }, [areShapesVisible, isCanvasReady, updateShapesVisibility]);
   
-    useEffect(() => {
-      let isMounted = true;
-      if (!DiptychIdCode) {
-        console.log("Waiting for DiptychIdCode");
+
+  useEffect(() => {
+    console.log("DynamicDiptychComponent render or re-render");
+    let isMounted = true;
+
+    if (!DiptychIdCode) {
+      console.log("Waiting for DiptychIdCode");
+      return;
+    }
+
+    async function setupCanvas() {
+      console.log(`Setting up canvas for ${DiptychIdCode}`);
+
+      const config = diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations];
+      if (!config) {
+        console.error('Configuration not found for DiptychIdCode:', DiptychIdCode);
         return;
       }
-      
-      async function setupCanvas() {
-        console.log(`Setting up canvas for ${DiptychIdCode}`);
-      
-        const config = diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations];
-        if (!config) {
-          console.error('Configuration not found for DiptychIdCode:', DiptychIdCode);
-          return;
-        }
-      
-        fabricCanvas.current = initializeCanvas(canvasRef, config);
-        if (!fabricCanvas.current) return;
-      
-        const photoDetails = photoId ? await fetchPhotoDetails(photoId) : selectedPhoto;
-        if (!photoDetails) return;
-      
-        // Type assertion to LayoutSpecs
-        const layoutSpecs = {
+
+      fabricCanvas.current = initializeCanvas(canvasRef, config);
+      if (!fabricCanvas.current) return;
+
+       // Update fabricCanvasRef in store
+      setFabricCanvasRef(DiptychIdCode, fabricCanvas.current);
+
+      const photoDetails = photoId ? await fetchPhotoDetails(photoId) : selectedPhoto;
+      if (!photoDetails) return;
+
+       const layoutSpecs = {
           ...config as LayoutSpecs,
-          DiptychIdCode,
-          photoId: photoDetails.photoID,
-          photoUrl: getPhotoUrl(photoDetails.imagePath),
-          mirroredPhotoUrl: getPhotoUrl(photoDetails.imagePath),
-        };
-      
-        useStore.getState().setLayoutSpecs(DiptychIdCode, layoutSpecs);
-        console.log(`Layout specs set for ${DiptychIdCode}:`, layoutSpecs);
-      
-        if (isMounted) {
-          await applyLayoutAndScaling(fabricCanvas.current, layoutSpecs, containerRef, areShapesVisible, updateHeight, DiptychIdCode);
-          setIsCanvasReady(true);
-        }
-      }
-  
-      setupCanvas().then(() => {
-        if (isMounted && fabricCanvas.current) {
-          console.log(`setupCanvas for ${DiptychIdCode}`);
-          onCanvasReady?.(fabricCanvas.current, DiptychIdCode);
-        }
-      });
-  
-      return () => {
-        isMounted = false;
-        clearFabricCanvasRef(DiptychIdCode);
-        fabricCanvas.current?.dispose();
+        DiptychIdCode,
+        photoId: photoDetails.photoID,
+        photoUrl: getPhotoUrl(photoDetails.imagePath),
+        mirroredPhotoUrl: getPhotoUrl(photoDetails.imagePath),
       };
-    }, [photoId, selectedPhoto, DiptychIdCode, areShapesVisible, fetchPhotoDetails]);
+
+      useStore.getState().setLayoutSpecs(DiptychIdCode, layoutSpecs);
+      console.log(`Layout specs set for ${DiptychIdCode}:`, layoutSpecs);
+
+      if (isMounted) {
+        const result = await layoutDiptych(fabricCanvas.current, layoutSpecs, false, areShapesVisible);
+        const { shapesImg, mirroredShapesImg } = result || {};
+        shapeRefs.current = { shapesImg, mirroredShapesImg };
+
+        // Ensure canvas is properly scaled before making it visible
+        scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {
+          if (updateHeight) {
+            updateHeight(newHeight, DiptychIdCode);
+          }
+          // Set canvas ready state after scaling
+          setIsCanvasReady(true);
+
+        });
+        
+        onCanvasReady?.(fabricCanvas.current, DiptychIdCode);
+
+        console.log('Canvas is ready. Setting initial visibility for shapes.');
+        // Set initial visibility for shapes
+        updateShapesVisibility();
+      }
+    }
+
+    setupCanvas();
+
+    return () => {
+      isMounted = false;
+      clearFabricCanvasRef(DiptychIdCode);
+      fabricCanvas.current?.dispose();
+    };
+  }, [photoId, selectedPhoto, DiptychIdCode, areShapesVisible, fetchPhotoDetails, updateShapesVisibility]);
 
   useEffect(() => {
     const handleResize = () => {
+      console.log('Handling resize in DynamicDiptychComponent');
       if (fabricCanvas.current && containerRef.current) {
         const config = diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations];
         scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {

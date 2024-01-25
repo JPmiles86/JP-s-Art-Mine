@@ -37,7 +37,8 @@ export const createOffScreenCanvas = async (
 
   const { frameImg, photoImg, mirroredImg, shapesImg, mirroredShapesImg } = result;
 
-  let objectsToAdd = [frameImg, photoImg, mirroredImg];
+    // Filter out null values
+    let objectsToAdd = [frameImg, photoImg, mirroredImg, shapesImg, mirroredShapesImg].filter(img => img !== null);
 
   // Add shapes to the objects array if they are visible
   if (areShapesVisible && shapesImg && mirroredShapesImg) {
@@ -45,7 +46,7 @@ export const createOffScreenCanvas = async (
   }
 
   // Create a group with the images
-  const group = new fabric.Group(objectsToAdd, {
+  const group = new fabric.Group(objectsToAdd as fabric.Object[], {
     originX: 'center',
     originY: 'center',
     selectable: false,

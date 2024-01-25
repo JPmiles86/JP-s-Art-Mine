@@ -72,8 +72,8 @@ const DiptychCarousel = ({ photoId, frameId, diptychId, aspectRatio, areShapesVi
   };
 
 
-  console.log("Current currentSlide:", currentSlide);
-  console.log("Current totalSlides:", totalSlides);
+  //console.log("Current currentSlide:", currentSlide);
+  //console.log("Current totalSlides:", totalSlides);
 
   return (
     <div>

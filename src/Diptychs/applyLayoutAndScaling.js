@@ -1,4 +1,4 @@
-// applyLayoutAndScaling.js
+// my-gallery/src/Diptychs/applyLayoutAndScaling.js
 import { scaleCanvas } from './scaleCanvas';
 import { layoutDiptych } from './layoutDiptych';
 import { LayoutSpecs } from './LayoutSpecs';
