@@ -106,7 +106,7 @@ useEffect(() => {
                 Inquire
             </button>
             <DownloadButton
-                photoId={selectedPhoto.photoID}
+                photoId={selectedPhoto?.photoID}
                 DiptychIdCode={useStore.getState().selectedDiptychIdCode}
                 fabricCanvasRef={fabricCanvasRef}
                 layoutSpecs={layoutSpecs}

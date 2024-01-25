@@ -30,19 +30,24 @@ interface Photograph {
 }
 
 const ExhibitionSpace = () => {
+  console.log('ExhibitionSpace Rendered or Re-rendered');
   const navigate = useNavigate();
   const { photos } = useStore((state) => state);
+  const { filter, photoID } = useParams<{ filter: string, photoID: string }>();
+  
   const {
-    currentFilter, setCurrentFilter, sortedPhotos, setSortedPhotos, 
-    selectedPhoto, setSelectedPhoto, loading, setLoading, shapeCode, 
+    currentFilter, setCurrentFilter, sortedPhotos, loading, setLoading, shapeCode, 
     initialPhotoFetch, setInitialPhotoFetch, sortValue, setPhotos
   } = useStore((state) => state);
-  const { photoID } = useParams<{ photoID: string }>();
+    // Find the Photograph object that matches the photoID
+  const selectedPhotograph = useMemo(() => 
+    sortedPhotos.find(photo => photo.photoID === photoID), 
+    [sortedPhotos, photoID]
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [galleryBackground, setGalleryBackground] = useState('/assets/images/gallerybg/Gallery-2.png');
   const [error] = useState<Error | null>(null);
   const location = useLocation();
-  const {  } = useStore();
   const { selectedDiptychIdCode, setSelectedDiptychIdCode } = useStore(state => ({
     selectedDiptychIdCode: state.selectedDiptychIdCode,
     setSelectedDiptychIdCode: state.setSelectedDiptychIdCode
@@ -55,24 +60,50 @@ const ExhibitionSpace = () => {
   const [areShapesVisible, setAreShapesVisible] = useState(false);
   const { diptychInfo, isLoading: diptychInfoLoading } = useDiptychInfo(selectedDiptychIdCode);
   const [isLoading, setIsLoading] = useState(true);
-  const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, setSelectedPhoto, currentFilter);
+  
+  // Ensure that selectedPhotograph is not undefined when using useGalleryNavigation
+  const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(
+    sortedPhotos,
+    currentFilter
+  );
   const [photosError, setPhotosError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (filter) {
+      setCurrentFilter(filter);
+    }
+  }, [filter, setCurrentFilter]);
+
+   // Fetching photos
+   useEffect(() => {
+    console.log("Checking if photos need to be fetched");
+    if (sortedPhotos.length === 0 && currentFilter) {
+      console.log('Fetching photos as sortedPhotos is empty and currentFilter is set:', currentFilter);
+      fetchPhotosService(
+        setPhotosError, 
+        setLoading, 
+        setPhotos,
+        setInitialPhotoFetch,
+        currentFilter,
+        initialPhotoFetch
+      );
+    }
+  }, [sortedPhotos, currentFilter, setPhotos, setInitialPhotoFetch]);
+  
   // Function to navigate to the inquiry page
-const navigateToInquiry = () => {
-  if (selectedPhoto) {
-    navigate(`/${currentFilter}/${selectedPhoto.photoID}/inquire`);
-    console.log("Navigating to the inquire page.");
-  } else {
-    console.log("No photo selected, unable to navigate to the inquiry page.");
-  }
-};
+  const navigateToInquiry = () => {
+    if (photoID) {
+      navigate(`/${currentFilter}/${photoID}/inquire`);
+      console.log("Navigating to the inquire page.");
+    } else {
+      console.log("No photo selected, unable to navigate to the inquiry page.");
+    }
+  };
 
   const handleChangeGalleryBackground = useCallback((backgroundImage: string) => {
     setGalleryBackground(backgroundImage);
   }, []);
 
-   // useMemo to memoize the background image style
    const galleryBackgroundStyle = useMemo(() => ({
     backgroundImage: `url(${galleryBackground})`,
     display: 'flex',
@@ -80,64 +111,13 @@ const navigateToInquiry = () => {
     alignItems: 'center',
   }), [galleryBackground]);
 
- // Replace the useEffect hook for fetching photos
- useEffect(() => {
-  if (sortedPhotos.length === 0 || !selectedPhoto) {
-    const parsedUrl = new parseUrlService().parseUrl();
-
-    if (sortedPhotos.length === 0) {
-      fetchPhotosService(
-        setPhotosError, 
-        setLoading, 
-        setPhotos,
-        setInitialPhotoFetch,
-        parsedUrl.filter,
-        initialPhotoFetch
-      );
-    }
-    
-    // Set selected photo from URL
-    if (!selectedPhoto && parsedUrl.photoID) {
-      setSelectedPhoto(parsedUrl.photoID);
-    }
-  }
-}, [selectedPhoto, sortedPhotos, setPhotos, setInitialPhotoFetch, setSelectedPhoto]);
-
-useEffect(() => {
-  if (photoID) {
-    setSelectedPhoto(photoID);
-    // Check if the photoID is in the current sortedPhotos
-    const photoExists = sortedPhotos.some(photo => photo.photoID === photoID);
-    if (!photoExists) {
-      // Fetch and sort photos if the current photoID is not in the sortedPhotos
-      // Call fetchPhotosService here if needed
-    }
-  }
-}, [photoID, sortedPhotos, setSelectedPhoto]);
-
-
-  // Set the current index to the index of the selected photo in the sortedPhotos array
-  useEffect(() => {
-    if (selectedPhoto) {
-      const newIndex = sortedPhotos.findIndex(photo => photo.photoID === selectedPhoto.photoID);
-      setCurrentIndex(newIndex >= 0 ? newIndex : 0);
-    }
-  }, [selectedPhoto, sortedPhotos]);
-  
-
-const loadComponent = (
-  selectedDiptychIdCode: string, 
-  setDiptychComponent: React.Dispatch<React.SetStateAction<React.ComponentType<any> | null>>
-) => {
-  console.log(`Loading DynamicDiptychComponent for selectedDiptychIdCode: ${selectedDiptychIdCode}`);
-  setDiptychComponent(() => DynamicDiptychComponent);
-};
-  
-  //useEffect(() => {
-  //  if (!loading.diptychInfo) {
-  //    setIsLoading(false);
-  //  }
-  //}, [loading.diptychInfo]);
+  const loadComponent = (
+    selectedDiptychIdCode: string, 
+    setDiptychComponent: React.Dispatch<React.SetStateAction<React.ComponentType<any> | null>>
+  ) => {
+    console.log(`Loading DynamicDiptychComponent for selectedDiptychIdCode: ${selectedDiptychIdCode}`);
+    setDiptychComponent(() => DynamicDiptychComponent);
+  };
   
   const wrappedHandlePrevPhoto = useCallback(() => {
     handlePrevPhoto(currentIndex);
@@ -169,15 +149,27 @@ const loadComponent = (
     }
   }, [layoutSpecsMap]); 
   
+ // Updating currentIndex based on photoID
+  useEffect(() => {
+    console.log("trying to updates currentIndex if photoID & sortedPhotos are ready");
+    if (photoID && sortedPhotos.length > 0) {
+      console.log("Updating currentIndex - photoID:", photoID, "sortedPhotos:", sortedPhotos);
+      const newIndex = sortedPhotos.findIndex(photo => photo.photoID === photoID);
+      if (newIndex >= 0) {
+        setCurrentIndex(newIndex);
+      }
+    }
+  }, [photoID, sortedPhotos]);
 
   // Function to handle canvas ready from Diptych component
   const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {
-    console.log(`Canvas ready for ${selectedDiptychIdCode}:`, canvasRef);
+    console.log(`handleCanvasReady for Canvas ready for ${selectedDiptychIdCode}:`, canvasRef);
     useStore.getState().setFabricCanvasRef(selectedDiptychIdCode, canvasRef);
   }, []); // Add dependencies if needed
 
   // UseEffect to check container size
   useEffect(() => {
+    console.log('useEffect for container size check triggered');
     const checkContainerSize = () => {
     if (galleryRef.current) {
       const { clientWidth } = galleryRef.current;
@@ -193,9 +185,9 @@ const loadComponent = (
       return () => {
         window.removeEventListener('resize', checkContainerSize);
       };
-    }, [selectedPhoto, isLoading]);
+    }, [photoID, isLoading]);
 
-if (!selectedPhoto) {
+if (!photoID) {
   return <div>No photo selected.</div>;
   }
 
@@ -207,8 +199,8 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
   return <div>Loading Exhibition...</div>;
 }
 
-  console.log('Selected photo in ExhibitionSpace: ', selectedPhoto);
-  console.log("Before rendering in ExhibitionSpace, isContainerReady:", isContainerReady, "selectedPhoto:", selectedPhoto);
+  console.log('Selected photo in ExhibitionSpace: ', photoID);
+  console.log("Before rendering in ExhibitionSpace, isContainerReady:", isContainerReady, "photoID:", photoID);
   console.log(`selectedDiptychIdCode is ${selectedDiptychIdCode}`);
   console.log(`Accessing layoutSpecs for ${selectedDiptychIdCode}`);
   console.log(`Accessing fabricCanvasMap for ${fabricCanvasMap}`); 
@@ -218,7 +210,7 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
     <div className={styles.exhibitionSpace}>
       <ExhibitionHeader
         currentFilter={currentFilter}
-        selectedPhoto={selectedPhoto}
+        selectedPhoto={selectedPhotograph || null}
         diptychInfo={diptychInfo}
         handlePrevPhoto={wrappedHandlePrevPhoto}
         handleNextPhoto={wrappedHandleNextPhoto}
@@ -232,9 +224,9 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
        }}
           >
             <div className={styles.diptychWrapper}>
-            { isContainerReady && selectedPhoto && selectedDiptychIdCode ? (
+            { isContainerReady && photoID && selectedDiptychIdCode ? (
               <DynamicDiptychComponent 
-              photoId={selectedPhoto.photoID}
+              photoId={photoID}
               containerRef={containerRef}
               onCanvasReady={onCanvasReady}
               DiptychIdCode={selectedDiptychIdCode}
@@ -249,7 +241,7 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
       <div>
       <DiptychControls
             navigateToInquiry={navigateToInquiry}
-            selectedPhoto={selectedPhoto}
+            selectedPhoto={selectedPhotograph}
             layoutSpecs={selectedDiptychIdCode ? layoutSpecsMap.get(selectedDiptychIdCode) : undefined} 
             fabricCanvasRef={selectedDiptychIdCode ? fabricCanvasMap.get(selectedDiptychIdCode) : undefined}
             areShapesVisible={areShapesVisible}

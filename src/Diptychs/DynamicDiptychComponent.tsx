@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { fabric } from 'fabric';
 import useStore from '../utils/store';
 import urlConfig from '../screens/urlConfig';
-// import { dataService } from '../utils/DataService';
 import { scaleCanvas } from './scaleCanvas';
 import { layoutDiptych, LayoutDiptychResult } from './layoutDiptych';
 import initializeCanvas from './initializeCanvas';
@@ -48,6 +47,7 @@ interface LayoutSpecs {
   }
 
   const DynamicDiptychComponent: React.FC<SetPhotoIdProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight }) => {
+    console.log('DynamicDiptychComponent Mounted', { DiptychIdCode, photoId });
     const { selectedPhoto, setFabricCanvasRef, clearFabricCanvasRef, diptychConfigurations } = useStore();
     const [isCanvasReady, setIsCanvasReady] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -93,6 +93,7 @@ interface LayoutSpecs {
   }, []);
 
   useEffect(() => {
+    console.log('useEffect for shapesVisibilityRef and isCanvasReady triggered', { areShapesVisible, isCanvasReady });
     shapesVisibilityRef.current = areShapesVisible;
     if (isCanvasReady) {
       // Defer the update to ensure canvas is in a valid state
@@ -102,7 +103,7 @@ interface LayoutSpecs {
   
 
   useEffect(() => {
-    console.log("DynamicDiptychComponent render or re-render");
+    console.log('useEffect for component setup triggered', { DiptychIdCode, photoId, selectedPhoto });
     let isMounted = true;
 
     if (!DiptychIdCode) {
@@ -168,10 +169,12 @@ interface LayoutSpecs {
       isMounted = false;
       clearFabricCanvasRef(DiptychIdCode);
       fabricCanvas.current?.dispose();
+      console.log('DynamicDiptychComponent Unmounted', { DiptychIdCode });
     };
   }, [photoId, selectedPhoto, DiptychIdCode, areShapesVisible, fetchPhotoDetails, updateShapesVisibility]);
 
   useEffect(() => {
+    console.log('useEffect for resize handling triggered', { DiptychIdCode });
     const handleResize = () => {
       console.log('Handling resize in DynamicDiptychComponent');
       if (fabricCanvas.current && containerRef.current) {
