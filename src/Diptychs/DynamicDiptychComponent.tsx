@@ -46,6 +46,11 @@ interface LayoutSpecs {
     mirroredPhotoPlacement: Placement;
   }
 
+  type CanvasStyles = React.CSSProperties & {
+    visibility: 'visible' | 'hidden';
+  };
+  
+
   const DynamicDiptychComponent: React.FC<SetPhotoIdProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight }) => {
     console.log('DynamicDiptychComponent Mounted', { DiptychIdCode, photoId });
     const { selectedPhoto, setFabricCanvasRef, clearFabricCanvasRef, diptychConfigurations } = useStore();
@@ -62,6 +67,12 @@ interface LayoutSpecs {
       mirroredShapesImg: null
     });
     
+    const canvasStyles: CanvasStyles = {
+      display: 'block', // Always display as a block
+      visibility: isCanvasReady ? 'visible' : 'hidden', // Control visibility instead of rendering
+      width: '100%',
+      height: '100%'
+    };
 
     const fetchPhotoDetails = useCallback(async (photoId: string) => {
       console.log('fetchPhotoDetails triggered');
@@ -103,11 +114,12 @@ interface LayoutSpecs {
   
 
   useEffect(() => {
-    console.log('useEffect for component setup triggered', { DiptychIdCode, photoId, selectedPhoto });
+    console.log('useEffect for component setup and shapes visibility triggered', { DiptychIdCode, photoId, selectedPhoto, areShapesVisible });
     let isMounted = true;
-
-    if (!DiptychIdCode) {
-      console.log("Waiting for DiptychIdCode");
+  
+    // Early exit if we don't have the necessary IDs.
+    if (!DiptychIdCode || !photoId) {
+      console.log("Waiting for DiptychIdCode and photoId");
       return;
     }
 
@@ -144,7 +156,7 @@ interface LayoutSpecs {
         const result = await layoutDiptych(fabricCanvas.current, layoutSpecs, false, areShapesVisible);
         const { shapesImg, mirroredShapesImg } = result || {};
         shapeRefs.current = { shapesImg, mirroredShapesImg };
-
+  
         // Ensure canvas is properly scaled before making it visible
         scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {
           if (updateHeight) {
@@ -152,18 +164,16 @@ interface LayoutSpecs {
           }
           // Set canvas ready state after scaling
           setIsCanvasReady(true);
-
         });
-        
+  
         onCanvasReady?.(fabricCanvas.current, DiptychIdCode);
-
-        console.log('Canvas is ready. Setting initial visibility for shapes.');
-        // Set initial visibility for shapes
+  
+        console.log('Canvas setup complete. Ensuring shapes visibility is correct.');
         updateShapesVisibility();
       }
     }
-
-    setupCanvas();
+  
+    setupCanvas();  
 
     return () => {
       isMounted = false;
@@ -194,7 +204,7 @@ interface LayoutSpecs {
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <canvas ref={canvasRef} style={{ display: isCanvasReady ? 'block' : 'none', width: '100%', height: '100%' }} />
+      <canvas ref={canvasRef} style={canvasStyles} />
     </div>
   );
 };

@@ -151,7 +151,7 @@ const ExhibitionSpace = () => {
   
  // Updating currentIndex based on photoID
   useEffect(() => {
-    console.log("trying to updates currentIndex if photoID & sortedPhotos are ready");
+   // console.log("trying to update currentIndex if photoID & sortedPhotos are ready");
     if (photoID && sortedPhotos.length > 0) {
       console.log("Updating currentIndex - photoID:", photoID, "sortedPhotos:", sortedPhotos);
       const newIndex = sortedPhotos.findIndex(photo => photo.photoID === photoID);
@@ -199,12 +199,12 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
   return <div>Loading Exhibition...</div>;
 }
 
-  console.log('Selected photo in ExhibitionSpace: ', photoID);
-  console.log("Before rendering in ExhibitionSpace, isContainerReady:", isContainerReady, "photoID:", photoID);
-  console.log(`selectedDiptychIdCode is ${selectedDiptychIdCode}`);
-  console.log(`Accessing layoutSpecs for ${selectedDiptychIdCode}`);
-  console.log(`Accessing fabricCanvasMap for ${fabricCanvasMap}`); 
-  console.log(`Accessing layoutSpecsMap for ${layoutSpecsMap}`); 
+  //console.log('Selected photo in ExhibitionSpace: ', photoID);
+  //console.log("Before rendering in ExhibitionSpace, isContainerReady:", isContainerReady, "photoID:", photoID);
+  //console.log(`selectedDiptychIdCode is ${selectedDiptychIdCode}`);
+  //console.log(`Accessing layoutSpecs for ${selectedDiptychIdCode}`);
+  //console.log(`Accessing fabricCanvasMap for ${fabricCanvasMap}`); 
+  //console.log(`Accessing layoutSpecsMap for ${layoutSpecsMap}`); 
   
   return (
     <div className={styles.exhibitionSpace}>

@@ -2,7 +2,12 @@
 import { fabric } from 'fabric';
 
 const initializeCanvas = (canvasRef, config) => {
-  if (!canvasRef.current) return null;
+  console.log('initializeCanvas called', { canvasRef, config });
+
+  if (!canvasRef.current) {
+    console.log('Canvas ref is not currently set.');
+    return null;
+  }
 
   const canvas = new fabric.Canvas(canvasRef.current, {
     selection: false,
@@ -11,7 +16,10 @@ const initializeCanvas = (canvasRef, config) => {
     height: config.originalHeight,
   });
 
+  console.log('Fabric canvas created', { canvas });
+
   return canvas;
 };
+
 
 export default initializeCanvas;
