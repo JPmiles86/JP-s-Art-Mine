@@ -71,6 +71,7 @@ const ExhibitionSpace = () => {
   useEffect(() => {
     if (filter) {
       setCurrentFilter(filter);
+      console.log("ExhibitionSpace useEffect - filter changed", filter);
     }
   }, [filter, setCurrentFilter]);
 
@@ -132,6 +133,7 @@ const ExhibitionSpace = () => {
   // Add a toggle function for the shape visibility
   const toggleShapesVisibility = useCallback(() => {
     setAreShapesVisible(prev => !prev);
+    console.log("Toggling shapes visibility");
   }, []);
 
   const onCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {

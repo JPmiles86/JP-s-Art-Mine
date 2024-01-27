@@ -8,6 +8,8 @@ import { scaleCanvas } from './scaleCanvas';
 import { layoutDiptych, LayoutDiptychResult } from './layoutDiptych';
 import initializeCanvas from './initializeCanvas';
 import applyLayoutAndScaling from './applyLayoutAndScaling';
+import useFetchPhotoDetails from './useFetchPhotoDetails';
+
 
 // Helper function to get photo URL
 function getPhotoUrl(imagePath: string) {
@@ -58,6 +60,7 @@ interface LayoutSpecs {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvas = useRef<fabric.Canvas | null>(null);
     const shapesVisibilityRef = useRef(areShapesVisible);
+    const fetchPhotoDetails = useFetchPhotoDetails();
 
     const shapeRefs = useRef<{
       shapesImg: fabric.Image | null,
@@ -74,20 +77,20 @@ interface LayoutSpecs {
       height: '100%'
     };
 
-    const fetchPhotoDetails = useCallback(async (photoId: string) => {
-      console.log('fetchPhotoDetails triggered');
-      try {
-        const response = await fetch(`/api/photos/${photoId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error('Error fetching photo details:', error);
-        return null;
-      }
-    }, []);
+ //   const fetchPhotoDetails = useCallback(async (photoId: string) => {
+ //     console.log('fetchPhotoDetails triggered');
+ //     try {
+ //       const response = await fetch(`/api/photos/${photoId}`);
+ //       if (!response.ok) {
+ //         throw new Error(`HTTP error! status: ${response.status}`);
+ //       }
+ //       const data = await response.json();
+ //       return data;
+ //     } catch (error) {
+ //       console.error('Error fetching photo details:', error);
+ //       return null;
+ //     }
+ //   }, []);
 
   // Function to update shapes visibility on canvas
   const updateShapesVisibility = useCallback(() => {

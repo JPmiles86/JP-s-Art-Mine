@@ -1,4 +1,4 @@
-// initializeCanvas.js
+// my-gallery/src/Diptychs/initializeCanvas.js
 import { fabric } from 'fabric';
 
 const initializeCanvas = (canvasRef, config) => {
