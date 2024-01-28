@@ -19,7 +19,8 @@ interface DownloadButtonProps {
 const DownloadButton: React.FC<DownloadButtonProps> = ({ photoId, DiptychIdCode, fabricCanvasRef, layoutSpecs, areShapesVisible, size}) => {
   const buttonClass = size === 'small' ? `${buttonStyles.button} ${buttonStyles.small}` : buttonStyles.button;
 
-  if (photoId && DiptychIdCode && fabricCanvasRef && layoutSpecs) {
+  //if (photoId && DiptychIdCode && fabricCanvasRef && layoutSpecs) {
+    if (DiptychIdCode) {  
     console.log('DownloadButton Props:', { photoId, DiptychIdCode, fabricCanvasRef, layoutSpecs });
   }
     const handleDownload = async () => {

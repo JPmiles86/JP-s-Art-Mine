@@ -21,6 +21,17 @@ export const layoutDiptych = async (
     try {
     console.log("Starting layoutDiptych function");
 
+    if (!canvas) {
+      console.error("Canvas is not available in layoutDiptych");
+      return {
+        frameImg: null,
+        photoImg: null,
+        mirroredImg: null,
+        shapesImg: null,
+        mirroredShapesImg: null
+      };
+    }    
+
     // Log layoutSpecs details
     console.log("Layout Specs:", layoutSpecs);
 

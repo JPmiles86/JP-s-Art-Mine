@@ -104,9 +104,6 @@ export interface Store {
   };
   downloadURLs: DownloadURLs;
   canvasRefs: Map<string, React.RefObject<HTMLCanvasElement>>;
-  fabricCanvasRefs: Map<string, fabric.Canvas>;
-  layoutSpecsMap: Map<string, LayoutSpecs>;
-  diptychConfigurations: typeof diptychConfigurations;
   selectedDiptychIdCode: string | null;
   diptychSVGs: DiptychSVG[]; // Add a new state property to hold the diptych data
   isMerged: string;
@@ -118,13 +115,9 @@ export interface Store {
   setFrameId: (FrameId: number) => void;
   setSelectedDiptychIdCode: (diptychIdCode: string | null) => void;
   clearSelectedDiptychIdCode: () => void;
-  setLayoutSpecs: (diptychIdCode: string, specs: LayoutSpecs) => void;
-  setFabricCanvasRef: (diptychIdCode: string, canvas: fabric.Canvas) => void;
-  clearFabricCanvasRef: (diptychIdCode: string) => void;
   setCanvasRef: (diptychIdCode: string, ref: React.RefObject<HTMLCanvasElement>) => void;
   clearCanvasRef: (diptychIdCode: string) => void;
   setDownloadURL: (diptychIdCode: string, url: string) => void;
-  // setFrameId: (color: number | 'white' | 'black' | 'unframed') => void;
   clearPhotos: () => void;
   setPreviousFilter: (filter: string) => void;
   setSeriesFilter: (series: string) => void;
@@ -182,19 +175,8 @@ const useStore = create<Store>((set, get) => ({
   selectedSeries: '',
   seriesFilter: '',
   previousFilter: '',
-  // FrameId: 'white', 
   downloadURLs: {},
   canvasRefs: new Map(),
-  fabricCanvasRefs: new Map(),
-  layoutSpecsMap: new Map(),
-  diptychConfigurations,
-    setLayoutSpecs: (diptychIdCode, specs) => set(state => {
-    console.log(`Before setting layout specs for ${diptychIdCode}`);
-    const newMap = new Map(state.layoutSpecsMap);
-    newMap.set(diptychIdCode, specs);
-    console.log(`Setting layout specs for ${diptychIdCode}:`, specs);
-    return { layoutSpecsMap: newMap };
-  }),  
   selectedDiptychIdCode: null,
   diptychSVGs: [], // Initialize the state
   isMerged: 'Entangled', // default value
@@ -216,16 +198,6 @@ const useStore = create<Store>((set, get) => ({
   set({ selectedDiptychIdCode: diptychIdCode });
   },
   clearSelectedDiptychIdCode: () => set({ selectedDiptychIdCode: null }),
-  setFabricCanvasRef: (diptychIdCode, canvas) => set((state) => {
-    const newRefs = new Map(state.fabricCanvasRefs);
-    newRefs.set(diptychIdCode, canvas);
-    return { fabricCanvasRefs: newRefs };
-  }),  
-  clearFabricCanvasRef: (diptychIdCode) => set((state) => {
-    const newRefs = new Map(state.fabricCanvasRefs);
-    newRefs.delete(diptychIdCode);
-    return { fabricCanvasRefs: newRefs };
-  }),
   setCanvasRef: (diptychIdCode, ref) => set((state) => {
     const newRefs = new Map(state.canvasRefs);
     newRefs.set(diptychIdCode, ref);

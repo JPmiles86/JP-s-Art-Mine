@@ -5,6 +5,7 @@ export interface DiptychConfigurations {
   [key: string]: LayoutSpecs; // This allows indexing with a string
 }
 
+export type { LayoutSpecs }; 
 export const diptychConfigurations = {
     'E_2x3_CD_P_U': {
       frameImagePath: `${process.env.PUBLIC_URL}/assets/images/frames/2x3-entangled-portrait-unframed.png`,

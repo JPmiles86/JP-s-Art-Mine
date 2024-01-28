@@ -12,7 +12,6 @@ import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
 import DiptychControls from '../Diptychs/DiptychControls';
 import useDiptychInfo from '../Diptychs/useDiptychInfo';
 import useGalleryNavigation from '../utils/useGalleryNavigation';
-import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
 import { fabric } from 'fabric';
 
 
@@ -56,11 +55,11 @@ const ExhibitionSpace = () => {
   const [isContainerReady, setIsContainerReady] = useState(false);
   const galleryRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [layoutSpecsMap, setLayoutSpecsMap] = useState<Map<string, LayoutSpecs>>(new Map());
+  const layoutSpecsMap = useStore(state => state.layoutSpecsMap);
+  const fabricCanvasMap = useStore(state => state.fabricCanvasRefs);
   const [areShapesVisible, setAreShapesVisible] = useState(false);
   const { diptychInfo, isLoading: diptychInfoLoading } = useDiptychInfo(selectedDiptychIdCode);
   const [isLoading, setIsLoading] = useState(true);
-  const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
   
   // Ensure that selectedPhotograph is not undefined when using useGalleryNavigation
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(
@@ -69,10 +68,14 @@ const ExhibitionSpace = () => {
   );
   const [photosError, setPhotosError] = useState<string | null>(null);
 
-  const handleLayoutSpecsReady = useCallback((layoutSpecs: LayoutSpecs) => {
-    setLayoutSpecsMap(prevMap => new Map(prevMap).set(layoutSpecs.DiptychIdCode, layoutSpecs));
-  }, []);  
-
+  useEffect(() => {
+    console.log('ExhibitionSpace Mounted');
+  
+    return () => {
+      console.log('ExhibitionSpace Unmounted');
+    };
+  }, []);
+  
   useEffect(() => {
     if (filter) {
       setCurrentFilter(filter);
@@ -143,8 +146,18 @@ const ExhibitionSpace = () => {
 
   const onCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {
     console.log(`Canvas ready for ${selectedDiptychIdCode}`, canvasRef);
-    setFabricCanvas(canvasRef); // Set the local state for fabric canvas
-  }, []);  
+  
+    // Set the fabric canvas reference in the global state
+    useStore.getState().setFabricCanvasRef(selectedDiptychIdCode, canvasRef);
+    console.log(`OnCanvasReady Set the fabric canvas reference in the global state ${selectedDiptychIdCode}:`, selectedDiptychIdCode, canvasRef);
+  
+    // Retrieve the layout specs from the store
+    const currentLayoutSpecs = layoutSpecsMap.get(selectedDiptychIdCode);
+    console.log(`Retrieved the layout specs from the store ${selectedDiptychIdCode}`);
+    if (!currentLayoutSpecs) {
+      console.log(`Layout specs not found for ${selectedDiptychIdCode}`);
+    }
+  }, [layoutSpecsMap]); 
   
  // Updating currentIndex based on photoID
   useEffect(() => {
@@ -161,6 +174,7 @@ const ExhibitionSpace = () => {
   // Function to handle canvas ready from Diptych component
   const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {
     console.log(`handleCanvasReady for Canvas ready for ${selectedDiptychIdCode}:`, canvasRef);
+    useStore.getState().setFabricCanvasRef(selectedDiptychIdCode, canvasRef);
   }, []); // Add dependencies if needed
 
   // UseEffect to check container size
@@ -183,14 +197,6 @@ const ExhibitionSpace = () => {
       };
     }, [photoID, isLoading]);
 
-    const updateLayoutSpecs = (diptychIdCode: string, specs: LayoutSpecs) => {
-      setLayoutSpecsMap(prevMap => {
-        const newMap = new Map(prevMap);
-        newMap.set(diptychIdCode, specs);
-        return newMap;
-      });
-    };
-    
 if (!photoID) {
   return <div>No photo selected.</div>;
   }
@@ -202,6 +208,15 @@ if (error) {
 if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galleryBackground) {
   return <div>Loading Exhibition...</div>;
 }
+
+  //console.log('Selected photo in ExhibitionSpace: ', photoID);
+  //console.log("Before rendering in ExhibitionSpace, isContainerReady:", isContainerReady, "photoID:", photoID);
+  //console.log(`selectedDiptychIdCode is ${selectedDiptychIdCode}`);
+  //console.log(`Accessing layoutSpecs for ${selectedDiptychIdCode}`);
+  //console.log(`Accessing fabricCanvasMap for ${fabricCanvasMap}`); 
+  //console.log(`Accessing layoutSpecsMap for ${layoutSpecsMap}`); 
+  console.log('Rendering DynamicDiptychComponent', { isContainerReady, photoID, selectedDiptychIdCode });
+
   
   return (
     <div className={styles.exhibitionSpace}>
@@ -228,7 +243,6 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
               onCanvasReady={onCanvasReady}
               DiptychIdCode={selectedDiptychIdCode}
               areShapesVisible={areShapesVisible}
-              onLayoutSpecsReady={handleLayoutSpecsReady}
             />
             ) : (
               <div>No photo selected.</div>
@@ -240,8 +254,8 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
       <DiptychControls
             navigateToInquiry={navigateToInquiry}
             selectedPhoto={selectedPhotograph}
-            layoutSpecs={selectedDiptychIdCode ? layoutSpecsMap.get(selectedDiptychIdCode) : undefined}
-            fabricCanvasRef={fabricCanvas} 
+            layoutSpecs={selectedDiptychIdCode ? layoutSpecsMap.get(selectedDiptychIdCode) : undefined} 
+            fabricCanvasRef={selectedDiptychIdCode ? fabricCanvasMap.get(selectedDiptychIdCode) : undefined}
             areShapesVisible={areShapesVisible}
             toggleShapesVisibility={toggleShapesVisibility}
           >

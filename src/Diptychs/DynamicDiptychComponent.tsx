@@ -2,28 +2,29 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { fabric } from 'fabric';
-import useStore from '../utils/store';
 import urlConfig from '../screens/urlConfig';
 import { scaleCanvas } from './scaleCanvas';
-import { layoutDiptych, LayoutDiptychResult } from './layoutDiptych';
+import { layoutDiptych } from './layoutDiptych';
 import initializeCanvas from './initializeCanvas';
-import applyLayoutAndScaling from './applyLayoutAndScaling';
 import useFetchPhotoDetails from './useFetchPhotoDetails';
-
+import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
+import { LayoutSpecs } from './LayoutSpecs';
+import applyLayoutAndScaling from './applyLayoutAndScaling';
 
 // Helper function to get photo URL
-function getPhotoUrl(imagePath: string) {
+export function getPhotoUrl(imagePath: string) {
   const pathIndex = imagePath.indexOf('/originals');
   return pathIndex >= 0 ? `${urlConfig.baseURL}${imagePath.slice(pathIndex + '/originals'.length)}` : imagePath;
 }
 
-interface SetPhotoIdProps {
+interface DynamicDiptychComponentProps {
   photoId: string;
   containerRef: React.RefObject<HTMLDivElement>;
   onCanvasReady: (canvasRef: fabric.Canvas, DiptychIdCode: string) => void;
   DiptychIdCode: string;
   areShapesVisible?: boolean;
-  updateHeight?: (height: number, diptychIdCode: string) => void;  // Update here
+  updateHeight?: (height: number, diptychIdCode: string) => void;
+  onLayoutSpecsReady?: (layoutSpecs: LayoutSpecs) => void; // New callback prop
 }
 
 interface Placement {
@@ -35,31 +36,18 @@ interface Placement {
     flipX?: boolean;
   }
 
-interface LayoutSpecs {
-    photoId: string;
-    DiptychIdCode: string;
-    frameImagePath: string;
-    shapesImagePath: string;
-    photoUrl: string;
-    mirroredPhotoUrl: string;
-    originalWidth: number;
-    originalHeight: number;
-    photoPlacement: Placement;
-    mirroredPhotoPlacement: Placement;
-  }
-
   type CanvasStyles = React.CSSProperties & {
     visibility: 'visible' | 'hidden';
   };
   
 
-  const DynamicDiptychComponent: React.FC<SetPhotoIdProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight }) => {
+  const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight, onLayoutSpecsReady }) => {
     console.log('DynamicDiptychComponent Mounted', { DiptychIdCode, photoId });
-    const { selectedPhoto, setFabricCanvasRef, clearFabricCanvasRef, diptychConfigurations } = useStore();
     const [isCanvasReady, setIsCanvasReady] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvas = useRef<fabric.Canvas | null>(null);
     const shapesVisibilityRef = useRef(areShapesVisible);
+    const config = diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations];
     const fetchPhotoDetails = useFetchPhotoDetails();
 
     const shapeRefs = useRef<{
@@ -76,21 +64,6 @@ interface LayoutSpecs {
       width: '100%',
       height: '100%'
     };
-
- //   const fetchPhotoDetails = useCallback(async (photoId: string) => {
- //     console.log('fetchPhotoDetails triggered');
- //     try {
- //       const response = await fetch(`/api/photos/${photoId}`);
- //       if (!response.ok) {
- //         throw new Error(`HTTP error! status: ${response.status}`);
- //       }
- //       const data = await response.json();
- //       return data;
- //     } catch (error) {
- //       console.error('Error fetching photo details:', error);
- //       return null;
- //     }
- //   }, []);
 
   // Function to update shapes visibility on canvas
   const updateShapesVisibility = useCallback(() => {
@@ -117,7 +90,7 @@ interface LayoutSpecs {
   
 
   useEffect(() => {
-    console.log('useEffect for component setup and shapes visibility triggered', { DiptychIdCode, photoId, selectedPhoto, areShapesVisible });
+    console.log('useEffect for component setup and shapes visibility triggered', { DiptychIdCode, photoId, areShapesVisible });
     let isMounted = true;
   
     // Early exit if we don't have the necessary IDs.
@@ -138,10 +111,7 @@ interface LayoutSpecs {
       fabricCanvas.current = initializeCanvas(canvasRef, config);
       if (!fabricCanvas.current) return;
 
-       // Update fabricCanvasRef in store
-      setFabricCanvasRef(DiptychIdCode, fabricCanvas.current);
-
-      const photoDetails = photoId ? await fetchPhotoDetails(photoId) : selectedPhoto;
+      const photoDetails = photoId ? await fetchPhotoDetails(photoId):null;
       if (!photoDetails) return;
 
        const layoutSpecs = {
@@ -152,8 +122,8 @@ interface LayoutSpecs {
         mirroredPhotoUrl: getPhotoUrl(photoDetails.imagePath),
       };
 
-      useStore.getState().setLayoutSpecs(DiptychIdCode, layoutSpecs);
-      console.log(`Layout specs set for ${DiptychIdCode}:`, layoutSpecs);
+      // Call the new callback with the constructed layout specs
+      onLayoutSpecsReady?.(layoutSpecs);
 
       if (isMounted) {
         const result = await layoutDiptych(fabricCanvas.current, layoutSpecs, false, areShapesVisible);
@@ -180,11 +150,10 @@ interface LayoutSpecs {
 
     return () => {
       isMounted = false;
-      clearFabricCanvasRef(DiptychIdCode);
       fabricCanvas.current?.dispose();
       console.log('DynamicDiptychComponent Unmounted', { DiptychIdCode });
     };
-  }, [photoId, selectedPhoto, DiptychIdCode, areShapesVisible, fetchPhotoDetails, updateShapesVisibility]);
+  }, [photoId, DiptychIdCode, areShapesVisible, fetchPhotoDetails]);
 
   useEffect(() => {
     console.log('useEffect for resize handling triggered', { DiptychIdCode });
