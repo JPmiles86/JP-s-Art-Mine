@@ -16,10 +16,21 @@ export const layoutDiptych = async (
   canvas: fabric.Canvas, 
   layoutSpecs: LayoutSpecs, 
   useOffscreenCanvas = false,
-  areShapesVisible: boolean = false // Default to false
+  areShapesVisible: boolean = false 
   ): Promise<LayoutDiptychResult> => {
     try {
     console.log("Starting layoutDiptych function");
+
+    if (!canvas || !canvas.getElement()) {
+      console.error("Canvas is not available in layoutDiptych");
+      return {
+        frameImg: null,
+        photoImg: null,
+        mirroredImg: null,
+        shapesImg: null,
+        mirroredShapesImg: null
+      };
+    }    
 
     // Log layoutSpecs details
     console.log("Layout Specs:", layoutSpecs);
@@ -66,7 +77,7 @@ export const layoutDiptych = async (
       fabric.Image.fromURL(layoutSpecs.photoUrl, resolve, { crossOrigin: 'anonymous' })
     );
     photoImg.set(layoutSpecs.photoPlacement);
-
+   
     // Load and add mirrored photo
     console.log("Loading mirrored photo image from:", layoutSpecs.mirroredPhotoUrl);
     const mirroredImg = await new Promise<fabric.Image>((resolve) =>

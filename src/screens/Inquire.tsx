@@ -198,7 +198,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
           </select>
         </div>
       </div>
-      {selectedPhotograph ? (
+      {selectedPhotograph && selectedDiptychIdCode? (
         <Box>
           {renderDiptych(selectedDiptychIdCode || '', selectedPhotograph.photoID)}
           <Typography style={{ textAlign: 'center' }}>Description for {selectedDiptychIdCode}</Typography>

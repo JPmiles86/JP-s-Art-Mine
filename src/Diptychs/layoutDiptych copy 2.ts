@@ -16,12 +16,12 @@ export const layoutDiptych = async (
   canvas: fabric.Canvas, 
   layoutSpecs: LayoutSpecs, 
   useOffscreenCanvas = false,
-  areShapesVisible: boolean = false // Default to false
+  areShapesVisible: boolean = false 
   ): Promise<LayoutDiptychResult> => {
     try {
     console.log("Starting layoutDiptych function");
 
-    if (!canvas) {
+    if (!canvas || !canvas.getElement()) {
       console.error("Canvas is not available in layoutDiptych");
       return {
         frameImg: null,
@@ -41,6 +41,16 @@ export const layoutDiptych = async (
        fabric.Image.fromURL(layoutSpecs.frameImagePath, resolve, { crossOrigin: 'anonymous' })
      );
      console.log("Frame image loaded successfully");
+     // After loading the frame image
+      console.log("Frame image loaded with placement:", {
+        left: frameImg.left,
+        top: frameImg.top,
+        scaleX: frameImg.scaleX,
+        scaleY: frameImg.scaleY,
+        originX: frameImg.originX,
+        originY: frameImg.originY
+      });
+
 
     // Create a halo shadow frame
     const haloFrame = fabric.util.object.clone(frameImg);
@@ -77,6 +87,15 @@ export const layoutDiptych = async (
       fabric.Image.fromURL(layoutSpecs.photoUrl, resolve, { crossOrigin: 'anonymous' })
     );
     photoImg.set(layoutSpecs.photoPlacement);
+    // After loading the photo image
+    console.log("Photo image loaded with placement:", {
+      left: photoImg.left,
+      top: photoImg.top,
+      scaleX: photoImg.scaleX,
+      scaleY: photoImg.scaleY,
+      originX: photoImg.originX,
+      originY: photoImg.originY
+    });
 
     // Load and add mirrored photo
     console.log("Loading mirrored photo image from:", layoutSpecs.mirroredPhotoUrl);
@@ -84,6 +103,15 @@ export const layoutDiptych = async (
       fabric.Image.fromURL(layoutSpecs.mirroredPhotoUrl, resolve, { crossOrigin: 'anonymous' })
     );
     mirroredImg.set(layoutSpecs.mirroredPhotoPlacement);
+    // After loading the mirrored photo image
+    console.log("Mirrored photo image loaded with placement:", {
+      left: mirroredImg.left,
+      top: mirroredImg.top,
+      scaleX: mirroredImg.scaleX,
+      scaleY: mirroredImg.scaleY,
+      originX: mirroredImg.originX,
+      originY: mirroredImg.originY
+    });
 
     // Load shapes if areShapesVisible is true
     let shapesImg = null, mirroredShapesImg = null;
@@ -112,8 +140,20 @@ export const layoutDiptych = async (
     // Add images to the canvas
     console.log("Adding images to canvas");
     canvas.add(frameImg);
+    console.log("Frame image added to canvas at position:", {
+      left: frameImg.left,
+      top: frameImg.top
+    });
     canvas.add(photoImg);
+    console.log("Frame image added to canvas at position:", {
+      left: frameImg.left,
+      top: frameImg.top
+    });
     canvas.add(mirroredImg);
+    console.log("Mirrored photo image added to canvas at position:", {
+      left: mirroredImg.left,
+      top: mirroredImg.top
+    });
 
     if (areShapesVisible && shapesImg && mirroredShapesImg) {
       canvas.add(shapesImg);
@@ -124,6 +164,15 @@ export const layoutDiptych = async (
     // Group all objects together
     console.log("Grouping all objects");
     const allObjects = canvas.getObjects();
+    console.log("Objects on canvas before grouping:", allObjects.map(obj => {
+      return {
+        type: obj.type,
+        left: obj.left,
+        top: obj.top,
+        scaleX: obj.scaleX,
+        scaleY: obj.scaleY
+      };
+    }));
     const group = new fabric.Group(allObjects, {
       originX: 'center',
       originY: 'center',
@@ -134,6 +183,10 @@ export const layoutDiptych = async (
     // Clear the canvas and add the group
     console.log("Clearing canvas and adding group");
     canvas.clear().add(group);
+    console.log("Group added to canvas with position:", {
+      left: group.left,
+      top: group.top
+    });
     canvas.renderAll();
     console.log("layoutDiptych function completed successfully");
 

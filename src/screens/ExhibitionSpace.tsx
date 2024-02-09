@@ -68,43 +68,79 @@ const ExhibitionSpace = () => {
     currentFilter
   );
   const [photosError, setPhotosError] = useState<string | null>(null);
+  
+  // Use React.memo for components like DynamicDiptychComponent
+  const DynamicDiptychComponentMemoized = React.memo(DynamicDiptychComponent);
 
-  const handleLayoutSpecsReady = useCallback((layoutSpecs: LayoutSpecs) => {
+
+  const handleLayoutSpecsReadyMemoized = useCallback((layoutSpecs: LayoutSpecs) => {
+    console.log('handleLayoutSpecsReady called with:', layoutSpecs);
     setLayoutSpecsMap(prevMap => new Map(prevMap).set(layoutSpecs.DiptychIdCode, layoutSpecs));
-  }, []);  
+  }, []);
 
-  useEffect(() => {
-    if (filter) {
-      setCurrentFilter(filter);
-      console.log("ExhibitionSpace useEffect - filter changed", filter);
-    }
-  }, [filter, setCurrentFilter]);
+ useEffect(() => {
+  console.log(`[ExhibitionSpace] Current filter: ${currentFilter}, New filter: ${filter}`);
+  if (filter && filter !== currentFilter) {
+    setCurrentFilter(filter);
+    console.log("[ExhibitionSpace] Filter updated to:", filter);
+  }
+}, [filter, setCurrentFilter, currentFilter]);
 
    // Fetching photos
    useEffect(() => {
-    console.log("Checking if photos need to be fetched");
-    if (sortedPhotos.length === 0 && currentFilter) {
-      console.log('Fetching photos as sortedPhotos is empty and currentFilter is set:', currentFilter);
-      fetchPhotosService(
-        setPhotosError, 
-        setLoading, 
-        setPhotos,
-        setInitialPhotoFetch,
-        currentFilter,
-        initialPhotoFetch
-      );
+    let isMounted = true;
+  
+    async function initializeGallery() {
+      if (!sortedPhotos.length && currentFilter && isMounted) { // Check isMounted here might not be necessary, but added for illustration
+        console.log('[ExhibitionSpace] Fetching photos...');
+        await fetchPhotosService(
+          setPhotosError, 
+          setLoading, 
+          setPhotos,
+          setInitialPhotoFetch,
+          currentFilter,
+          initialPhotoFetch
+        );
+      }
+  
+      // If your logic after fetching photos needs to update state, check isMounted before doing so
+      if (isMounted) {
+        const photo = sortedPhotos.find(photo => photo.photoID === photoID);
+        if (photo) {
+          console.log('[ExhibitionSpace] Selected photo found:', photo);
+          // Perform actions dependent on the selected photo here
+        }
+      }
     }
-  }, [sortedPhotos, currentFilter, setPhotos, setInitialPhotoFetch]);
+  
+    initializeGallery();
+  
+    return () => { isMounted = false; };
+  }, [currentFilter, photoID, sortedPhotos, initialPhotoFetch]);
+     
+   
+//   useEffect(() => {
+//    console.log("Checking if photos need to be fetched");
+//    if (sortedPhotos.length === 0 && currentFilter) {
+//      console.log('Fetching photos as sortedPhotos is empty and currentFilter is set:', currentFilter);
+//      fetchPhotosService(
+//        setPhotosError, 
+//        setLoading, 
+//        setPhotos,
+//        setInitialPhotoFetch,
+//        currentFilter,
+//        initialPhotoFetch
+//      );
+//    }
+//  }, [sortedPhotos, currentFilter, setPhotos, setInitialPhotoFetch]);
   
   // Function to navigate to the inquiry page
-  const navigateToInquiry = () => {
+  const navigateToInquiryMemoized = useCallback(() => {
     if (photoID) {
       navigate(`/${currentFilter}/${photoID}/inquire`);
       console.log("Navigating to the inquire page.");
-    } else {
-      console.log("No photo selected, unable to navigate to the inquiry page.");
     }
-  };
+  }, [navigate, photoID, currentFilter]);
 
   const handleChangeGalleryBackground = useCallback((backgroundImage: string) => {
     setGalleryBackground(backgroundImage);
@@ -184,6 +220,7 @@ const ExhibitionSpace = () => {
     }, [photoID, isLoading]);
 
     const updateLayoutSpecs = (diptychIdCode: string, specs: LayoutSpecs) => {
+      console.log('[ExhibitionSpace] setLayoutSpecsMap called with a newMap');
       setLayoutSpecsMap(prevMap => {
         const newMap = new Map(prevMap);
         newMap.set(diptychIdCode, specs);
@@ -203,6 +240,8 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
   return <div>Loading Exhibition...</div>;
 }
   
+console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selectedDiptychIdCode });
+
   return (
     <div className={styles.exhibitionSpace}>
       <ExhibitionHeader
@@ -228,7 +267,7 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
               onCanvasReady={onCanvasReady}
               DiptychIdCode={selectedDiptychIdCode}
               areShapesVisible={areShapesVisible}
-              onLayoutSpecsReady={handleLayoutSpecsReady}
+              onLayoutSpecsReady={handleLayoutSpecsReadyMemoized}
             />
             ) : (
               <div>No photo selected.</div>
@@ -238,7 +277,7 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
       </div>
       <div>
       <DiptychControls
-            navigateToInquiry={navigateToInquiry}
+            navigateToInquiry={navigateToInquiryMemoized}
             selectedPhoto={selectedPhotograph}
             layoutSpecs={selectedDiptychIdCode ? layoutSpecsMap.get(selectedDiptychIdCode) : undefined}
             fabricCanvasRef={fabricCanvas} 
@@ -251,5 +290,6 @@ if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galle
     </div>
 );
 };
+console.log('[ExhibitionSpace] Render end');
 
 export default ExhibitionSpace;
