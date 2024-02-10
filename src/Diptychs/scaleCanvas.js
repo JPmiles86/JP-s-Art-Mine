@@ -8,7 +8,7 @@ export function scaleCanvas(canvas, originalWidth, originalHeight, container, ca
 
   // Dynamically calculate the container height based on the aspect ratio
   const containerHeight = containerWidth / aspectRatio;
-  container.style.height = `${containerHeight}px`;
+  // container.style.height = `${containerHeight}px`;
 
   let scaleFactor = containerWidth / originalWidth;
 

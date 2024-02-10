@@ -8,7 +8,7 @@ import getPhotoUrl  from '../Diptychs/DynamicDiptychComponent'; // Import getPho
 import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
 import DownloadButton from '../Diptychs/DownloadButton'; 
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs'; 
-import './Inquire.module.css'; 
+// import './Inquire.module.css'; 
 import useGalleryNavigation from '../utils/useGalleryNavigation'; // Import the hook
 import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
