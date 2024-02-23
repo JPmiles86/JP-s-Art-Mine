@@ -6,9 +6,10 @@ import urlConfig from '../screens/urlConfig';
 import { scaleCanvas } from './scaleCanvas';
 import { layoutDiptych } from './layoutDiptych';
 import initializeCanvas from './initializeCanvas';
-// import useFetchPhotoDetails from './useFetchPhotoDetails';
+import useFetchPhotoDetails from './useFetchPhotoDetails';
 import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
 import { LayoutSpecs } from './LayoutSpecs';
+import useStore from '../utils/store';
 
 // Helper function to get photo URL
 export function getPhotoUrl(imagePath: string) {
@@ -18,7 +19,6 @@ export function getPhotoUrl(imagePath: string) {
 
 interface DynamicDiptychComponentProps {
   photoId: string;
-  imagePath: string;
   containerRef: React.RefObject<HTMLDivElement>;
   onCanvasReady: (canvasRef: fabric.Canvas, DiptychIdCode: string) => void;
   DiptychIdCode: string;
@@ -41,18 +41,19 @@ interface Placement {
   };
   
 
-  const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = ({ photoId, imagePath, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight, onLayoutSpecsReady }) => {
+  const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = ({ photoId, containerRef, onCanvasReady, DiptychIdCode, areShapesVisible, updateHeight, onLayoutSpecsReady }) => {
     console.log('DynamicDiptychComponent Mounted', { DiptychIdCode, photoId });
     const [isCanvasReady, setIsCanvasReady] = useState(false);
+    const [isFabricCanvasReady, setIsFabricCanvasReady] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvas = useRef<fabric.Canvas | null>(null);
     const shapesVisibilityRef = useRef(areShapesVisible);
     const config = diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations];
-    const isMounted = useRef(false);
-     // const fetchPhotoDetails = useFetchPhotoDetails();
-    // const [isMounted, setIsMounted] = useState(true);
-
-
+    const photos = useStore(state => state.photos);
+    const photoDetails = photos.find(photo => photo.photoID === photoId);
+    const [isMounted, setIsMounted] = useState(true);
+    const photoDetailsLoaded = useStore(state => state.photoDetailsLoaded);
+      
     const shapeRefs = useRef<{
       shapesImg: fabric.Image | null,
       mirroredShapesImg: fabric.Image | null
@@ -81,7 +82,7 @@ interface Placement {
       console.log('Canvas or shape references are not ready.');
     }
   }, []);  
-
+  
   useEffect(() => {
     console.log('useEffect for shapesVisibilityRef and isCanvasReady triggered', { areShapesVisible, isCanvasReady });
     shapesVisibilityRef.current = areShapesVisible;
@@ -92,93 +93,92 @@ interface Placement {
   }, [areShapesVisible, isCanvasReady, updateShapesVisibility]);  
   
   useEffect(() => {
-    isMounted.current = true;
-
-    console.log(`[Initialization useEffect] Called for ${DiptychIdCode} with photoId: ${photoId}`);
-    if (!fabricCanvas.current && canvasRef.current && DiptychIdCode && photoId && imagePath) {
-      console.log(`[Initialization useEffect] Before initializing canvas for ${DiptychIdCode}`);
+    if (!fabricCanvas.current && canvasRef.current && DiptychIdCode && photoId && photoDetailsLoaded) {
       fabricCanvas.current = initializeCanvas(canvasRef, diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations]);
-      console.log(`[Initialization useEffect] After initializing canvas for ${DiptychIdCode}`);
-      console.log('[Initialization useEffect] Canvas dimensions after initialization:', canvasRef.current?.width, canvasRef.current?.height);
-      console.log('[Initialization useEffect] Canvas initialized:', !!fabricCanvas.current); 
+      console.log('fabricCanvas initialized:', fabricCanvas.current);
+      setIsFabricCanvasReady(true);
     }
   
     return () => {
-      console.log(`[Initialization useEffect] Cleanup for ${DiptychIdCode}`);
-      if (isMounted.current && fabricCanvas.current) {
-        isMounted.current = false;
+      if (fabricCanvas.current) {
+        console.log('Cleaning up fabricCanvas');
         fabricCanvas.current.dispose();
-        console.log(`[Initialization useEffect] Canvas disposed for ${DiptychIdCode}`);
         fabricCanvas.current = null;
       }
     };
-  }, []); // This will only run once on mount
+  }, [DiptychIdCode, photoId, photoDetailsLoaded]); // Adjusted to use photoDetailsLoaded  
   
-  // Wrap any canvas manipulation in this function to ensure safety
-const safeCanvasOperation = (operation: () => void) => {
-  if (isMounted.current && fabricCanvas.current) {
-    operation();
-  } else {
-    console.warn("Attempted canvas operation on unmounted component or before canvas initialization.");
-  }
-};
-
-// Function to update the canvas with new layout specs
-const updateCanvas = async () => {
-  console.log('updateCanvas called');
-
-  if (!fabricCanvas.current) {
-    console.error('fabricCanvas ref is not current or valid.');
-    return;
-  }
-
-  // Directly use state and refs instead of function parameters
-  const layoutSpecs: LayoutSpecs = {
-    ...diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations],
-    DiptychIdCode,
-    photoId, // Assuming photoId is accessible from the component's state or props
-    photoUrl: getPhotoUrl(imagePath), // Assuming imagePath is accessible from the component's state or props
-    mirroredPhotoUrl: getPhotoUrl(imagePath),
-    photoPlacement: {
-      ...config.photoPlacement,
-      originX: 'center', 
-      originY: 'center', 
-    },
-    mirroredPhotoPlacement: {
-      ...config.mirroredPhotoPlacement,
-      originX: 'center', 
-      originY: 'center', 
-    },
-  };
-
-  safeCanvasOperation(async () => {
-    fabricCanvas.current!.clear();
-    const result = await layoutDiptych(fabricCanvas.current!, layoutSpecs, false, shapesVisibilityRef.current);
-    if (result) {
-      scaleCanvas(fabricCanvas.current!, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {
+  // Function to update the canvas with new layout specs
+  const updateCanvas = async (canvas: fabric.Canvas, photoId: string, DiptychIdCode: string, areShapesVisible: boolean | undefined) => {
+    console.log('updateCanvas called with:', { photoId, DiptychIdCode, areShapesVisible });
+  
+    if (!fabricCanvas.current || !photoDetails) {
+      console.error('Preconditions for updateCanvas not met', {fabricCanvasCurrent: fabricCanvas.current, photoDetails});
+      return;
+    }
+  
+    // Ensure layoutSpecs can be defined with available details
+    if (!config || !getPhotoUrl(photoDetails.imagePath)) {
+      console.error('Missing data for layoutSpecs', {config, photoUrl: getPhotoUrl(photoDetails?.imagePath)});
+      return;
+    }
+  
+    // Define layout specifications
+    const layoutSpecs: LayoutSpecs = {
+      ...diptychConfigurations[DiptychIdCode as keyof typeof diptychConfigurations],
+      DiptychIdCode,
+      photoId: photoDetails.photoID,
+      photoUrl: getPhotoUrl(photoDetails.imagePath),
+      mirroredPhotoUrl: getPhotoUrl(photoDetails.imagePath),
+      photoPlacement: {...config.photoPlacement, originX: 'center', originY: 'center'},
+      mirroredPhotoPlacement: {...config.mirroredPhotoPlacement, originX: 'center', originY: 'center'},
+    };
+  
+    console.log('About to clear canvas');
+    if (fabricCanvas.current) {
+      console.log('Canvas is available');
+      fabricCanvas.current.clear();
+      // Additional operations
+    }
+  
+    console.log('[updateCanvas] Before layout update');
+    const result = await layoutDiptych(canvas, layoutSpecs, false, areShapesVisible);
+    console.log('[updateCanvas] After layout update:', result);
+  
+    if (result && isMounted) { // Check if the component is still mounted
+      console.log('Component is mounted, updating state');
+      scaleCanvas(fabricCanvas.current, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {
+        console.log('Canvas dimensions after initial scaling:', fabricCanvas.current?.getWidth(), fabricCanvas.current?.getHeight());
         if (updateHeight) {
           updateHeight(newHeight, DiptychIdCode);  
         }
+        console.log('[updateCanvas] After scaling canvas');
       });
+      // Update shape visibility if needed
       updateShapesVisibility();
+      // Set canvas as ready and re-render to apply the updates
       setIsCanvasReady(true);
-      fabricCanvas.current!.renderAll();
-      onCanvasReady?.(fabricCanvas.current!, DiptychIdCode);
+      fabricCanvas.current.renderAll();
+      // Notify parent components that the canvas is ready
+      onCanvasReady?.(fabricCanvas.current, DiptychIdCode);
       onLayoutSpecsReady?.(layoutSpecs);
       console.log('[updateCanvas] Update complete for', { DiptychIdCode });
-    } else {
+    } else if (!result) {
       console.error('[updateCanvas] layoutDiptych did not return a result');
     }
-  });
-};
+  };
+  
 
-
-useEffect(() => {
-  if (fabricCanvas.current && photoId && DiptychIdCode && imagePath) {
-    updateCanvas(); 
-  }
-}, [photoId, DiptychIdCode, imagePath, areShapesVisible]); // Dependencies are correct
-
+  useEffect(() => {
+    if (fabricCanvas.current && photoId && DiptychIdCode && photoDetailsLoaded && isFabricCanvasReady) {
+      console.log('Conditions met for updateCanvas');
+      updateCanvas(fabricCanvas.current, photoId, DiptychIdCode, areShapesVisible);
+    } else {
+      console.log('Waiting for conditions to be met for updateCanvas', {photoDetailsLoaded, isFabricCanvasReady});
+    }
+  }, [photoId, DiptychIdCode, areShapesVisible, photoDetailsLoaded, isFabricCanvasReady]);
+  
+  
   useEffect(() => {
     console.log('useEffect for resize handling triggered', { DiptychIdCode });
     const handleResize = () => {

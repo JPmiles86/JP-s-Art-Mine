@@ -260,9 +260,10 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
        }}
           >
             <div className={styles.diptychWrapper}>
-            { isContainerReady && photoID && selectedDiptychIdCode ? (
+            { isContainerReady && photoID && selectedDiptychIdCode && selectedPhotograph?.imagePath ? (
               <DynamicDiptychComponent 
               photoId={photoID}
+              imagePath={selectedPhotograph.imagePath} 
               containerRef={containerRef}
               onCanvasReady={onCanvasReady}
               DiptychIdCode={selectedDiptychIdCode}

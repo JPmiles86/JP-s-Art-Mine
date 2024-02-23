@@ -48,6 +48,26 @@ export interface Photograph extends DiptychSVG {
   artworkID: string;
 }
 
+export interface PhotoDetails {
+  photoID: string;
+  seriesName: string;
+  date: string;
+  number: string;
+  shutterSpeed: string;
+  aperture: string;
+  aspectRatio: string;
+  createdAt: string;
+  dateOriginal: string;
+  dimensions: string;
+  focalLength: string;
+  imagePath: string;
+  iso: string;
+  lens: string;
+  model: string;
+  uniqueKey: string;
+  updatedAt: string;
+}
+
 // Add this new interface for managing download URLs
 export interface DownloadURLs {
   [diptychIdCode: string]: string;
@@ -110,7 +130,9 @@ export interface Store {
   shapeCode: string;
   FrameId: number; 
   frames: Frame[];
-  photoDetailsLoaded: boolean;
+  photoDetails: Record<string, PhotoDetails | undefined>;
+  fetchPhotoDetails: (photoId: string) => Promise<void>;
+  getPhotoDetails: (photoId: string) => PhotoDetails | undefined;
   setIsMerged: (isMerged: string) => void;
   setShapeCode: (shapeCode: string) => void;
   setFrameId: (FrameId: number) => void;
@@ -190,11 +212,36 @@ const useStore = create<Store>((set, get) => ({
     { id: 3, frameType: 'Unframed' },
   ],
   currentFilter: '',
-  photoDetailsLoaded: false,
-  setPhotoDetailsLoaded: (loaded: boolean) => set({ photoDetailsLoaded: loaded }),
-   setPhotoDetails: (photos: Photograph[]) => {
-    // Existing logic to set photos...
-    set({ photoDetailsLoaded: true }); // Add this line
+  photoDetails: {},
+  fetchPhotoDetails: async (photoId: string) => {
+    // Check if we already have details for this photoId
+    const existingDetails = get().photoDetails[photoId];
+    if (existingDetails) {
+      return; // If details exist, no need to fetch again
+    }
+
+    try {
+      const response = await fetch(`/api/photos/${photoId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: PhotoDetails = await response.json();
+      
+      // Update the store with the new photo details
+      set((state) => ({
+        photoDetails: {
+          ...state.photoDetails,
+          [photoId]: data,
+        },
+      }));
+    } catch (error) {
+      console.error('Error fetching photo details:', error);
+      // Consider handling errors more gracefully, possibly updating the store with error info
+    }
+  },
+
+  getPhotoDetails: (photoId: string) => {
+    return get().photoDetails[photoId];
   },
   setCurrentFilter: (filter: string) => set({ currentFilter: filter }),
   setIsMerged: (isMerged) => set({ isMerged }),

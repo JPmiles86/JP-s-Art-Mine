@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 
 // Define an interface that represents the expected shape of your photo details
-interface PhotoDetails {
+export interface PhotoDetails {
   photoID: string;
   seriesName: string;
   date: string;

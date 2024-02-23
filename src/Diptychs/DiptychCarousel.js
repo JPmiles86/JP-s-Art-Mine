@@ -5,7 +5,7 @@ import Slider from 'react-slick';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
 import './DiptychCarousel.css'; 
 
-const DiptychCarousel = ({ photoId, frameId, diptychId, aspectRatio, areShapesVisible, containerRef, handleCanvasReady, onDiptychIdCodeChange, handleLayoutSpecsReady }) => {
+const DiptychCarousel = ({ photoId, imagePath, frameId, diptychId, aspectRatio, areShapesVisible, containerRef, handleCanvasReady, onDiptychIdCodeChange, handleLayoutSpecsReady }) => {
   const [diptychIdCodes, setDiptychIdCodes] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(1); 
   const [totalSlides, setTotalSlides] = useState(0);
@@ -82,6 +82,7 @@ const DiptychCarousel = ({ photoId, frameId, diptychId, aspectRatio, areShapesVi
           <div key={code.DiptychIdCode} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: `${carouselHeight}px` }}>
             <DynamicDiptychComponent
                 photoId={photoId}
+                imagePath={imagePath}
                 containerRef={containerRef}
                 onCanvasReady={handleCanvasReady}
                 DiptychIdCode={code.DiptychIdCode}

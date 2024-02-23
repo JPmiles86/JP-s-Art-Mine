@@ -137,6 +137,7 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
     <div className={styles.diptychContainer}>
       <DynamicDiptychComponent
         photoId={selectedPhotograph?.photoID || ''}
+        imagePath={selectedPhotograph?.imagePath || ''}
         containerRef={containerRef}
         onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
         DiptychIdCode={diptychIdCode}
@@ -207,6 +208,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
 
           <DiptychCarouselDynamic
             photoId={selectedPhotograph.photoID}
+            imagePath={selectedPhotograph.imagePath}
             frameId={useStore.getState().FrameId}
             diptychId={1}
             aspectRatio={selectedPhotograph.aspectRatio}
@@ -221,6 +223,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
+            imagePath={selectedPhotograph.imagePath}
             frameId={useStore.getState().FrameId}
             diptychId={2}
             aspectRatio={selectedPhotograph.aspectRatio}
@@ -235,6 +238,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
+            imagePath={selectedPhotograph.imagePath}
             frameId={useStore.getState().FrameId}
             diptychId={3}
             aspectRatio={selectedPhotograph.aspectRatio}
@@ -249,6 +253,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
+            imagePath={selectedPhotograph.imagePath}
             frameId={useStore.getState().FrameId}
             diptychId={4}
             aspectRatio={selectedPhotograph.aspectRatio}
@@ -263,6 +268,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
+            imagePath={selectedPhotograph.imagePath}
             frameId={useStore.getState().FrameId}
             diptychId={5}
             aspectRatio={selectedPhotograph.aspectRatio}
