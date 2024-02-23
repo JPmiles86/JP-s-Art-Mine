@@ -63,6 +63,7 @@ const DiptychCarousel = ({ photoId, imagePath, frameId, diptychId, aspectRatio, 
     prevArrow: <CustomLeftArrow />,
     nextArrow: <CustomRightArrow />,
     lazyload: true,
+    lazyLoad: 'progressive', // Consider changing to 'progressive' if that suits your use case better
     afterChange: (current) => {
       const currentCode = diptychIdCodes[current].DiptychIdCode;
       setSelectedCarouselDiptychIdCode(currentCode);
