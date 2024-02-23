@@ -115,19 +115,21 @@ interface Placement {
   }, []); // This will only run once on mount
   
   // Wrap any canvas manipulation in this function to ensure safety
-const safeCanvasOperation = (operation: () => void) => {
-  if (isMounted.current && fabricCanvas.current) {
-    operation();
-  } else {
-    console.warn("Attempted canvas operation on unmounted component or before canvas initialization.");
-  }
-};
+  const safeCanvasOperation = (operation: () => void) => {
+    if (isMounted.current && fabricCanvas.current && fabricCanvas.current.getElement()) {
+      console.log("[DynamicDiptychComponent] Canvas is ready for operations.");
+      operation();
+    } else {
+      console.warn("Attempted canvas operation on unmounted component or before canvas initialization.");
+    }
+  };
 
-// Function to update the canvas with new layout specs
-const updateCanvas = async () => {
-  console.log('updateCanvas called');
+  // Function to update the canvas with new layout specs
+  const updateCanvas = async () => {
+    console.log('updateCanvas called');
 
-  if (!fabricCanvas.current) {
+    // Ensure that the canvas has been initialized and the element is available
+  if (!fabricCanvas.current || !fabricCanvas.current.getElement()) {
     console.error('fabricCanvas ref is not current or valid.');
     return;
   }
@@ -152,10 +154,23 @@ const updateCanvas = async () => {
   };
 
   safeCanvasOperation(async () => {
-    fabricCanvas.current!.clear();
-    const result = await layoutDiptych(fabricCanvas.current!, layoutSpecs, false, shapesVisibilityRef.current);
+    console.log("[DynamicDiptychComponent] Before clearing canvas", { canvas: fabricCanvas.current });
+    // Check if the canvas element is available before clearing
+    if (fabricCanvas.current && fabricCanvas.current.getElement()) {
+      fabricCanvas.current.clear();
+      console.log("[DynamicDiptychComponent] Canvas cleared successfully");
+    } else {
+      console.error("[DynamicDiptychComponent] Canvas or its element is not available for clearing.");
+      return; // Exit the operation if canvas is not available
+    }
+  
+    console.log("[DynamicDiptychComponent] Before calling layoutDiptych", { layoutSpecs });
+    const result = await layoutDiptych(fabricCanvas.current, layoutSpecs, false, shapesVisibilityRef.current);
+    console.log("[DynamicDiptychComponent] After calling layoutDiptych", { result });
+  
     if (result) {
       scaleCanvas(fabricCanvas.current!, config.originalWidth, config.originalHeight, containerRef.current, (newHeight: number) => {
+        console.log("[DynamicDiptychComponent] After scaling canvas", { newHeight });
         if (updateHeight) {
           updateHeight(newHeight, DiptychIdCode);  
         }
@@ -163,6 +178,7 @@ const updateCanvas = async () => {
       updateShapesVisibility();
       setIsCanvasReady(true);
       fabricCanvas.current!.renderAll();
+      
       onCanvasReady?.(fabricCanvas.current!, DiptychIdCode);
       onLayoutSpecsReady?.(layoutSpecs);
       console.log('[updateCanvas] Update complete for', { DiptychIdCode });

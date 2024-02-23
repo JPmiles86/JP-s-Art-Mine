@@ -35,7 +35,6 @@ const ExhibitionSpace = () => {
   const navigate = useNavigate();
   const { photos } = useStore((state) => state);
   const { filter, photoID } = useParams<{ filter: string, photoID: string }>();
-  
   const {
     currentFilter, setCurrentFilter, sortedPhotos, loading, setLoading, shapeCode, 
     initialPhotoFetch, setInitialPhotoFetch, sortValue, setPhotos
@@ -48,7 +47,6 @@ const ExhibitionSpace = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [galleryBackground, setGalleryBackground] = useState('/assets/images/gallerybg/Gallery-2.png');
   const [error] = useState<Error | null>(null);
-  const location = useLocation();
   const { selectedDiptychIdCode, setSelectedDiptychIdCode } = useStore(state => ({
     selectedDiptychIdCode: state.selectedDiptychIdCode,
     setSelectedDiptychIdCode: state.setSelectedDiptychIdCode
@@ -61,33 +59,68 @@ const ExhibitionSpace = () => {
   const { diptychInfo, isLoading: diptychInfoLoading } = useDiptychInfo(selectedDiptychIdCode);
   const [isLoading, setIsLoading] = useState(true);
   const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
-  
+  const [isDataReady, setIsDataReady] = useState(false);
+  const [photosError, setPhotosError] = useState<string | null>(null);
+
   // Ensure that selectedPhotograph is not undefined when using useGalleryNavigation
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(
     sortedPhotos,
     currentFilter
   );
-  const [photosError, setPhotosError] = useState<string | null>(null);
   
-  // Use React.memo for components like DynamicDiptychComponent
-  const DynamicDiptychComponentMemoized = React.memo(DynamicDiptychComponent);
-
-
   const handleLayoutSpecsReadyMemoized = useCallback((layoutSpecs: LayoutSpecs) => {
     console.log('handleLayoutSpecsReady called with:', layoutSpecs);
     setLayoutSpecsMap(prevMap => new Map(prevMap).set(layoutSpecs.DiptychIdCode, layoutSpecs));
   }, []);
 
- useEffect(() => {
-  console.log(`[ExhibitionSpace] Current filter: ${currentFilter}, New filter: ${filter}`);
-  if (filter && filter !== currentFilter) {
-    setCurrentFilter(filter);
-    console.log("[ExhibitionSpace] Filter updated to:", filter);
-  }
-}, [filter, setCurrentFilter, currentFilter]);
+    // Function to navigate to the inquiry page
+    const navigateToInquiryMemoized = useCallback(() => {
+      if (photoID) {
+        navigate(`/${currentFilter}/${photoID}/inquire`);
+        console.log("Navigating to the inquire page.");
+      }
+    }, [navigate, photoID, currentFilter]);
+  
+    const handleChangeGalleryBackground = useCallback((backgroundImage: string) => {
+      setGalleryBackground(backgroundImage);
+    }, []);
+  
+    const galleryBackgroundStyle = useMemo(() => ({
+      backgroundImage: `url(${galleryBackground})`,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }), [galleryBackground]);
+    
+    const wrappedHandlePrevPhoto = useCallback(() => {
+      handlePrevPhoto(currentIndex);
+    }, [handlePrevPhoto, currentIndex]);
+    
+    const wrappedHandleNextPhoto = useCallback(() => {
+      handleNextPhoto(currentIndex);
+    }, [handleNextPhoto, currentIndex]);
+
+      // Add a toggle function for the shape visibility
+    const toggleShapesVisibility = useCallback(() => {
+      setAreShapesVisible(prev => !prev);
+      console.log("Toggling shapes visibility");
+    }, []);
+
+    const onCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {
+      console.log(`Canvas ready for ${selectedDiptychIdCode}`, canvasRef);
+      setFabricCanvas(canvasRef); // Set the local state for fabric canvas
+    }, []);  
+
+  useEffect(() => {
+    console.log(`[ExhibitionSpace] Current filter: ${currentFilter}, New filter: ${filter}`);
+    if (filter && filter !== currentFilter) {
+      setCurrentFilter(filter);
+      console.log("[ExhibitionSpace] Filter updated to:", filter);
+    }
+  }, [filter, setCurrentFilter, currentFilter]);
 
    // Fetching photos
-   useEffect(() => {
+  useEffect(() => {
     let isMounted = true;
   
     async function initializeGallery() {
@@ -117,70 +150,8 @@ const ExhibitionSpace = () => {
   
     return () => { isMounted = false; };
   }, [currentFilter, photoID, sortedPhotos, initialPhotoFetch]);
-     
-   
-//   useEffect(() => {
-//    console.log("Checking if photos need to be fetched");
-//    if (sortedPhotos.length === 0 && currentFilter) {
-//      console.log('Fetching photos as sortedPhotos is empty and currentFilter is set:', currentFilter);
-//      fetchPhotosService(
-//        setPhotosError, 
-//        setLoading, 
-//        setPhotos,
-//        setInitialPhotoFetch,
-//        currentFilter,
-//        initialPhotoFetch
-//      );
-//    }
-//  }, [sortedPhotos, currentFilter, setPhotos, setInitialPhotoFetch]);
-  
-  // Function to navigate to the inquiry page
-  const navigateToInquiryMemoized = useCallback(() => {
-    if (photoID) {
-      navigate(`/${currentFilter}/${photoID}/inquire`);
-      console.log("Navigating to the inquire page.");
-    }
-  }, [navigate, photoID, currentFilter]);
-
-  const handleChangeGalleryBackground = useCallback((backgroundImage: string) => {
-    setGalleryBackground(backgroundImage);
-  }, []);
-
-   const galleryBackgroundStyle = useMemo(() => ({
-    backgroundImage: `url(${galleryBackground})`,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  }), [galleryBackground]);
-
-  const loadComponent = (
-    selectedDiptychIdCode: string, 
-    setDiptychComponent: React.Dispatch<React.SetStateAction<React.ComponentType<any> | null>>
-  ) => {
-    console.log(`Loading DynamicDiptychComponent for selectedDiptychIdCode: ${selectedDiptychIdCode}`);
-    setDiptychComponent(() => DynamicDiptychComponent);
-  };
-  
-  const wrappedHandlePrevPhoto = useCallback(() => {
-    handlePrevPhoto(currentIndex);
-  }, [handlePrevPhoto, currentIndex]);
-  
-  const wrappedHandleNextPhoto = useCallback(() => {
-    handleNextPhoto(currentIndex);
-  }, [handleNextPhoto, currentIndex]);
   
   // useKeyboardNavigation(wrappedHandleNextPhoto, wrappedHandlePrevPhoto, swapShape, rotateShape, toggleMergeStatus);
-  
-  // Add a toggle function for the shape visibility
-  const toggleShapesVisibility = useCallback(() => {
-    setAreShapesVisible(prev => !prev);
-    console.log("Toggling shapes visibility");
-  }, []);
-
-  const onCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {
-    console.log(`Canvas ready for ${selectedDiptychIdCode}`, canvasRef);
-    setFabricCanvas(canvasRef); // Set the local state for fabric canvas
-  }, []);  
   
  // Updating currentIndex based on photoID
   useEffect(() => {
@@ -193,11 +164,6 @@ const ExhibitionSpace = () => {
       }
     }
   }, [photoID, sortedPhotos]);
-
-  // Function to handle canvas ready from Diptych component
-  const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, selectedDiptychIdCode: string) => {
-    console.log(`handleCanvasReady for Canvas ready for ${selectedDiptychIdCode}:`, canvasRef);
-  }, []); // Add dependencies if needed
 
   // UseEffect to check container size
   useEffect(() => {
@@ -218,15 +184,6 @@ const ExhibitionSpace = () => {
         window.removeEventListener('resize', checkContainerSize);
       };
     }, [photoID, isLoading]);
-
-    const updateLayoutSpecs = (diptychIdCode: string, specs: LayoutSpecs) => {
-      console.log('[ExhibitionSpace] setLayoutSpecsMap called with a newMap');
-      setLayoutSpecsMap(prevMap => {
-        const newMap = new Map(prevMap);
-        newMap.set(diptychIdCode, specs);
-        return newMap;
-      });
-    };
     
 if (!photoID) {
   return <div>No photo selected.</div>;
@@ -239,7 +196,7 @@ if (error) {
 if (loading.photos || loading.diptychSVG || loading.diptychInfo || loading.galleryBackground) {
   return <div>Loading Exhibition...</div>;
 }
-  
+
 console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selectedDiptychIdCode });
 
   return (
@@ -271,7 +228,7 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
               onLayoutSpecsReady={handleLayoutSpecsReadyMemoized}
             />
             ) : (
-              <div>No photo selected.</div>
+              <div> </div>
             )}
           </div>
           </div>

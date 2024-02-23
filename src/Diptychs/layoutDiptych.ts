@@ -111,11 +111,16 @@ export const layoutDiptych = async (
   
     // Add images to the canvas
     console.log("Adding images to canvas");
+    console.log("Frame image state before adding:", frameImg);
+    console.log("Photo image state before adding:", photoImg);
+    console.log("Canvas state before adding images:", canvas);
+
     canvas.add(frameImg);
     canvas.add(photoImg);
     canvas.add(mirroredImg);
+    console.log("Canvas state after adding images:", canvas);
 
-    if (areShapesVisible && shapesImg && mirroredShapesImg) {
+    if (areShapesVisible && shapesImg && mirroredShapesImg && canvas.getElement()) {
       canvas.add(shapesImg);
       canvas.add(mirroredShapesImg);
     }
@@ -124,18 +129,25 @@ export const layoutDiptych = async (
     // Group all objects together
     console.log("Grouping all objects");
     const allObjects = canvas.getObjects();
+    console.log("All objects before grouping:", allObjects);
     const group = new fabric.Group(allObjects, {
       originX: 'center',
       originY: 'center',
       selectable: false,
       evented: false,
     });
-
-    // Clear the canvas and add the group
+    
     console.log("Clearing canvas and adding group");
-    canvas.clear().add(group);
-    canvas.renderAll();
-    console.log("layoutDiptych function completed successfully");
+    console.log("Canvas state before clearing:", canvas);
+    console.log("Canvas element before operation:", canvas.getElement());
+    // Add the conditional check before clearing the canvas and adding the group
+    if (canvas.getElement()) {
+      canvas.clear().add(group);
+      console.log("Canvas state after adding group:", canvas);
+      canvas.renderAll();
+  } else {
+      console.error("[layoutDiptych] Attempted to operate on a canvas with no element.");
+  }
 
      // Return the shapes for on-screen canvas (this is for manipulating shapes in DynamicDiptychComponent)
      return {
