@@ -14,6 +14,10 @@ SizeCategories.init({
     type: DataTypes.STRING,
     allowNull: false,
     unique: true
+  },
+  sizeName: { // Add this new column
+    type: DataTypes.STRING,
+    allowNull: true // Assuming it can be null initially; adjust as needed
   }
 }, {
   sequelize,

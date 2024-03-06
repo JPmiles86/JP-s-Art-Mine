@@ -1,0 +1,10 @@
+/* my-gallery/src/Diptychs/DiptychInformationStyles.module.css */
+
+.tableCell {
+    text-align: center;
+    width: 100px;
+  }
+
+  .tableCellContents {
+    text-align: center;
+  }

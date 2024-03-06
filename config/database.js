@@ -1,25 +1,14 @@
-const { Sequelize } = require('sequelize');
+// my-gallery/config/database.js
 
-const config = {
-    development: {
-      username: 'jpm_art',
-      password: 'Willywanka1',
-      database: 'jpm_art_database',
-      host: '127.0.0.1',
-      dialect: 'postgres',
-      operatorsAliases: false
-    }
-};
+const { Sequelize } = require('sequelize');
+const env = process.env.NODE_ENV || 'development';
+const config = require('./config')[env]; 
 
 const sequelize = new Sequelize(
-    config.development.database,
-    config.development.username,
-    config.development.password,
-    {
-      host: config.development.host,
-      dialect: 'postgres',
-      timezone: 'UTC', // Add this line
-    }
+  config.database,
+  config.username,
+  config.password,
+  config // This now includes all remaining properties from the config
 );
 
 module.exports = sequelize;

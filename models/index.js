@@ -1,4 +1,4 @@
-// index.js 
+// my-gallery/models/index.js
 module.exports = {
     Artwork: require('./Artwork'),
     CameraModel: require('./CameraModel'),

@@ -1,4 +1,5 @@
-// associations.js
+// my-gallery/models/associations.js
+
 const models = require('./index');
 
 const { Photo, CameraModel, Series, Dates, ImageNumbers, Artwork, Diptych, DiptychSVG, Frame, Pricing, PrintSizes, SizeCategories } = models;

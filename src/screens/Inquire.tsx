@@ -16,6 +16,7 @@ import buttonStyles from './ButtonStyles.module.css';
 import DiptychCarousel from '../Diptychs/DiptychCarousel';
 import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
 import { fetchPhotosService } from '../utils/fetchPhotosService';
+import DiptychInformationModule from '../Diptychs/DiptychInformationModule';
 
 
 interface DownloadButtonProps {
@@ -203,8 +204,10 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
         <Box>
           {renderDiptych(selectedDiptychIdCode || '', selectedPhotograph.photoID)}
           <Typography style={{ textAlign: 'center' }}>Description for {selectedDiptychIdCode}</Typography>
-          {renderDownloadButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')}
-          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {renderDownloadButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          </div>
 
           <DiptychCarouselDynamic
             photoId={selectedPhotograph.photoID}
@@ -218,8 +221,18 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
-          {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
-          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {selectedPhotograph && (
+              <DiptychInformationModule
+                photoId={selectedPhotograph.photoID}
+                diptychId={1} 
+              />
+            )}
+          </div>
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
@@ -233,8 +246,18 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
-          {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
-          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {selectedPhotograph && (
+              <DiptychInformationModule
+                photoId={selectedPhotograph.photoID}
+                diptychId={2} 
+              />
+            )}
+          </div>
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
@@ -248,8 +271,18 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
-          {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
-          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {selectedPhotograph && (
+              <DiptychInformationModule
+                photoId={selectedPhotograph.photoID}
+                diptychId={3} 
+              />
+            )}
+          </div>
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
@@ -263,8 +296,18 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
-          {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
-          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {selectedPhotograph && (
+              <DiptychInformationModule
+                photoId={selectedPhotograph.photoID}
+                diptychId={4} 
+              />
+            )}
+          </div>
 
           <DiptychCarousel
             photoId={selectedPhotograph.photoID}
@@ -278,9 +321,18 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
-          {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
-          <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
-
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            {selectedPhotograph && (
+              <DiptychInformationModule
+                photoId={selectedPhotograph.photoID}
+                diptychId={5} 
+              />
+            )}
+          </div>
         </Box>
 
       ) : (

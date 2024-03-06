@@ -367,6 +367,56 @@ app.get('/api/diptychsvgs/aspectratio/:aspectRatio/frameid/:frameId/diptychid/:d
   }
 });
 
+app.get('/api/artworks/details/:photoId/:diptychId', async (req, res) => {
+  const { photoId, diptychId } = req.params; // Using query parameters for filtering
+
+  try {
+    // First, find the Photo entry to get the id that matches the photoID string
+    const photo = await Photo.findOne({ where: { photoID: photoId } });
+    if (!photo) {
+      return res.status(404).send('Photo not found');
+    }
+    // Use the retrieved photo's id to find related Artworks
+    const artworks = await Artwork.findAll({
+      where: {
+        photoRefId: photo.id, 
+        diptychId: diptychId,
+      },
+      include: [
+        { model: SizeCategories },
+        { model: Pricing },
+        {
+          model: PrintSizes,
+          attributes: ['sizeInInches', 'sizeInCm'] // Explicitly request these attributes
+        },
+        { model: Photo },
+        { model: Diptych },
+      ],
+    });
+
+    // Transform the sequelize objects into the shape you want to send to the client
+    const details = artworks.map(artwork => ({
+      artworkId: artwork.artworkID,
+      photoId: artwork.Photo?.photoID,
+      sizeName: artwork.SizeCategory?.sizeName, 
+      price: artwork.Pricing?.price,
+      printSizeInInches: artwork.PrintSize?.sizeInInches, 
+      printSizeInCm: artwork.PrintSize?.sizeInCm,
+      status: artwork.status,
+      photoDate: artwork.Photo?.date, 
+      photoNumber: artwork.Photo?.number,
+      shutterSpeed: artwork.Photo?.shutterSpeed,
+      seriesName: artwork.Photo?.seriesName, 
+      diptychName: artwork.Diptych?.diptychName, 
+      edition: artwork.edition,
+    }));
+
+    res.json(details); 
+  } catch (error) {
+    console.error("Detailed error: ", error);
+    res.status(500).send('Server Error');
+  }  
+});
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
