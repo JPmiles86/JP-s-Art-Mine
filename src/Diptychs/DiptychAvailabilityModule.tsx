@@ -1,10 +1,10 @@
-// my-gallery/src/Diptychs/DiptychInformationModule.tsx
+// my-gallery/src/Diptychs/DiptychAvailabilityModule.tsx
 
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Switch, FormControlLabel } from '@mui/material';
 import axios from 'axios';
 import buttonStyles from '../screens/ButtonStyles.module.css';
-import styles from './DiptychInformationStyles.module.css';
+import styles from './DiptychAvailabilityStyles.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 
@@ -24,12 +24,12 @@ interface ArtworkDetail {
   diptychName: string;
 }
 
-interface DiptychInformationModuleProps {
+interface DiptychAvailabilityModuleProps {
   photoId: string;
   diptychId: number; // Ensure this matches your backend API requirements
 }
 
-const DiptychInformationModule: React.FC<DiptychInformationModuleProps> = ({ photoId, diptychId }) => {
+const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ photoId, diptychId }) => {
   const [artworkDetails, setArtworkDetails] = useState<ArtworkDetail[]>([]);
   const [showInInches, setShowInInches] = useState(true); // New state for toggling size display
   const navigate = useNavigate();
@@ -139,4 +139,4 @@ const findApStatus = (cpArtworkId: string) => {
   );
 };
 
-export default DiptychInformationModule;
+export default DiptychAvailabilityModule;

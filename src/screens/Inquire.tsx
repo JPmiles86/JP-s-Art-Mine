@@ -16,7 +16,7 @@ import buttonStyles from './ButtonStyles.module.css';
 import DiptychCarousel from '../Diptychs/DiptychCarousel';
 import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
 import { fetchPhotosService } from '../utils/fetchPhotosService';
-import DiptychInformationModule from '../Diptychs/DiptychInformationModule';
+import DiptychAvailabilityModule from '../Diptychs/DiptychAvailabilityModule';
 
 
 interface DownloadButtonProps {
@@ -227,7 +227,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
             {selectedPhotograph && (
-              <DiptychInformationModule
+              <DiptychAvailabilityModule
                 photoId={selectedPhotograph.photoID}
                 diptychId={1} 
               />
@@ -252,7 +252,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
             {selectedPhotograph && (
-              <DiptychInformationModule
+              <DiptychAvailabilityModule
                 photoId={selectedPhotograph.photoID}
                 diptychId={2} 
               />
@@ -277,7 +277,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
             {selectedPhotograph && (
-              <DiptychInformationModule
+              <DiptychAvailabilityModule
                 photoId={selectedPhotograph.photoID}
                 diptychId={3} 
               />
@@ -302,7 +302,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
             {selectedPhotograph && (
-              <DiptychInformationModule
+              <DiptychAvailabilityModule
                 photoId={selectedPhotograph.photoID}
                 diptychId={4} 
               />
@@ -327,7 +327,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
             {selectedPhotograph && (
-              <DiptychInformationModule
+              <DiptychAvailabilityModule
                 photoId={selectedPhotograph.photoID}
                 diptychId={5} 
               />
