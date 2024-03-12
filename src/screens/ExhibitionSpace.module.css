@@ -1,6 +1,7 @@
 .exhibitionSpace {
   display: flex;
   flex-direction: column;
+  padding-top: 45px;
   min-height: 100vh;
   overflow: hidden; /* New */
 }
@@ -153,4 +154,3 @@
   align-items: center;
   transition: background-image 0.5s ease; /* Smooth transition for background changes */
 }
-

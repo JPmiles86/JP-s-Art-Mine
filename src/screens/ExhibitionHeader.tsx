@@ -1,8 +1,9 @@
 // ExhibitionHeader.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
 import useStore from '../utils/store'; 
+import ButtonStyles from './ButtonStyles.module.css';
 
 interface ExhibitionHeaderProps {
   currentFilter: string;
@@ -37,6 +38,11 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const { setCurrentFilter } = useStore(); // Use the setCurrentFilter from the store
+  const [showExtraInfo, setShowExtraInfo] = useState(false);
+
+  const toggleExtraInfo = () => {
+    setShowExtraInfo(!showExtraInfo);
+  };
 
   const handleFilterChange = (filter: string) => {
     setCurrentFilter(filter); // Set the current filter
@@ -52,7 +58,7 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
   }
 
   return (
-    <header className={styles.header}>
+    <header className={styles.header}  style={{ marginTop: '0px'}}>
       <div className={styles.leftColumn}>
         <button className={styles.navButton} onClick={handleBackToImageGrid}>
           &larr; Back to Image Grid
@@ -82,7 +88,10 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
           >
             {selectedPhoto.seriesName}
           </span>
-          <br />
+          
+          </p>
+            {showExtraInfo && (
+          <p>
           <strong>Diptych Variation: </strong>
           {diptychInfo ? (
             <>
@@ -103,6 +112,10 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
           {diptychInfo ? diptychInfo.shapeAtTopEdge : 'Loading...'}
           <br />
         </p>
+        )}
+        <button onClick={toggleExtraInfo} className={ButtonStyles.moreinfobutton}>
+          {showExtraInfo ? '↑ Less Info ↑' : '↓ More Info ↓'}
+        </button>
       </div>
       <div className={styles.rightColumn}>
         <button className={styles.idButton} onClick={handlePrevPhoto}>

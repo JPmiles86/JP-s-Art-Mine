@@ -15,6 +15,17 @@ const Frame = require('./models/Frame');
 const Pricing = require('./models/Pricing');
 const PrintSizes = require('./models/PrintSizes');
 const SizeCategories = require('./models/SizeCategories');
+const Users = require('./models/Users');
+const EntityType = require('./models/EntityType');
+const Locations = require('./models/Locations');
+const PersonContactInfo = require('./models/PersonContactInfo');
+const OrganizationContactInfo = require('./models/OrganizationContactInfo');
+const Artists = require('./models/Artists');
+const ArtistsAdditionalPhotos = require('./models/ArtistsAdditionalPhotos');
+const PrivacyPreferences = require('./models/PrivacyPreferences');
+const AuditTrail = require('./models/AuditTrail');
+const authRoutes = require('./routes/authRoutes');
+const passport = require('passport');
 const cors = require('cors');
 
 app.use(cors({
@@ -24,6 +35,8 @@ app.use(cors({
 app.use(express.json()); // Make sure you have this line to parse JSON body
 
 app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals'));
+
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

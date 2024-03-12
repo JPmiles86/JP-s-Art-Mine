@@ -9,6 +9,10 @@ module.exports = {
       dialect: 'postgres',
       timezone: 'UTC', // This is optional and can be omitted if not needed
     },
+    email: {
+      user: 'jpmilesart@gmail.com',
+      pass: 'uwyp jhoz yhqg lpua'
+    }
     // You can also add configurations for test and production environments
   };
   
