@@ -1,6 +1,7 @@
 // my-gallery/server.js
 
 const express = require('express');
+const { Sequelize, Op } = require('sequelize');
 const sequelize = require('./config/database');
 const app = express();
 const port = 4000;
@@ -24,6 +25,8 @@ const Artists = require('./models/Artists');
 const ArtistsAdditionalPhotos = require('./models/ArtistsAdditionalPhotos');
 const PrivacyPreferences = require('./models/PrivacyPreferences');
 const AuditTrail = require('./models/AuditTrail');
+const Like = require('./models/Like');
+const HiddenPhoto = require('./models/HiddenPhoto');
 const authRoutes = require('./routes/authRoutes');
 const passport = require('passport');
 const cors = require('cors');
@@ -46,7 +49,14 @@ app.get('/api/photos/date/:date', async (req, res) => {
   const { date } = req.params;
   console.log(`Date: ${date}`);
   try {
-    const photos = await Photo.findAll({ where: { date } });
+    const photos = await Photo.findAll({
+      where: {
+        date,
+        id: {
+          [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+        }
+      }
+    });
     console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
@@ -59,7 +69,14 @@ app.get('/api/photos/number/:number', async (req, res) => {
   const { number } = req.params;
   console.log(`Number: ${number}`);
   try {
-    const photos = await Photo.findAll({ where: { number } });
+    const photos = await Photo.findAll({
+      where: {
+        number,
+        id: {
+          [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+        }
+      }
+    });
     console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
@@ -72,10 +89,44 @@ app.get('/api/photos/series/:series', async (req, res) => {
   const { series } = req.params;
   console.log(`Series: ${series}`);
   try {
-    const photos = await Photo.findAll({ 
-      where: { seriesCode: series } 
+    const photos = await Photo.findAll({
+      where: {
+        seriesCode: series,
+        id: {
+          [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+        }
+      }
     });
     console.log(`Number of photos found: ${photos.length}`);
+    res.json(photos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/photos/filter/:filter', async (req, res) => {
+  const { filter } = req.params;
+  try {
+    let photos;
+    switch (filter) {
+      case 'CST':
+      case '230321':
+      case '1125':
+        photos = await Photo.findAll({
+          where: {
+            filter,
+            id: {
+              [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+            }
+          }
+        });
+        break;
+      // Add other cases here as needed
+      default:
+        photos = [];
+        break;
+    }
     res.json(photos);
   } catch (error) {
     console.error(error);
@@ -256,28 +307,6 @@ app.post('/api/numbers/update-image-url', async (req, res) => {
   }
 });
 
-app.get('/api/photos/filter/:filter', async (req, res) => {
-  const { filter } = req.params;
-  try {
-    let photos;
-    switch(filter) {
-      case 'CST':
-      case '230321':
-      case '1125':
-        photos = await Photo.findAll({ where: { filter } });
-        break;
-      // Add other cases here as needed
-      default:
-        photos = [];
-        break;
-    }
-    res.json(photos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
-  }
-});
-
 app.get('/api/photo/:photoID', async (req, res) => {
   const { photoID } = req.params;
   try {
@@ -429,6 +458,143 @@ app.get('/api/artworks/details/:photoId/:diptychId', async (req, res) => {
     console.error("Detailed error: ", error);
     res.status(500).send('Server Error');
   }  
+});
+
+app.post('/api/likes', async (req, res) => {
+  const { userId, photoId, diptychIdCode, isLiked } = req.body;
+  console.log('Received data:', { userId, photoId, diptychIdCode, isLiked });
+
+  try {
+    // Find the photo by its photoID and extract the id
+    const photo = await Photo.findOne({ where: { photoID: photoId } });
+    if (!photo) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    const photoIdInt = photo.id;
+
+    // Find the diptych by its DiptychIdCode and extract the id
+    const diptych = await DiptychSVG.findOne({ where: { DiptychIdCode: diptychIdCode } });
+    if (!diptych) {
+      return res.status(404).json({ error: 'Diptych not found' });
+    }
+    const diptychIdInt = diptych.id;
+
+    // Check if a like record already exists for the user and photo/diptych combination
+    const existingLike = await Like.findOne({
+      where: {
+        userId,
+        photoId: photoIdInt,
+        diptychIdCode: diptychIdInt,
+      },
+    });
+
+    if (existingLike) {
+      // Update the isLiked value of the existing like record
+      existingLike.isLiked = isLiked;
+      await existingLike.save();
+      res.json(existingLike);
+    } else {
+      // Create a new like record
+      const like = await Like.create({ userId, photoId: photoIdInt, diptychIdCode: diptychIdInt, isLiked });
+      res.json(like);
+    }
+  } catch (error) {
+    console.error('Error creating like:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.put('/api/likes/:photoId/:diptychIdCode', async (req, res) => {
+  const { photoId, diptychIdCode } = req.params;
+  const { userId, isLiked } = req.body;
+
+  try {
+    // Find the photo by its photoID and extract the id
+    const photo = await Photo.findOne({ where: { photoID: photoId } });
+    if (!photo) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    const photoIdInt = photo.id;
+
+    // Find the diptych by its DiptychIdCode and extract the id
+    const diptych = await DiptychSVG.findOne({ where: { DiptychIdCode: diptychIdCode } });
+    if (!diptych) {
+      return res.status(404).json({ error: 'Diptych not found' });
+    }
+    const diptychIdInt = diptych.id;
+
+    // Find the like record
+    const like = await Like.findOne({
+      where: {
+        userId,
+        photoId: photoIdInt,
+        diptychIdCode: diptychIdInt,
+      },
+    });
+
+    if (like) {
+      // Update the isLiked value
+      like.isLiked = isLiked;
+      await like.save();
+      res.json(like);
+    } else {
+      res.status(404).send('Like not found');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/likes/:userId/:photoId/:diptychIdCode', async (req, res) => {
+  const { userId, photoId, diptychIdCode } = req.params;
+
+  try {
+    // Find the photo by its photoID and extract the id
+    const photo = await Photo.findOne({ where: { photoID: photoId } });
+    if (!photo) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    const photoIdInt = photo.id;
+
+    // Find the diptych by its DiptychIdCode and extract the id
+    const diptych = await DiptychSVG.findOne({ where: { DiptychIdCode: diptychIdCode } });
+    if (!diptych) {
+      return res.status(404).json({ error: 'Diptych not found' });
+    }
+    const diptychIdInt = diptych.id;
+
+    // Check if a like record exists for the user and photo/diptych combination
+    const existingLike = await Like.findOne({
+      where: {
+        userId,
+        photoId: photoIdInt,
+        diptychIdCode: diptychIdInt,
+      },
+    });
+
+    if (existingLike) {
+      res.json({ isLiked: existingLike.isLiked });
+    } else {
+      res.json({ isLiked: false });
+    }
+  } catch (error) {
+    console.error('Error checking like status:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/api/photos/hidden', async (req, res) => {
+  try {
+    const hiddenPhotos = await HiddenPhoto.findAll({
+      where: { isVisible: false },
+      include: [{ model: Photo }]
+    });
+    res.json(hiddenPhotos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
 });
 
 app.listen(port, () => {

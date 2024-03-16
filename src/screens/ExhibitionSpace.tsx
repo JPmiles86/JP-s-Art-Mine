@@ -13,6 +13,7 @@ import DiptychControls from '../Diptychs/DiptychControls';
 import useDiptychInfo from '../Diptychs/useDiptychInfo';
 import useGalleryNavigation from '../utils/useGalleryNavigation';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
+import AuthModal from '../components/modals/AuthModal';
 import { fabric } from 'fabric';
 
 
@@ -61,6 +62,7 @@ const ExhibitionSpace = () => {
   const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
   const [isDataReady, setIsDataReady] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Ensure that selectedPhotograph is not undefined when using useGalleryNavigation
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(
@@ -153,6 +155,12 @@ const ExhibitionSpace = () => {
   
   // useKeyboardNavigation(wrappedHandleNextPhoto, wrappedHandlePrevPhoto, swapShape, rotateShape, toggleMergeStatus);
   
+  const handleLikeButtonClick = () => {
+    if (!useStore.getState().userId) {
+      setIsAuthModalOpen(true);
+    }
+  };
+
  // Updating currentIndex based on photoID
   useEffect(() => {
    // console.log("trying to update currentIndex if photoID & sortedPhotos are ready");
@@ -241,11 +249,21 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
             fabricCanvasRef={fabricCanvas} 
             areShapesVisible={areShapesVisible}
             toggleShapesVisibility={toggleShapesVisibility}
+            setIsAuthModalOpen={setIsAuthModalOpen}
           >
                     <GalleryBackgroundSelector onChange={handleChangeGalleryBackground} />
                 </DiptychControls>
         </div>
-    </div>
+        <AuthModal 
+        open={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        showAnonymousOption={true}
+        isLikeTriggered={true}
+        photoId={photoID}
+        diptychIdCode={selectedDiptychIdCode || undefined}
+        onSuccessfulAuth={handleLikeButtonClick}
+      />
+          </div>
 );
 };
 console.log('[ExhibitionSpace] Render end');

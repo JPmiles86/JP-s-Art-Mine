@@ -14,6 +14,7 @@ import smoothscroll from 'smoothscroll-polyfill';
 import TopNavBar from './components/layout/TopNavBar';
 import { AuthProvider } from './contexts/AuthContext';
 import ResetPassword from './pages/auth/ResetPassword';
+import Profile from './screens/Profile';
 
 // kick off the polyfill!
 smoothscroll.polyfill();
@@ -56,6 +57,7 @@ const AppContent: React.FC = () => {
         <ScrollContext.Provider value={{ handleScroll, scrollToTop }}>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/profile" element={<Profile />} /> 
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/:filter" element={<ImageGrid />} />
             <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />

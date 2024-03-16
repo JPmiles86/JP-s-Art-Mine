@@ -10,11 +10,16 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
 import ForgotPassword from '../../pages/auth/ForgotPassword';
+import useStore from '../../utils/store';
 
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
   showAnonymousOption: boolean;
+  isLikeTriggered: boolean;
+  photoId?: string;
+  diptychIdCode?: string;
+  onSuccessfulAuth?: () => void;
 }
 
 const useStyles = makeStyles(() => ({
@@ -37,7 +42,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption, isLikeTriggered, photoId, diptychIdCode, onSuccessfulAuth, }) => {
   const classes = useStyles();
   const [isSignUp, setIsSignUp] = useState(false);
   const { setIsAuthenticated } = useAuth();
@@ -49,18 +54,47 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
       const response = await axios.post('/api/auth/anonymous');
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
+      useStore.getState().setUserId(response.data.userId); // Store the userId in the store
+  
+      if (isLikeTriggered && photoId && diptychIdCode) {
+        // Register the like here
+        await fetch(`/api/likes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: response.data.userId, photoId, diptychIdCode, isLiked: true }),
+        });
+      }
+  
       onClose();
+      onSuccessfulAuth?.();
     } catch (error) {
-      // Handle anonymous user creation error
+      console.error('Error during anonymous browsing:', error);
     }
   };
+  
 
   const handleClose = () => {
     setIsForgotPassword(false);
     setIsSignUp(false);
     onClose();
   };
-  
+
+  const handleSuccessfulAuth = async () => {
+    if (isLikeTriggered && photoId && diptychIdCode) {
+      // Register the like here
+      await fetch(`/api/likes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: useStore.getState().userId, photoId, diptychIdCode, isLiked: true }),
+      });
+    }
+    onClose();
+    onSuccessfulAuth?.();
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -79,12 +113,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
           {isForgotPassword ? (
             <ForgotPassword setIsSignUp={setIsSignUp} setIsForgotPassword={setIsForgotPassword} />
           ) : isSignUp ? (
-            <>
-              <SignUp onClose={handleClose} setIsSignUp={setIsSignUp} />
-            </>
+            <SignUp onClose={handleClose} setIsSignUp={setIsSignUp} onSuccessfulAuth={handleSuccessfulAuth} />
           ) : (
             <>
-              <SignIn onClose={handleClose} setIsForgotPassword={setIsForgotPassword} />
+              <SignIn onClose={handleClose} setIsForgotPassword={setIsForgotPassword} onSuccessfulAuth={handleSuccessfulAuth} />
               <hr style={{ borderTop: '1px solid black', margin: '20px 0', width: '150px' }} />
               <Typography variant="body2" align="center" style={{ marginTop: '5px', marginBottom: '10px' }}>
                 New user?
@@ -93,7 +125,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
                 Sign Up
               </button>
               <hr style={{ borderTop: '1px solid black', margin: '35px 0', width: '150px' }} />
-             {showAnonymousOption && (
+              {isLikeTriggered && showAnonymousOption && (
                 <>
                   <Typography variant="body2" align="center" style={{ marginTop: '-10px', marginBottom: '20px' }}>
                     or...
@@ -114,6 +146,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
       </Box>
     </Modal>
   );
- }
+};
 
 export default AuthModal;

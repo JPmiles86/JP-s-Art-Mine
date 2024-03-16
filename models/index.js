@@ -21,6 +21,8 @@ module.exports = {
     ArtistsAdditionalPhotos: require('./ArtistsAdditionalPhotos'),
     PrivacyPreferences: require('./PrivacyPreferences'),
     AuditTrail: require('./AuditTrail'),
-    PasswordResetToken: require('./PasswordResetToken')
+    PasswordResetToken: require('./PasswordResetToken'),
+    Like: require('./Like'), 
+    HiddenPhoto: require('./HiddenPhoto'),
   };
   

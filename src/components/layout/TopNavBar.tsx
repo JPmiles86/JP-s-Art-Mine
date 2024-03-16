@@ -85,8 +85,7 @@ const TopNavBar: React.FC = () => {
           </button>
         )}
       </Toolbar>
-      <AuthModal open={isAuthModalOpen} onClose={handleAuthModalClose} showAnonymousOption={true} />
-    </AppBar>
+      <AuthModal open={isAuthModalOpen} onClose={handleAuthModalClose} showAnonymousOption={true} isLikeTriggered={false} />    </AppBar>
   );
 };
 

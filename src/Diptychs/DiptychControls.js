@@ -5,8 +5,9 @@ import DownloadButton from './DownloadButton';
 import buttonStyles from '../screens/ButtonStyles.module.css';
 import useStore from '../utils/store'; 
 import { swapMapping, rotateMapping } from './DiptychIdCodeMapping'; 
+import LikeButton from '../components/layout/LikeButton';
 
-const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children }) => {
+const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen }) => {
     const { FrameId, isMerged, shapeCode, selectedDiptychIdCode, setFrameId, setIsMerged, setShapeCode, setSelectedDiptychIdCode } = useStore(state => ({
         FrameId: state.FrameId,
         isMerged: state.isMerged,
@@ -113,6 +114,11 @@ useEffect(() => {
                 areShapesVisible={areShapesVisible}
                 size="small"
             />
+            <LikeButton
+                photoId={selectedPhoto?.photoID}
+                diptychIdCode={useStore.getState().selectedDiptychIdCode}
+                setIsAuthModalOpen={setIsAuthModalOpen}
+            />            
             <div className={buttonStyles.dropdownSelector}>
                 {children}
             </div>

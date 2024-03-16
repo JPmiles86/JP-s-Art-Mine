@@ -111,6 +111,8 @@ export interface Store {
   FrameId: number; 
   frames: Frame[];
   photoDetailsLoaded: boolean;
+  userId: number | null;
+  setUserId: (userId: number | null) => void;
   setIsMerged: (isMerged: string) => void;
   setShapeCode: (shapeCode: string) => void;
   setFrameId: (FrameId: number) => void;
@@ -191,6 +193,8 @@ const useStore = create<Store>((set, get) => ({
   ],
   currentFilter: '',
   photoDetailsLoaded: false,
+  userId: null,
+  setUserId: (userId) => set({ userId }),
   setPhotoDetailsLoaded: (loaded: boolean) => set({ photoDetailsLoaded: loaded }),
    setPhotoDetails: (photos: Photograph[]) => {
     // Existing logic to set photos...

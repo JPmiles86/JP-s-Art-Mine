@@ -8,18 +8,20 @@ import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import SignUpSuccess from './SignUpSuccess';
+import useStore from '../../utils/store';
 // import { sendSignUpEmail } from '../../utils/emailService';
 
 interface SignUpProps {
     onClose: () => void;
     setIsSignUp: (value: boolean) => void;
+    onSuccessfulAuth?: () => void;
   }
   
-  const SignUp: React.FC<SignUpProps> = ({ onClose, setIsSignUp }) => {
+  const SignUp: React.FC<SignUpProps> = ({ onClose, setIsSignUp, onSuccessfulAuth }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { setIsAuthenticated, login } = useAuth(); 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -44,19 +46,19 @@ interface SignUpProps {
     }
     try {
       const response = await axios.post('/api/auth/register', { email, password });
-      // Store the token in localStorage or a secure cookie
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
+      useStore.getState().setUserId(response.data.userData.userId); // Store the userId in the store
+      login(response.data.token); // Call the login function with only the token
       setSuccess(true);
       setShowSuccessPage(true);
-
-    // Send the sign-up email
-    await axios.post('/api/auth/send-signup-email', { email });
-
-
-
-      // onClose();
+  
+      // Send the sign-up email
+      await axios.post('/api/auth/send-signup-email', { email });
+  
+      onSuccessfulAuth?.();
     } catch (error: any) {
+      console.error('Error during sign-up:', error);
       if (error.response && error.response.status === 400) {
         setError('Email already exists. Please sign in or use a different email.');
       } else {

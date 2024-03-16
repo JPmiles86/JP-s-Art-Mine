@@ -65,5 +65,20 @@ ArtistsAdditionalPhotos.belongsTo(Artists, { foreignKey: 'artistId' });
 Users.hasMany(PrivacyPreferences, { foreignKey: 'userId' });
 PrivacyPreferences.belongsTo(Users, { foreignKey: 'userId' });
 
-Users.hasMany(AuditTrail, { foreignKey: 'UserID' });
-AuditTrail.belongsTo(Users, { foreignKey: 'UserID' });
+Users.hasMany(AuditTrail, { foreignKey: 'userID' });
+AuditTrail.belongsTo(Users, { foreignKey: 'userID' });
+
+Users.hasMany(Like, { foreignKey: 'userId' });
+Like.belongsTo(Users, { foreignKey: 'userId' });
+
+Photo.hasMany(Like, { foreignKey: 'photoId' });
+Like.belongsTo(Photo, { foreignKey: 'id' });
+
+DiptychSVG.hasMany(Like, { foreignKey: 'diptychIdCode' });
+Like.belongsTo(DiptychSVG, { foreignKey: 'id' });
+
+Photo.hasMany(HiddenPhoto, { foreignKey: 'photoId' });
+HiddenPhoto.belongsTo(Photo, { foreignKey: 'id' });
+
+Users.hasMany(HiddenPhoto, { foreignKey: 'userId' });
+HiddenPhoto.belongsTo(Users, { foreignKey: 'userId' });

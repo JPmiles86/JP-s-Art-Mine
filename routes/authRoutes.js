@@ -38,7 +38,17 @@ router.post('/register', async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ userId: newUser.userId }, 'your-secret-key');
 
-    res.status(201).json({ message: 'User registered successfully', token });
+    // Include user data in the response
+    const userData = {
+      userId: newUser.userId,
+      email: newUser.email,
+      username: newUser.username,
+      role: newUser.role,
+      isAnonymous: newUser.isAnonymous,
+      // Include any other user properties you need
+    };
+
+    res.status(201).json({ message: 'User registered successfully', token, userData });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
@@ -76,8 +86,15 @@ router.post('/login', async (req, res) => {
   
       // Generate a JWT token
       const token = jwt.sign({ userId: user.userId }, 'your-secret-key');
+
+      // Include user data in the response
+      const userData = {
+        userId: user.userId,
+        email: user.email,
+        // Include any other user properties you need
+      };
   
-      res.status(200).json({ message: 'Login successful', token });
+      res.status(200).json({ message: 'Login successful', token, userData });
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ error: 'Login failed' });
@@ -99,7 +116,7 @@ router.post('/login', async (req, res) => {
       // Generate a JWT token for the anonymous user
       const token = jwt.sign({ userId: anonymousUser.userId }, 'your-secret-key');
 
-      res.status(200).json({ message: 'Anonymous user created', token });
+      res.status(200).json({ message: 'Anonymous user created', token, userId: anonymousUser.userId });
     } catch (error) {
       console.error('Anonymous user creation error:', error);
       res.status(500).json({ error: 'Anonymous user creation failed' });

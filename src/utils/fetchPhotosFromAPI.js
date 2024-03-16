@@ -30,3 +30,19 @@ export async function fetchPhotosFromAPI(filterType, filterValue) {
         return []; // Return empty array in case of error
     }
 }
+
+export async function fetchHiddenPhotos() {
+    const endpoint = `${BASE_URL}/photos/hidden`;
+
+    try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const hiddenPhotos = await response.json();
+        return hiddenPhotos;
+    } catch (error) {
+        console.error('Error fetching hidden photos:', error);
+        return []; // Return empty array in case of error
+    }
+}

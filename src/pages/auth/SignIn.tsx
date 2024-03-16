@@ -7,17 +7,19 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import useStore from '../../utils/store';
 
 interface SignInProps {
     onClose: () => void;
     setIsForgotPassword: (value: boolean) => void;
+    onSuccessfulAuth?: () => void;
   }
 
-const SignIn: React.FC<SignInProps> = ({ onClose, setIsForgotPassword }) => {
+const SignIn: React.FC<SignInProps> = ({ onClose, setIsForgotPassword, onSuccessfulAuth }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { setIsAuthenticated, login } = useAuth(); 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   // const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -31,11 +33,14 @@ const SignIn: React.FC<SignInProps> = ({ onClose, setIsForgotPassword }) => {
     try {
       const lowercaseEmail = email.toLowerCase();
       const response = await axios.post('/api/auth/login', { email: lowercaseEmail, password });
-      // Store the token in localStorage or a secure cookie
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
-      onClose(); // Close the modal after successful login
+      useStore.getState().setUserId(response.data.userData.userId);
+      login(response.data.token); // Call the login function with only the token
+      onClose();
+      onSuccessfulAuth?.();
     } catch (error) {
+      console.error('Error during sign-in:', error);
       setError('Invalid email or password.');
     }
   };
