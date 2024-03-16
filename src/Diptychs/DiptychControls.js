@@ -84,7 +84,11 @@ useEffect(() => {
     }
 }, [updateNeeded]);
 
-
+const handleLikeButtonClick = () => {
+    if (!useStore.getState().userId) {
+      setIsAuthModalOpen(true);
+    }
+  };
 
     return (
         <div className={buttonStyles.buttonContainer}>
@@ -117,8 +121,9 @@ useEffect(() => {
             <LikeButton
                 photoId={selectedPhoto?.photoID}
                 diptychIdCode={useStore.getState().selectedDiptychIdCode}
-                setIsAuthModalOpen={setIsAuthModalOpen}
-            />            
+                setIsAuthModalOpen={handleLikeButtonClick}
+                onLikeButtonClick={handleLikeButtonClick}
+            />          
             <div className={buttonStyles.dropdownSelector}>
                 {children}
             </div>

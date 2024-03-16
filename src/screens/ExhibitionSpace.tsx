@@ -251,20 +251,20 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
             toggleShapesVisibility={toggleShapesVisibility}
             setIsAuthModalOpen={setIsAuthModalOpen}
           >
-                    <GalleryBackgroundSelector onChange={handleChangeGalleryBackground} />
-                </DiptychControls>
-        </div>
-        <AuthModal 
-        open={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-        showAnonymousOption={true}
-        isLikeTriggered={true}
-        photoId={photoID}
-        diptychIdCode={selectedDiptychIdCode || undefined}
-        onSuccessfulAuth={handleLikeButtonClick}
-      />
-          </div>
-);
+            <GalleryBackgroundSelector onChange={handleChangeGalleryBackground} />
+        </DiptychControls>
+      </div>
+      <AuthModal 
+          open={isAuthModalOpen} 
+          onClose={() => setIsAuthModalOpen(false)} 
+          showAnonymousOption={true}
+          isLikeTriggered={true}
+          photoId={photoID}
+          diptychIdCode={selectedDiptychIdCode || undefined}
+          onSuccessfulAuth={handleLikeButtonClick}
+        />
+    </div>
+   );
 };
 console.log('[ExhibitionSpace] Render end');
 

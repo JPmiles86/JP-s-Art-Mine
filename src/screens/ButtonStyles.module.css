@@ -1,13 +1,14 @@
 /* my-gallery/src/screens/ButtonStyles.module.css*/
 
 .button {
-  background-color: transparent;
+  background-color: #ffffff;
   border: 1px solid #000;
   color: black;
   font-size: 16px;
   padding: 5px 5px;
   margin-left: 5px;
   margin-right: 5px; 
+  margin-top: 5px; 
   font-family: 'EB Garamond', serif;
   width: 150px;
   height: 40px;
@@ -15,6 +16,25 @@
   cursor: pointer;
   box-sizing: border-box;
   transition: background-color 0.3s, color 0.3s;
+}
+
+.button.small {
+  background-color: #ffffff;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 16px;
+  font-family: 'EB Garamond', serif;
+  padding: 5px 5px;
+  height: 40px;
+  line-height: -1; /* Adjust the line-height to vertically center the text */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex-grow: 0; /* Prevent stretching */
+  text-align: center;
+  margin: 5px;
+  margin-top: 5px;
+  max-width: 125px; /* Max width for buttons */
+  flex-basis: calc(20% - 10px); /* Adjust based on total number of buttons */
 }
 
 .button:last-child {
@@ -30,22 +50,6 @@
   border-top: 1px solid #000;
   border-bottom: 1px solid #000;
   margin-bottom: 5px;
-}
-
-.button.small {
-  background-color: #ffffff;
-  border: 1px solid #000;
-  color: #000;
-  font-size: 16px;
-  font-family: 'EB Garamond', serif;
-  padding: 5px 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  flex-grow: 0; /* Prevent stretching */
-  text-align: center;
-  margin: 5px;
-  max-width: 125px; /* Max width for buttons */
-  flex-basis: calc(20% - 10px); /* Adjust based on total number of buttons */
 }
 
 @media (max-width: 600px) { /* Adjust breakpoint as needed */

@@ -3,15 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import useStore from '../../utils/store';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LikeButtonProps {
   photoId: string;
   diptychIdCode: string;
   setIsAuthModalOpen: (isOpen: boolean) => void;
+  onLikeButtonClick: () => void;
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ photoId, diptychIdCode, setIsAuthModalOpen }) => {
+const LikeButton: React.FC<LikeButtonProps> = ({ photoId, diptychIdCode, setIsAuthModalOpen, onLikeButtonClick }) => {
   const [isLiked, setIsLiked] = useState(false);
+  const { isAuthenticated } = useAuth();
+
 
   useEffect(() => {
     const checkLikeStatus = async () => {
@@ -24,12 +28,22 @@ const LikeButton: React.FC<LikeButtonProps> = ({ photoId, diptychIdCode, setIsAu
         }
       };
   
-    if (useStore.getState().userId) {
-      checkLikeStatus();
-    }
+      if (useStore.getState().userId) {
+        checkLikeStatus();
+      } else {
+        setIsLiked(false); // Reset isLiked state when user is not logged in
+      }
   }, [photoId, diptychIdCode, useStore.getState().userId]);
 
+  useEffect(() => {
+    // Reset isLiked state when user logs out
+    if (!isAuthenticated) {
+      setIsLiked(false);
+    }
+  }, [isAuthenticated]);
+
   const handleLike = async () => {
+    onLikeButtonClick(); 
     if (!useStore.getState().userId) {
       setIsAuthModalOpen(true);
       return;

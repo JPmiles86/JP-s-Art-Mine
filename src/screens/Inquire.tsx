@@ -17,7 +17,8 @@ import DiptychCarousel from '../Diptychs/DiptychCarousel';
 import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
 import { fetchPhotosService } from '../utils/fetchPhotosService';
 import DiptychAvailabilityModule from '../Diptychs/DiptychAvailabilityModule';
-
+import LikeButton from '../components/layout/LikeButton';
+import AuthModal from '../components/modals/AuthModal';
 
 interface DownloadButtonProps {
   photoId: string;
@@ -45,11 +46,49 @@ const Inquiry: React.FC = () => {
   );
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, currentFilter, '/inquire');
   const [areShapesVisible, setAreShapesVisible] = useState(false);
-  const [selectedCarouselDiptychIdCode, setSelectedCarouselDiptychIdCode] = useState('');
+ // const [selectedCarouselDiptychIdCode, setSelectedCarouselDiptychIdCode] = useState('');
+  const [carousel1SelectedDiptychIdCode, setCarousel1SelectedDiptychIdCode] = useState('');
+  const [carousel2SelectedDiptychIdCode, setCarousel2SelectedDiptychIdCode] = useState('');
+  const [carousel3SelectedDiptychIdCode, setCarousel3SelectedDiptychIdCode] = useState('');
+  const [carousel4SelectedDiptychIdCode, setCarousel4SelectedDiptychIdCode] = useState('');
+  const [carousel5SelectedDiptychIdCode, setCarousel5SelectedDiptychIdCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
   const [fabricCanvas, setFabricCanvas] = useState<Map<string, fabric.Canvas>>(new Map());
   const [layoutSpecsMap, setLayoutSpecsMap] = useState<Map<string, LayoutSpecs>>(new Map());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [likeButtonDiptychIdCode, setLikeButtonDiptychIdCode] = useState('');
+  
+  // Add a callback function to update the selected code for each carousel
+  const handleCarousel1DiptychIdCodeChange = (code: string) => {setCarousel1SelectedDiptychIdCode(code);};
+  const handleCarousel2DiptychIdCodeChange = (code: string) => {setCarousel2SelectedDiptychIdCode(code);};
+  const handleCarousel3DiptychIdCodeChange = (code: string) => {setCarousel3SelectedDiptychIdCode(code);};
+  const handleCarousel4DiptychIdCodeChange = (code: string) => {setCarousel4SelectedDiptychIdCode(code);};
+  const handleCarousel5DiptychIdCodeChange = (code: string) => {setCarousel5SelectedDiptychIdCode(code);};
+
+  const renderLikeButton = (photoId: string, diptychIdCode: string) => {
+    const handleLikeButtonClick = () => {
+      setLikeButtonDiptychIdCode(diptychIdCode);
+      if (!useStore.getState().userId) {
+        setIsAuthModalOpen(true);
+      }
+    };
+  
+    return (
+      <LikeButton
+        photoId={photoId}
+        diptychIdCode={diptychIdCode}
+        setIsAuthModalOpen={handleLikeButtonClick}
+        onLikeButtonClick={handleLikeButtonClick}
+      />
+    );
+  };
+
+  const handleLikeButtonClick = () => {
+    if (!useStore.getState().userId) {
+      setIsAuthModalOpen(true);
+    }
+  };
 
   // Function to handle canvas ready from Diptych component
   const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, diptychIdCode: string) => {
@@ -134,6 +173,7 @@ const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
   };  
     
  const renderDiptych = useCallback((diptychIdCode: string, photoId?: string) => {
+
   return (
     <div className={styles.diptychContainer}>
       <DynamicDiptychComponent
@@ -169,26 +209,18 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
   return null;
 };
 
-      
-  // Add a callback function to update the selected code
-  const handleCarouselDiptychIdCodeChange = (code: string) => {
-    setSelectedCarouselDiptychIdCode(code);
-  };
-
-{selectedCarouselDiptychIdCode && 
- renderDownloadButton(selectedPhotograph!.photoID, selectedCarouselDiptychIdCode)}
-
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
         Thanks for inquiring about purchasing my art, which Diptych are you interested in purchasing?
       </Typography>
-      <div>
-        <button className={buttonStyles.button} onClick={handleReturnToGallery}>Return to Gallery</button>
+      <div style={{ display: 'flex', justifyContent: 'center'}}>
         <button className={buttonStyles.button} onClick={() => handlePrevPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Previous Photo</button>
+        <button className={buttonStyles.button} onClick={handleReturnToGallery}>Return to Gallery</button>
         <button className={buttonStyles.button} onClick={() => handleNextPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Next Photo</button>
-        <div className={buttonStyles.dropdownSelector}>
-          <Typography variant="h6" gutterBottom>Frame Color:</Typography>
+      </div>
+        <div className={buttonStyles.dropdownSelector} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <Typography variant="h6" gutterBottom style={{ marginTop: '7.5px' }}>Frame Color:</Typography>
           <select
             className={buttonStyles.button} // Apply the button class to the select element
             onChange={(e) => updateDiptychIdCodeForFrame(e.target.value)}
@@ -199,14 +231,21 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             <option value="Unframed">Unframed</option>
           </select>
         </div>
-      </div>
+      
       {selectedPhotograph && selectedDiptychIdCode? (
         <Box>
-          {renderDiptych(selectedDiptychIdCode || '', selectedPhotograph.photoID)}
-          <Typography style={{ textAlign: 'center' }}>Description for {selectedDiptychIdCode}</Typography>
+          <div style={{ display: 'flex', justifyContent: 'center'}}>
+            {renderDiptych(selectedDiptychIdCode || '', selectedPhotograph.photoID)}
+          </div>
+          <Typography style={{ textAlign: 'center' }}>
+            Diptych Variation: {selectedDiptychIdCode}
+          </Typography>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
             {renderDownloadButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
+            {renderLikeButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')}
+            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> 
+              {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} 
+            </button>
           </div>
 
           <DiptychCarouselDynamic
@@ -218,11 +257,12 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             areShapesVisible={areShapesVisible}
             containerRef={containerRef}
             handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+            onDiptychIdCodeChange={handleCarousel1DiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            {renderDownloadButton(selectedPhotograph.photoID, carousel1SelectedDiptychIdCode)}
+            {renderLikeButton(selectedPhotograph.photoID, carousel1SelectedDiptychIdCode || '')}
             <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
@@ -243,11 +283,12 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             areShapesVisible={areShapesVisible}
             containerRef={containerRef}
             handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+            onDiptychIdCodeChange={handleCarousel2DiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            {renderDownloadButton(selectedPhotograph.photoID, carousel2SelectedDiptychIdCode)}
+            {renderLikeButton(selectedPhotograph.photoID, carousel2SelectedDiptychIdCode || '')}
             <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
@@ -268,11 +309,12 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             areShapesVisible={areShapesVisible}
             containerRef={containerRef}
             handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+            onDiptychIdCodeChange={handleCarousel3DiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            {renderDownloadButton(selectedPhotograph.photoID, carousel3SelectedDiptychIdCode)}
+            {renderLikeButton(selectedPhotograph.photoID, carousel3SelectedDiptychIdCode || '')}
             <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
@@ -293,11 +335,12 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             areShapesVisible={areShapesVisible}
             containerRef={containerRef}
             handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+            onDiptychIdCodeChange={handleCarousel4DiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            {renderDownloadButton(selectedPhotograph.photoID, carousel4SelectedDiptychIdCode)}
+            {renderLikeButton(selectedPhotograph.photoID, carousel4SelectedDiptychIdCode || '')}
             <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
@@ -318,11 +361,12 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             areShapesVisible={areShapesVisible}
             containerRef={containerRef}
             handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
+            onDiptychIdCodeChange={handleCarousel5DiptychIdCodeChange}
             handleLayoutSpecsReady={handleLayoutSpecsReady}
           />
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, selectedCarouselDiptychIdCode)}
+            {renderDownloadButton(selectedPhotograph.photoID, carousel5SelectedDiptychIdCode)}
+            {renderLikeButton(selectedPhotograph.photoID, carousel5SelectedDiptychIdCode || '')}
             <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
@@ -333,8 +377,16 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
               />
             )}
           </div>
+          <AuthModal
+            open={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            showAnonymousOption={true}
+            isLikeTriggered={true}
+            photoId={selectedPhotograph?.photoID || ''}
+            diptychIdCode={likeButtonDiptychIdCode}
+            onSuccessfulAuth={handleLikeButtonClick}
+          />
         </Box>
-
       ) : (
         <Typography>Loading... Please be patient. If nothing loads, I guess there's a problem. Please Inform JPM</Typography>
       )}

@@ -29,6 +29,10 @@ const TopNavBar: React.FC = () => {
     setIsAuthModalOpen(false);
   };
 
+  const handleSuccessfulAuth = () => {
+    handleMenuClose(); // Close the menu when authentication is successful
+  };
+
   return (
     <AppBar
       position="static"
@@ -85,7 +89,14 @@ const TopNavBar: React.FC = () => {
           </button>
         )}
       </Toolbar>
-      <AuthModal open={isAuthModalOpen} onClose={handleAuthModalClose} showAnonymousOption={true} isLikeTriggered={false} />    </AppBar>
+      <AuthModal
+        open={isAuthModalOpen}
+        onClose={handleAuthModalClose}
+        showAnonymousOption={true}
+        isLikeTriggered={false}
+        onSuccessfulAuth={handleSuccessfulAuth} 
+      />    
+   </AppBar>
   );
 };
 
