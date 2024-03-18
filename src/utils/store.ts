@@ -46,6 +46,7 @@ export interface Photograph extends DiptychSVG {
   DiptychIdCode: string;
   diptcyhName: string;
   artworkID: string;
+  isHidden: boolean;
 }
 
 // Add this new interface for managing download URLs
@@ -112,6 +113,8 @@ export interface Store {
   frames: Frame[];
   photoDetailsLoaded: boolean;
   userId: number | null;
+  userRole: string | null;
+  setUserRole: (role: string | null) => void;
   setUserId: (userId: number | null) => void;
   setIsMerged: (isMerged: string) => void;
   setShapeCode: (shapeCode: string) => void;
@@ -194,6 +197,8 @@ const useStore = create<Store>((set, get) => ({
   currentFilter: '',
   photoDetailsLoaded: false,
   userId: null,
+  userRole: null,
+  setUserRole: (role) => set({ userRole: role }),
   setUserId: (userId) => set({ userId }),
   setPhotoDetailsLoaded: (loaded: boolean) => set({ photoDetailsLoaded: loaded }),
    setPhotoDetails: (photos: Photograph[]) => {

@@ -6,8 +6,9 @@ import buttonStyles from '../screens/ButtonStyles.module.css';
 import useStore from '../utils/store'; 
 import { swapMapping, rotateMapping } from './DiptychIdCodeMapping'; 
 import LikeButton from '../components/layout/LikeButton';
+import useKeyboardNavigation from '../screens/useKeyboardNavigation';
 
-const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen }) => {
+const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen, }) => {
     const { FrameId, isMerged, shapeCode, selectedDiptychIdCode, setFrameId, setIsMerged, setShapeCode, setSelectedDiptychIdCode } = useStore(state => ({
         FrameId: state.FrameId,
         isMerged: state.isMerged,
@@ -77,6 +78,14 @@ const handleToggleMergeStatus = () => handleUpdate(FrameId, isMerged === 'Entang
 const handleSwapShape = () => handleUpdate(FrameId, isMerged, swapMapping[shapeCode] || shapeCode);
 const handleRotateShape = () => handleUpdate(FrameId, isMerged, rotateMapping[shapeCode] || shapeCode);
 
+useKeyboardNavigation(
+    null, // handleNextPhoto (not applicable in this component)
+    null, // handlePrevPhoto (not applicable in this component)
+    handleSwapShape, // Function to swap shape
+    handleRotateShape, // Function to rotate shape
+    handleToggleMergeStatus // Function to toggle merge status
+  );
+  
 useEffect(() => {
     // Update DiptychIdCode when necessary
     if (updateNeeded) {

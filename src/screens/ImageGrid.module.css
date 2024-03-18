@@ -115,3 +115,6 @@ body, html {
   box-shadow: 0 0 0 3px black; /* Outer border color changes on hover */
 }
 
+.hiddenImage {
+  opacity: 0.5;
+}

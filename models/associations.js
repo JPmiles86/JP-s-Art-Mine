@@ -78,7 +78,7 @@ DiptychSVG.hasMany(Like, { foreignKey: 'diptychIdCode' });
 Like.belongsTo(DiptychSVG, { foreignKey: 'id' });
 
 Photo.hasMany(HiddenPhoto, { foreignKey: 'photoId' });
-HiddenPhoto.belongsTo(Photo, { foreignKey: 'id' });
+HiddenPhoto.belongsTo(Photo, { foreignKey: 'photoId' });
 
 Users.hasMany(HiddenPhoto, { foreignKey: 'userId' });
 HiddenPhoto.belongsTo(Users, { foreignKey: 'userId' });

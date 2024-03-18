@@ -14,6 +14,7 @@ import useDiptychInfo from '../Diptychs/useDiptychInfo';
 import useGalleryNavigation from '../utils/useGalleryNavigation';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
 import AuthModal from '../components/modals/AuthModal';
+import HidePhotoButton from '../components/layout/HidePhotoButton';
 import { fabric } from 'fabric';
 
 
@@ -63,6 +64,7 @@ const ExhibitionSpace = () => {
   const [isDataReady, setIsDataReady] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const userRole = useStore((state) => state.userRole);
 
   // Ensure that selectedPhotograph is not undefined when using useGalleryNavigation
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(
@@ -113,6 +115,14 @@ const ExhibitionSpace = () => {
       setFabricCanvas(canvasRef); // Set the local state for fabric canvas
     }, []);  
 
+    useKeyboardNavigation(
+      wrappedHandleNextPhoto, // Function to handle next photo
+      wrappedHandlePrevPhoto, // Function to handle previous photo
+      () => {}, // Empty function for swapShape
+      () => {}, // Empty function for rotateShape
+      () => {} // Empty function for toggleMergeStatus
+    );
+  
   useEffect(() => {
     console.log(`[ExhibitionSpace] Current filter: ${currentFilter}, New filter: ${filter}`);
     if (filter && filter !== currentFilter) {
@@ -134,7 +144,8 @@ const ExhibitionSpace = () => {
           setPhotos,
           setInitialPhotoFetch,
           currentFilter,
-          initialPhotoFetch
+          initialPhotoFetch, 
+          userRole
         );
       }
   
@@ -153,7 +164,14 @@ const ExhibitionSpace = () => {
     return () => { isMounted = false; };
   }, [currentFilter, photoID, sortedPhotos, initialPhotoFetch]);
   
-  // useKeyboardNavigation(wrappedHandleNextPhoto, wrappedHandlePrevPhoto, swapShape, rotateShape, toggleMergeStatus);
+  // Call the useKeyboardNavigation hook with the appropriate function references
+ // useKeyboardNavigation(
+ //   wrappedHandleNextPhoto, // Function to handle next photo
+ //   wrappedHandlePrevPhoto, // Function to handle previous photo
+ //   handleSwapShape, // Function to swap shape
+ //   handleRotateShape, // Function to rotate shape
+ //   handleToggleMergeStatus // Function to toggle merge status
+ // );  
   
   const handleLikeButtonClick = () => {
     if (!useStore.getState().userId) {
@@ -241,6 +259,9 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
           </div>
           </div>
       </div>
+      {selectedPhotograph && userRole === 'Admin' && (
+        <HidePhotoButton photoId={selectedPhotograph.photoID} />
+      )}
       <div>
       <DiptychControls
             navigateToInquiry={navigateToInquiryMemoized}

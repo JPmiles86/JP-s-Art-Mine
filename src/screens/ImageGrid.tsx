@@ -41,6 +41,7 @@ const ImageGrid: React.FC = () => {
   const [gridHeaderData, setGridHeaderData] = useState<GridHeaderData | null>(null);
   const [needsHeaderImageUpdate, setNeedsHeaderImageUpdate] = useState(false);
   const [urlParsed, setUrlParsed] = useState(false); 
+  const userRole = useStore((state) => state.userRole);
   const { loadedPhotos, loadMorePhotos, photos } = useStore((state) => ({
     loadedPhotos: state.loadedPhotos,
     loadMorePhotos: state.loadMorePhotos,
@@ -97,7 +98,8 @@ const ImageGrid: React.FC = () => {
         setPhotos,
         setInitialPhotoFetch,
         currentFilter,
-        false
+        false,
+        userRole
       ).then(() => {
         loadMorePhotos();
       });
@@ -188,7 +190,8 @@ const ImageGrid: React.FC = () => {
       setPhotos,
       setInitialPhotoFetch,
       newSeriesCode,
-      false
+      false,
+      userRole
     ).then(() => {
       // This will now trigger the store to sort the photos after they are fetched
       setSortValue(sortValue); 
@@ -270,8 +273,8 @@ const ImageGrid: React.FC = () => {
         <img 
           src={`${urlConfig.baseURL}${photo.imagePath.slice(photo.imagePath.indexOf('originals') + 'originals'.length)}`} 
           alt="Grid Item" 
-          className={styles.image} 
-        />
+          className={`${styles.image} ${photo.isHidden ? styles.hiddenImage : ''}`}
+          />
       }
     </div>
   ))}

@@ -58,6 +58,8 @@ const Inquiry: React.FC = () => {
   const [layoutSpecsMap, setLayoutSpecsMap] = useState<Map<string, LayoutSpecs>>(new Map());
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [likeButtonDiptychIdCode, setLikeButtonDiptychIdCode] = useState('');
+  const userRole = useStore((state) => state.userRole);
+
   
   // Add a callback function to update the selected code for each carousel
   const handleCarousel1DiptychIdCodeChange = (code: string) => {setCarousel1SelectedDiptychIdCode(code);};
@@ -127,7 +129,8 @@ const Inquiry: React.FC = () => {
         setPhotos,
         setInitialPhotoFetch,
         currentFilter,
-        initialPhotoFetch
+        initialPhotoFetch, 
+        userRole
       );
     }
   }, [photoID, sortedPhotos, setPhotos, setInitialPhotoFetch, currentFilter, initialPhotoFetch]);

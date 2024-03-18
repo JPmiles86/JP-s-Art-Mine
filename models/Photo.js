@@ -1,10 +1,11 @@
 // my-gallery/models/Photo.js
-const { DataTypes } = require('sequelize');
+const {  Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const CameraModel = require('./CameraModel');
 const Series = require('./Series');
 const Dates = require('./Dates');
 const ImageNumbers = require('./ImageNumbers');
+const HiddenPhoto = require('./HiddenPhoto');
 // const Artwork = require('./Artwork');
 
 const Photo = sequelize.define('Photo', {

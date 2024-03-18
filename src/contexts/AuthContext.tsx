@@ -55,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     useStore.getState().setUserId(null);
+    useStore.getState().setUserRole(null); 
     setCurrentUser(null);
   };
 

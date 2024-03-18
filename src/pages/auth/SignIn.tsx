@@ -36,6 +36,7 @@ const SignIn: React.FC<SignInProps> = ({ onClose, setIsForgotPassword, onSuccess
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
       useStore.getState().setUserId(response.data.userData.userId);
+      useStore.getState().setUserRole(response.data.userData.role); 
       login(response.data.token); // Call the login function with only the token
       onClose();
       onSuccessfulAuth?.();

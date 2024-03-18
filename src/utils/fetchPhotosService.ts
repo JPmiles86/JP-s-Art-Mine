@@ -10,7 +10,8 @@ export async function fetchPhotosService(
     setPhotos: (photos: Photograph[]) => void,
     setInitialPhotoFetch: (value: boolean) => void,
     currentFilter: string,
-    initialPhotoFetch: boolean
+    initialPhotoFetch: boolean,
+    userRole: string | null
 ) {
     console.log("fetchPhotosService called", { currentFilter, initialPhotoFetch });
     console.log("Before fetching photos", { currentFilter, initialPhotoFetch });
@@ -25,7 +26,7 @@ export async function fetchPhotosService(
 
     try {
         const filterType = determineFilter(currentFilter);
-        const fetchedPhotos = await fetchPhotosFromAPI(filterType, currentFilter);
+        const fetchedPhotos = await fetchPhotosFromAPI(filterType, currentFilter, userRole);
 
         console.log("Fetched photos:", fetchedPhotos);
 

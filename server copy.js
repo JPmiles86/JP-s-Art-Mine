@@ -29,9 +29,40 @@ const Like = require('./models/Like');
 const HiddenPhoto = require('./models/HiddenPhoto');
 const authRoutes = require('./routes/authRoutes');
 const passport = require('passport');
-const url = require('url');
-const querystring = require('querystring');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 const cors = require('cors');
+
+
+// Configure JWT options
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: JWT_SECRET_KEY, 
+};
+
+// Create JWT strategy
+const jwtStrategy = new JwtStrategy(jwtOptions, async (payload, done) => {
+  try {
+    console.log('JWT token:', token); // Add this line
+    // Find the user in your database using the payload.userId
+    const user = await Users.findByPk(payload.userId);
+    console.log('User from database:', user); // Add this line
+
+    if (!user) {
+      return done(null, false);
+    }
+
+    // If user is found, pass the user object to the next middleware
+    return done(null, user);
+  } catch (error) {
+    return done(error, false);
+  }
+});
+
+// Use the JWT strategy
+passport.use(jwtStrategy);
+
 
 app.use(cors({
   origin: 'http://localhost:3000', // replace with your client's domain
@@ -43,30 +74,30 @@ app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/b
 
 app.use('/api/auth', authRoutes);
 
+app.use((req, res, next) => {
+  console.log('Request Headers:', req.headers);
+  next();
+});
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-app.get('/api/photos/date/:date', async (req, res) => {
+app.get('/api/photos/date/:date', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { date } = req.params;
-  const parsedQueryString = querystring.parse(req.url.split('?')[1]);
-  const userRole = parsedQueryString.userRole;
-
-  console.log('User Role:', userRole);
+  const userRole = req.user.role;
 
   try {
-    const whereCondition = { date };
-
-    if (userRole !== 'Admin') {
-      whereCondition.id = {
-        [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
-      };
-    }
-
     const photos = await Photo.findAll({
-      where: whereCondition
+      where: {
+        date,
+        ...(userRole === 'Admin' ? {} : {
+          id: {
+            [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+          }
+        })
+      }
     });
-
     console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
@@ -75,26 +106,21 @@ app.get('/api/photos/date/:date', async (req, res) => {
   }
 });
 
-app.get('/api/photos/number/:number', async (req, res) => {
+app.get('/api/photos/number/:number', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { number } = req.params;
-  const parsedQueryString = querystring.parse(req.url.split('?')[1]);
-  const userRole = parsedQueryString.userRole;
-
-  console.log('User Role:', userRole);
+  const userRole = req.user.role;
 
   try {
-    const whereCondition = { number };
-
-    if (userRole !== 'Admin') {
-      whereCondition.id = {
-        [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
-      };
-    }
-
     const photos = await Photo.findAll({
-      where: whereCondition
+      where: {
+        number,
+        ...(userRole === 'Admin' ? {} : {
+          id: {
+            [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+          }
+        })
+      }
     });
-
     console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
@@ -103,26 +129,21 @@ app.get('/api/photos/number/:number', async (req, res) => {
   }
 });
 
-app.get('/api/photos/series/:series', async (req, res) => {
+app.get('/api/photos/series/:series', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { series } = req.params;
-  const parsedQueryString = querystring.parse(req.url.split('?')[1]);
-  const userRole = parsedQueryString.userRole;
-
-  console.log('User Role:', userRole); 
+  const userRole = req.user.role;
 
   try {
-    const whereCondition = { seriesCode: series };
-
-    if (userRole !== 'Admin') {
-      whereCondition.id = {
-        [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
-      };
-    }
-
     const photos = await Photo.findAll({
-      where: whereCondition
+      where: {
+        seriesCode: series,
+        ...(userRole === 'Admin' ? {} : {
+          id: {
+            [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+          }
+        })
+      }
     });
-
     console.log(`Number of photos found: ${photos.length}`);
     res.json(photos);
   } catch (error) {
@@ -131,38 +152,32 @@ app.get('/api/photos/series/:series', async (req, res) => {
   }
 });
 
-app.get('/api/photos/filter/:filter', async (req, res) => {
+app.get('/api/photos/filter/:filter', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { filter } = req.params;
-  const parsedQueryString = querystring.parse(req.url.split('?')[1]);
-  const userRole = parsedQueryString.userRole;
-
-  console.log('User Role:', userRole);
+  const userRole = req.user.role;
 
   try {
-    let whereCondition;
-
+    let photos;
     switch (filter) {
       case 'CST':
       case '230321':
       case '1125':
-        whereCondition = { filter };
+        photos = await Photo.findAll({
+          where: {
+            filter,
+            ...(userRole === 'Admin' ? {} : {
+              id: {
+                [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
+              }
+            })
+          }
+        });
         break;
       // Add other cases here as needed
       default:
-        whereCondition = {};
+        photos = [];
         break;
     }
-
-    if (userRole !== 'Admin') {
-      whereCondition.id = {
-        [Op.notIn]: Sequelize.literal(`(SELECT "photoId" FROM "HiddenPhotos")`)
-      };
-    }
-
-    const photos = await Photo.findAll({
-      where: whereCondition
-    });
-
     res.json(photos);
   } catch (error) {
     console.error(error);
@@ -620,13 +635,14 @@ app.get('/api/likes/:userId/:photoId/:diptychIdCode', async (req, res) => {
   }
 });
 
-app.put('/api/photos/:photoId/hide', async (req, res) => {
+app.put('/api/photos/:photoId/hide', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { photoId } = req.params;
-  const { hide, userId, userRole } = req.body;
+  const { hide } = req.body;
 
   try {
     // Check if the user is an admin
-    if (userRole !== 'Admin') {
+    const user = await Users.findByPk(req.user.userId);
+    if (!user || user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Only admins can perform this action' });
     }
 
@@ -640,7 +656,7 @@ app.put('/api/photos/:photoId/hide', async (req, res) => {
     const isHidden = await HiddenPhoto.findOne({
       where: {
         photoId: photo.id,
-        userId,
+        userId: req.user.userId,
       },
     });
 
@@ -648,7 +664,7 @@ app.put('/api/photos/:photoId/hide', async (req, res) => {
       // Hide the photo
       await HiddenPhoto.create({
         photoId: photo.id,
-        userId,
+        userId: req.user.userId,
       });
       res.json({ message: 'Photo hidden successfully' });
     } else if (!hide && isHidden) {
@@ -656,7 +672,7 @@ app.put('/api/photos/:photoId/hide', async (req, res) => {
       await HiddenPhoto.destroy({
         where: {
           photoId: photo.id,
-          userId,
+          userId: req.user.userId,
         },
       });
       res.json({ message: 'Photo unhidden successfully' });
@@ -669,7 +685,7 @@ app.put('/api/photos/:photoId/hide', async (req, res) => {
   }
 });
 
-app.get('/api/photos/hidden', async (req, res) => {
+app.get('/api/photos/hidden', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
     const hiddenPhotos = await HiddenPhoto.findAll({
       where: { isVisible: false },
@@ -678,34 +694,6 @@ app.get('/api/photos/hidden', async (req, res) => {
     res.json(hiddenPhotos);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server Error');
-  }
-});
-
-app.get('/api/photos/:photoId/hidden-status', async (req, res) => {
-  const { photoId } = req.params;
-
-  try {
-    // Find the photo by its photoID
-    const photo = await Photo.findOne({ where: { photoID: photoId } });
-    if (!photo) {
-      return res.status(404).json({ error: 'Photo not found' });
-    }
-
-    // Check if a hidden photo record exists for the photo
-    const hiddenPhoto = await HiddenPhoto.findOne({
-      where: {
-        photoId: photo.id,
-      },
-    });
-
-    if (hiddenPhoto) {
-      res.json({ isHidden: true });
-    } else {
-      res.json({ isHidden: false });
-    }
-  } catch (error) {
-    console.error('Error checking photo hidden status:', error);
     res.status(500).send('Server Error');
   }
 });

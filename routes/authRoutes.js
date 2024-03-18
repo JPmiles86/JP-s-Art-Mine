@@ -15,6 +15,8 @@ function generateResetToken() {
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
   const lowercaseEmail = email.toLowerCase();
+  const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
+
 
   try {
     // Check if the user already exists
@@ -36,7 +38,7 @@ router.post('/register', async (req, res) => {
     await newUser.update({ username });
 
     // Generate a JWT token
-    const token = jwt.sign({ userId: newUser.userId }, 'your-secret-key');
+    const token = jwt.sign({ userId: newUser.userId }, JWT_SECRET_KEY);
 
     // Include user data in the response
     const userData = {
@@ -70,6 +72,7 @@ router.post('/send-signup-email', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const lowercaseEmail = email.toLowerCase();
+    const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
   
     try {
       // Check if the user exists
@@ -85,12 +88,13 @@ router.post('/login', async (req, res) => {
       }
   
       // Generate a JWT token
-      const token = jwt.sign({ userId: user.userId }, 'your-secret-key');
+      const token = jwt.sign({ userId: user.userId }, JWT_SECRET_KEY);
 
       // Include user data in the response
       const userData = {
         userId: user.userId,
         email: user.email,
+        role: user.role,
         // Include any other user properties you need
       };
   
@@ -102,6 +106,7 @@ router.post('/login', async (req, res) => {
   });
 
   router.post('/anonymous', async (req, res) => {
+    const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
     try {
       // Get the current maximum userId
       const maxUserId = await Users.max('userId');
@@ -114,7 +119,7 @@ router.post('/login', async (req, res) => {
       });
 
       // Generate a JWT token for the anonymous user
-      const token = jwt.sign({ userId: anonymousUser.userId }, 'your-secret-key');
+      const token = jwt.sign({ userId: anonymousUser.userId }, JWT_SECRET_KEY);
 
       res.status(200).json({ message: 'Anonymous user created', token, userId: anonymousUser.userId });
     } catch (error) {
