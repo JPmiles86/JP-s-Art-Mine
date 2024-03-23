@@ -21,11 +21,19 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   },
   organizationName: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: true
+  },
+  organizationType: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  taxIdNumber: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   },
   primaryEmail: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: true
   },
   secondaryEmail: {
     type: DataTypes.STRING(255),
@@ -33,19 +41,11 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   },
   primaryPhone: {
     type: DataTypes.STRING(20),
-    allowNull: false
+    allowNull: true
   },
   secondaryPhone: {
     type: DataTypes.STRING(20),
     allowNull: true
-  },
-  locationId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: Locations,
-      key: 'LocationID'
-    }
   },
   instagram: {
     type: DataTypes.STRING(255),
@@ -61,14 +61,6 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   },
   website: {
     type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  profilePhotoUrl: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  preferences: {
-    type: DataTypes.TEXT,
     allowNull: true
   },
   contactPerson1: {
@@ -126,6 +118,5 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
 });
 
 OrganizationContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
-OrganizationContactInfo.belongsTo(Locations, { foreignKey: 'locationId' });
 
 module.exports = OrganizationContactInfo;

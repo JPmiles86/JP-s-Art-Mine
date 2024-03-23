@@ -43,12 +43,16 @@ const Users = sequelize.define('Users', {
     unique: true,
     allowNull: true
   },
+  profilePhotoUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
   isAnonymous: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
   role: {
-    type: DataTypes.ENUM('Admin', 'Artist', 'RegularUser', 'AnonymousUser'),
+    type: DataTypes.ENUM('Admin', 'RegularUser', 'AnonymousUser'),
     defaultValue: 'RegularUser'
   }
 }, {

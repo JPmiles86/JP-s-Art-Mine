@@ -24,5 +24,6 @@ module.exports = {
     PasswordResetToken: require('./PasswordResetToken'),
     Like: require('./Like'), 
     HiddenPhoto: require('./HiddenPhoto'),
+    UserLocations: require('./UserLocations'),
   };
   

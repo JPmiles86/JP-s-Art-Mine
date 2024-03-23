@@ -45,13 +45,7 @@ interface SignUpProps {
       return;
     }
     try {
-      const userId = useStore.getState().userId;
-      const response = await axios.put(`/api/users/${userId}/profile`, {
-        email,
-        password,
-        isAnonymous: false,
-        role: 'RegularUser',
-      });
+      const response = await axios.post('/api/auth/register', { email, password });
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
       useStore.getState().setUserId(response.data.userData.userId); // Store the userId in the store

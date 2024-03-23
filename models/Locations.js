@@ -4,36 +4,36 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Locations = sequelize.define('Locations', {
-  LocationID: {
+  locationId: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
-  AddressLine1: {
+  addressLine1: {
     type: DataTypes.STRING(255),
     allowNull: false
   },
-  AddressLine2: {
+  addressLine2: {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  City: {
+  city: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  StateProvince: {
+  stateProvince: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  PostalCode: {
+  postalCode: {
     type: DataTypes.STRING(20),
     allowNull: false
   },
-  Country: {
+  country: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  LocationType: {
+  locationType: {
     type: DataTypes.ENUM('Home', 'Business', 'Other'),
     allowNull: false
   }

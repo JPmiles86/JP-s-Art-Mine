@@ -97,11 +97,11 @@ const ExhibitionSpace = () => {
     }), [galleryBackground]);
     
     const wrappedHandlePrevPhoto = useCallback(() => {
-      handlePrevPhoto(currentIndex);
+      handlePrevPhoto?.(currentIndex);
     }, [handlePrevPhoto, currentIndex]);
     
     const wrappedHandleNextPhoto = useCallback(() => {
-      handleNextPhoto(currentIndex);
+      handleNextPhoto?.(currentIndex);
     }, [handleNextPhoto, currentIndex]);
 
       // Add a toggle function for the shape visibility
@@ -256,12 +256,15 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
             ) : (
               <div> </div>
             )}
+             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px'}}>
+              {selectedPhotograph && userRole === 'Admin' && (
+                <HidePhotoButton photoId={selectedPhotograph.photoID} />
+              )}
+            </div>
           </div>
           </div>
       </div>
-      {selectedPhotograph && userRole === 'Admin' && (
-        <HidePhotoButton photoId={selectedPhotograph.photoID} />
-      )}
+     
       <div>
       <DiptychControls
             navigateToInquiry={navigateToInquiryMemoized}

@@ -43,7 +43,7 @@ const HidePhotoButton: React.FC<HidePhotoButtonProps> = ({ photoId }) => {
   };
 
   return userRole === 'Admin' ? (
-    <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={handleHidePhoto}>
+    <button className={`${buttonStyles.button}`} onClick={handleHidePhoto}>
       {isHidden ? 'Unhide Photo' : 'Hide Photo'}
     </button>
   ) : null;

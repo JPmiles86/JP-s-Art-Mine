@@ -6,7 +6,7 @@ const { Photo, CameraModel, Series, Dates, ImageNumbers,
     Artwork, Diptych, DiptychSVG, Frame, Pricing, PrintSizes, 
     SizeCategories, Users, EntityType, Locations, PersonContactInfo, 
     OrganizationContactInfo, Artists, ArtistsAdditionalPhotos, 
-    PrivacyPreferences, AuditTrail } = models;
+    PrivacyPreferences, AuditTrail, Like, HiddenPhoto, UserLocations } = models;
 
 Photo.belongsTo(CameraModel, { foreignKey: 'model' });
 CameraModel.hasMany(Photo, { foreignKey: 'model' });
@@ -23,14 +23,14 @@ ImageNumbers.hasMany(Photo, { foreignKey: 'number' });
 Photo.hasMany(Artwork, { foreignKey: 'photoRefId' }); 
 Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' }); 
 
-Artwork.belongsTo(Diptych, { foreignKey: 'diptychId' });
-Diptych.hasMany(Artwork, { foreignKey: 'diptychId' });
+Artwork.belongsTo(Diptych, { foreignKey: 'DiptychId' });
+Diptych.hasMany(Artwork, { foreignKey: 'DiptychId' });
 
-Diptych.hasMany(DiptychSVG, { foreignKey: 'diptychId' });
-DiptychSVG.belongsTo(Diptych, { foreignKey: 'diptychId' });
+Diptych.hasMany(DiptychSVG, { foreignKey: 'DiptychId' });
+DiptychSVG.belongsTo(Diptych, { foreignKey: 'DiptychId' });
 
-Frame.hasMany(DiptychSVG, { foreignKey: 'frameId' });
-DiptychSVG.belongsTo(Frame, { foreignKey: 'frameId' });
+Frame.hasMany(DiptychSVG, { foreignKey: 'FrameId' });
+DiptychSVG.belongsTo(Frame, { foreignKey: 'FrameId' });
 
 Artwork.belongsTo(Pricing, { foreignKey: 'pricingId' });
 Pricing.hasMany(Artwork, { foreignKey: 'pricingId' });
@@ -50,11 +50,14 @@ PersonContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
 EntityType.hasOne(OrganizationContactInfo, { foreignKey: 'entityId' });
 OrganizationContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
 
-Locations.hasMany(PersonContactInfo, { foreignKey: 'locationId' });
-PersonContactInfo.belongsTo(Locations, { foreignKey: 'locationId' });
+PersonContactInfo.hasMany(UserLocations, { foreignKey: 'personContactInfoId' });
+UserLocations.belongsTo(PersonContactInfo, { foreignKey: 'personContactInfoId' });
 
-Locations.hasMany(OrganizationContactInfo, { foreignKey: 'locationId' });
-OrganizationContactInfo.belongsTo(Locations, { foreignKey: 'locationId' });
+OrganizationContactInfo.hasMany(UserLocations, { foreignKey: 'organizationContactInfoId' });
+UserLocations.belongsTo(OrganizationContactInfo, { foreignKey: 'organizationContactInfoId' });
+
+Locations.hasMany(UserLocations, { foreignKey: 'locationId' });
+UserLocations.belongsTo(Locations, { foreignKey: 'locationId' });
 
 Users.hasOne(Artists, { foreignKey: 'userId' });
 Artists.belongsTo(Users, { foreignKey: 'userId' });
@@ -72,10 +75,10 @@ Users.hasMany(Like, { foreignKey: 'userId' });
 Like.belongsTo(Users, { foreignKey: 'userId' });
 
 Photo.hasMany(Like, { foreignKey: 'photoId' });
-Like.belongsTo(Photo, { foreignKey: 'id' });
+Like.belongsTo(Photo, { foreignKey: 'photoId' });
 
 DiptychSVG.hasMany(Like, { foreignKey: 'diptychIdCode' });
-Like.belongsTo(DiptychSVG, { foreignKey: 'id' });
+Like.belongsTo(DiptychSVG, { foreignKey: 'diptychIdCode' });
 
 Photo.hasMany(HiddenPhoto, { foreignKey: 'photoId' });
 HiddenPhoto.belongsTo(Photo, { foreignKey: 'photoId' });

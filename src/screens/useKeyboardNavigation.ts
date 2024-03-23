@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 
 const useKeyboardNavigation = (
-  handleNextPhoto: () => void,
-  handlePrevPhoto: () => void,
+  handleNextPhoto: (() => void) | undefined,
+  handlePrevPhoto: (() => void) | undefined,
   swapShape: () => void,
   rotateShape: () => void,
   toggleMergeStatus: () => void
@@ -13,10 +13,10 @@ const useKeyboardNavigation = (
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowRight':
-          handleNextPhoto();
+          handleNextPhoto?.();
           break;
         case 'ArrowLeft':
-          handlePrevPhoto();
+          handlePrevPhoto?.();
           break;
         case 'ArrowUp':
         case 's':

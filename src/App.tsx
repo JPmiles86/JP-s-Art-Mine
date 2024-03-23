@@ -30,7 +30,7 @@ const AppContent: React.FC = () => {
     if (!current) return;
     const { scrollTop, scrollHeight, clientHeight } = current;
     const isBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight * 0.9;
-    if (isBottom && scrollTop > 0) {
+    if (isBottom && scrollTop > 0 && location.pathname !== '/profile') {
       loadMorePhotos();
     }
   };   

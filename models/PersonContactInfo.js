@@ -21,7 +21,7 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   },
   firstName: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: true
   },
   middleName: {
     type: DataTypes.STRING(255),
@@ -29,11 +29,15 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   },
   lastName: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: true
+  },
+  preferredName: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   },
   primaryEmail: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: true
   },
   secondaryEmail: {
     type: DataTypes.STRING(255),
@@ -41,19 +45,15 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   },
   primaryPhone: {
     type: DataTypes.STRING(20),
-    allowNull: false
+    allowNull: true
   },
   secondaryPhone: {
     type: DataTypes.STRING(20),
     allowNull: true
   },
-  locationId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: Locations,
-      key: 'LocationID'
-    }
+  profession: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   },
   instagram: {
     type: DataTypes.STRING(255),
@@ -71,20 +71,8 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  profilePhotoUrl: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
   relationshipToArtist: {
     type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  purchasePrivacyLevel: {
-    type: DataTypes.ENUM('Public', 'Private', 'Anonymous'),
-    allowNull: false
-  },
-  preferences: {
-    type: DataTypes.TEXT,
     allowNull: true
   }
 }, {
@@ -94,6 +82,5 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
 });
 
 PersonContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
-PersonContactInfo.belongsTo(Locations, { foreignKey: 'locationId' });
 
 module.exports = PersonContactInfo;
