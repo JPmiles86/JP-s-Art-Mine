@@ -57,6 +57,47 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// routes/authRoutes.js
+
+router.post('/anonymous-signup', async (req, res) => {
+  const { userId, email, password } = req.body;
+  const lowercaseEmail = email.toLowerCase();
+  const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
+
+  try {
+    // Find the anonymous user by userId
+    const anonymousUser = await Users.findByPk(userId);
+    if (!anonymousUser) {
+      return res.status(404).json({ error: 'Anonymous user not found' });
+    }
+
+    // Check if the email is already in use by another user
+    const existingUser = await Users.findOne({ where: { email: lowercaseEmail } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update the anonymous user's email, password, and role
+    await anonymousUser.update({
+      email: lowercaseEmail,
+      password: hashedPassword,
+      role: 'RegularUser',
+      isAnonymous: false,
+    });
+
+    // Generate a new JWT token
+    const token = jwt.sign({ userId: anonymousUser.userId }, JWT_SECRET_KEY);
+
+    res.status(200).json({ message: 'Anonymous user sign-up successful', token });
+  } catch (error) {
+    console.error('Anonymous user sign-up error:', error);
+    res.status(500).json({ error: 'Anonymous user sign-up failed' });
+  }
+});
+
 router.post('/send-signup-email', async (req, res) => {
   const { email } = req.body;
 

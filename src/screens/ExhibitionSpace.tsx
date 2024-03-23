@@ -65,6 +65,7 @@ const ExhibitionSpace = () => {
   const [photosError, setPhotosError] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const userRole = useStore((state) => state.userRole);
+  const isAnonymous = useStore((state) => state.isAnonymous);
 
   // Ensure that selectedPhotograph is not undefined when using useGalleryNavigation
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(
@@ -286,6 +287,7 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
           photoId={photoID}
           diptychIdCode={selectedDiptychIdCode || undefined}
           onSuccessfulAuth={handleLikeButtonClick}
+          isAnonymousUser={isAnonymous}
         />
     </div>
    );

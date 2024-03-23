@@ -92,7 +92,6 @@ const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [personalContactInfo, setPersonalContactInfo] = useState<PersonalContactInfo | null>(null);
   const [organizationContactInfo, setOrganizationContactInfo] = useState<OrganizationContactInfo | null>(null);
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [entityType, setEntityType] = useState<string | null>(null);
@@ -105,6 +104,8 @@ const Profile: React.FC = () => {
   const [newUsername, setNewUsername] = useState(userData?.username || '');
   const [usernameError, setUsernameError] = useState('');
   const [isFormModified, setIsFormModified] = useState(false);
+  const isAnonymous = useStore((state) => state.isAnonymous);
+
 
   const handleCancelUsername = () => {
     setNewUsername(userData?.username || '');
@@ -139,7 +140,6 @@ const Profile: React.FC = () => {
       const response = await axios.get(`/api/users/${userId}/profile`);
       const { user, entityType, personContactInfo, organizationContactInfo } = response.data;
       setUserData(user);
-      setIsAnonymous(user.isAnonymous);
       setEntityType(entityType);
       setSelectedEntityType(entityType || '');
   
@@ -162,6 +162,9 @@ const Profile: React.FC = () => {
     }
   }, [userId]);
 
+  useEffect(() => {
+    fetchUserData();
+  }, [isAnonymous]);
 
   const handleSignUp = async () => {
     try {
@@ -340,30 +343,20 @@ return (
         <Typography variant="body1" align="center">
           <Link href="/">Go to Homepage</Link>
         </Typography>
-        <AuthModal
-          open={openAuthModal}
-          onClose={() => setOpenAuthModal(false)}
-          showAnonymousOption={false}
-          isLikeTriggered={false}
-        />
       </Box>
     ) : (
       <>
         {isAnonymous ? (
-          <Box>
-            <Typography variant="h6">Sign Up to Save Your Favorites</Typography>
-            <TextField
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button className={buttonStyles.button} onClick={handleSignUp}>Sign Up</button>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="50vh">
+            <Typography variant="h6" align="center" gutterBottom>
+              Sign Up to Save Your Favorites
+            </Typography>
+            <button className={buttonStyles.button} onClick={() => {
+              console.log("Sign Up button clicked");
+              setOpenAuthModal(true);
+            }}>
+              Sign Up
+            </button>
           </Box>
         ) : (
           <>
@@ -449,6 +442,13 @@ return (
         )}
       </>
     )}
+    <AuthModal
+          open={openAuthModal}
+          onClose={() => setOpenAuthModal(false)}
+          showAnonymousOption={false}
+          isLikeTriggered={false}
+          isAnonymousUser={isAnonymous}
+        />
     <ToastContainer />
   </Box>
 );

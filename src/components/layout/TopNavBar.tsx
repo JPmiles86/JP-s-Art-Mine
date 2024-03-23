@@ -7,11 +7,13 @@ import { AccountCircle } from '@mui/icons-material';
 import AuthModal from '../modals/AuthModal';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
+import useStore from '../../utils/store';
 
 const TopNavBar: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
+  const isAnonymous = useStore((state) => state.isAnonymous);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -95,6 +97,7 @@ const TopNavBar: React.FC = () => {
         showAnonymousOption={true}
         isLikeTriggered={false}
         onSuccessfulAuth={handleSuccessfulAuth} 
+        isAnonymousUser={isAnonymous}
       />    
    </AppBar>
   );

@@ -114,6 +114,8 @@ export interface Store {
   photoDetailsLoaded: boolean;
   userId: number | null;
   userRole: string | null;
+  isAnonymous: boolean;
+  setIsAnonymous: (isAnonymous: boolean) => void;
   setUserRole: (role: string | null) => void;
   setUserId: (userId: number | null) => void;
   setIsMerged: (isMerged: string) => void;
@@ -198,6 +200,8 @@ const useStore = create<Store>((set, get) => ({
   photoDetailsLoaded: false,
   userId: null,
   userRole: null,
+  isAnonymous: false, // Set the initial value to false
+  setIsAnonymous: (isAnonymous) => set({ isAnonymous }),
   setUserRole: (role) => set({ userRole: role }),
   setUserId: (userId) => set({ userId }),
   setPhotoDetailsLoaded: (loaded: boolean) => set({ photoDetailsLoaded: loaded }),

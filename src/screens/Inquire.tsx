@@ -59,6 +59,7 @@ const Inquiry: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [likeButtonDiptychIdCode, setLikeButtonDiptychIdCode] = useState('');
   const userRole = useStore((state) => state.userRole);
+  const isAnonymous = useStore((state) => state.isAnonymous);
 
   
   // Add a callback function to update the selected code for each carousel
@@ -388,6 +389,7 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
             photoId={selectedPhotograph?.photoID || ''}
             diptychIdCode={likeButtonDiptychIdCode}
             onSuccessfulAuth={handleLikeButtonClick}
+            isAnonymousUser={isAnonymous}
           />
         </Box>
       ) : (

@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { makeStyles } from '@mui/styles';
 import SignIn from '../../pages/auth/SignIn';
 import SignUp from '../../pages/auth/SignUp';
+import AnonymousSignUp from '../../pages/auth/AnonymousSignUp';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
@@ -20,6 +21,7 @@ interface AuthModalProps {
   photoId?: string;
   diptychIdCode?: string;
   onSuccessfulAuth?: () => void;
+  isAnonymousUser: boolean;
 }
 
 const useStyles = makeStyles(() => ({
@@ -42,12 +44,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption, isLikeTriggered, photoId, diptychIdCode, onSuccessfulAuth, }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption, isLikeTriggered, photoId, diptychIdCode, onSuccessfulAuth, isAnonymousUser }) => {
+  console.log("AuthModal rendered, open:", open);
+
   const classes = useStyles();
   const [isSignUp, setIsSignUp] = useState(false);
   const { setIsAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const isAnonymous = useStore((state) => state.userId !== null); // Define isAnonymous based on the userId in the store
+  console.log("isAnonymous:", isAnonymous);
 
   const handleAnonymous = async () => {
     try {
@@ -55,7 +61,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
       useStore.getState().setUserId(response.data.userId); // Store the userId in the store
-  
+      useStore.getState().setIsAnonymous(true);
+
       if (isLikeTriggered && photoId && diptychIdCode) {
         // Register the like here
         await fetch(`/api/likes`, {
@@ -106,17 +113,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
         <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
-        <Typography variant="h6" align="center" gutterBottom>
-          {isForgotPassword ? 'Forgot Password' : isSignUp ? '' : 'Sign In'}
-        </Typography>
-        <Box display="flex" flexDirection="column" alignItems="center">
-          {isForgotPassword ? (
-            <ForgotPassword setIsSignUp={setIsSignUp} setIsForgotPassword={setIsForgotPassword} />
-          ) : isSignUp ? (
-            <SignUp onClose={handleClose} setIsSignUp={setIsSignUp} onSuccessfulAuth={handleSuccessfulAuth} />
-          ) : (
-            <>
-              <SignIn onClose={handleClose} setIsForgotPassword={setIsForgotPassword} onSuccessfulAuth={handleSuccessfulAuth} />
+        {useStore.getState().isAnonymous ? (
+          <AnonymousSignUp onClose={handleClose} onSuccessfulAuth={handleSuccessfulAuth} />
+        ) : (
+          <>
+            <Typography variant="h6" align="center" gutterBottom>
+              {isForgotPassword ? 'Forgot Password' : isSignUp ? '' : 'Sign In'}
+            </Typography>
+            <Box display="flex" flexDirection="column" alignItems="center">
+              {isForgotPassword ? (
+                <ForgotPassword setIsSignUp={setIsSignUp} setIsForgotPassword={setIsForgotPassword} />
+              ) : isSignUp ? (
+                <SignUp onClose={handleClose} setIsSignUp={setIsSignUp} onSuccessfulAuth={handleSuccessfulAuth} />
+              ) : (
+                <>
+                  <SignIn onClose={handleClose} setIsForgotPassword={setIsForgotPassword} onSuccessfulAuth={handleSuccessfulAuth} />
               <hr style={{ borderTop: '1px solid black', margin: '20px 0', width: '150px' }} />
               <Typography variant="body2" align="center" style={{ marginTop: '5px', marginBottom: '10px' }}>
                 New user?
@@ -142,7 +153,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
               )}
             </>
           )}
-        </Box>
+         </Box>
+        </>
+       )}
       </Box>
     </Modal>
   );
