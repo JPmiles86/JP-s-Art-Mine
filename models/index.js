@@ -13,7 +13,7 @@ module.exports = {
     Series: require('./Series'),
     SizeCategories: require('./SizeCategories'),
     Users: require('./Users'),
-    EntityType: require('./EntityType'),
+   // EntityType: require('./EntityType'),
     Locations: require('./Locations'),
     PersonContactInfo: require('./PersonContactInfo'),
     OrganizationContactInfo: require('./OrganizationContactInfo'),

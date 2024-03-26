@@ -56,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
     useStore.getState().setUserId(null);
     useStore.getState().setUserRole(null); 
+    useStore.getState().setIsAnonymous(false);
     setCurrentUser(null);
   };
 

@@ -37,17 +37,19 @@ const AnonymousSignUp: React.FC<AnonymousSignUpProps> = ({ onClose, onSuccessful
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     try {
+      const newUsername = `${extractUsername(email)}#${userId}`;
       const response = await axios.post('/api/auth/anonymous-signup', {
         userId,
         email,
         password,
+        username: newUsername,
       });
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
@@ -55,6 +57,10 @@ const AnonymousSignUp: React.FC<AnonymousSignUpProps> = ({ onClose, onSuccessful
       setSuccess(true);
       setShowSuccessPage(true);
       useStore.getState().setIsAnonymous(false);
+
+      // Send the sign-up email
+      await axios.post('/api/auth/send-signup-email', { email });
+      
       onSuccessfulAuth?.();
     } catch (error: any) {
       console.error('Error during anonymous sign-up:', error);
@@ -66,6 +72,12 @@ const AnonymousSignUp: React.FC<AnonymousSignUpProps> = ({ onClose, onSuccessful
     }
   };
 
+  // Extract the username from the email
+    const extractUsername = (email: string) => {
+        const atIndex = email.indexOf('@');
+        return email.slice(0, atIndex);
+    };
+    
   return (
     <>
       {showSuccessPage ? (

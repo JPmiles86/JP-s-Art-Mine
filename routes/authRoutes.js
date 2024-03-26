@@ -57,10 +57,8 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// routes/authRoutes.js
-
 router.post('/anonymous-signup', async (req, res) => {
-  const { userId, email, password } = req.body;
+  const { userId, email, password, username } = req.body;
   const lowercaseEmail = email.toLowerCase();
   const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 
@@ -80,10 +78,11 @@ router.post('/anonymous-signup', async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update the anonymous user's email, password, and role
+    // Update the anonymous user's email, password, role, and username
     await anonymousUser.update({
       email: lowercaseEmail,
       password: hashedPassword,
+      username: username,
       role: 'RegularUser',
       isAnonymous: false,
     });
@@ -91,7 +90,16 @@ router.post('/anonymous-signup', async (req, res) => {
     // Generate a new JWT token
     const token = jwt.sign({ userId: anonymousUser.userId }, JWT_SECRET_KEY);
 
-    res.status(200).json({ message: 'Anonymous user sign-up successful', token });
+    // Include user data in the response
+    const userData = {
+      userId: anonymousUser.userId,
+      email: anonymousUser.email,
+      username: anonymousUser.username,
+      role: anonymousUser.role,
+      isAnonymous: anonymousUser.isAnonymous,
+    };
+
+    res.status(200).json({ message: 'Anonymous user sign-up successful', token, userData });
   } catch (error) {
     console.error('Anonymous user sign-up error:', error);
     res.status(500).json({ error: 'Anonymous user sign-up failed' });
@@ -152,11 +160,16 @@ router.post('/login', async (req, res) => {
       // Get the current maximum userId
       const maxUserId = await Users.max('userId');
 
-      // Create an anonymous user with the next available userId
+      // Generate a random number between 1 and 20
+      const randomNumber = Math.floor(Math.random() * 20) + 1;
+      const paddedNumber = randomNumber.toString().padStart(2, '0');
+
+       // Create an anonymous user with the next available userId and random profile picture URL
       const anonymousUser = await Users.create({
         isAnonymous: true,
         role: 'AnonymousUser',
         username: `Anonymous#${maxUserId + 1}`,
+        profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
       });
 
       // Generate a JWT token for the anonymous user

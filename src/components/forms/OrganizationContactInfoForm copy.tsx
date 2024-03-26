@@ -25,7 +25,7 @@ interface OrganizationContactInfoFormProps {
   setIsFormModified: (isModified: boolean) => void;
 }
 
- interface OrganizationContactInfo {
+export interface OrganizationContactInfo {
   organizationContactId: number;
   userId?: number;
   username?: string;
@@ -41,10 +41,26 @@ interface OrganizationContactInfoFormProps {
   twitter?: string;
   linkedIn?: string;
   website?: string;
-  contactPersonName?: string;
-  contactPersonRole?: string;
-  contactPersonEmail?: string;
-  contactPersonPhone?: string;
+  contactPerson1?: string;
+  contactPerson1Role?: string;
+  contactPerson1Email?: string;
+  contactPerson1Phone?: string;
+  contactPerson2?: string;
+  contactPerson2Role?: string;
+  contactPerson2Email?: string;
+  contactPerson2Phone?: string;
+  contactPerson3?: string;
+  contactPerson3Role?: string;
+  contactPerson3Email?: string;
+  contactPerson3Phone?: string;
+  contactPersons: ContactPerson[];
+}
+
+interface ContactPerson {
+  name?: string;
+  role?: string;
+  email?: string;
+  phone?: string;
 }
 
 interface OrganizationContactInfoFormData extends OrganizationContactInfo {
@@ -63,10 +79,12 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
 
   // const [isFormModified, setIsFormModified] = useState(false);
 
+  const MAX_CONTACT_PERSONS = 3;
 
   const [formData, setFormData] = useState<OrganizationContactInfoFormData>({
     ...organizationContactInfo,
     primaryEmail: userData?.email || organizationContactInfo?.primaryEmail || '',
+    contactPersons: organizationContactInfo?.contactPersons || [],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
@@ -90,21 +108,44 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
     }
   };
 
+  const handleContactPersonChange = (index: number, field: keyof ContactPerson, value: string) => {
+    setFormData((prevData) => {
+      const contactPersons = [...prevData.contactPersons];
+      contactPersons[index] = {
+        ...contactPersons[index],
+        [field]: value,
+      };
+      return { ...prevData, contactPersons };
+    });
+  };
 
+  const addContactPerson = () => {
+    if (formData.contactPersons.length < MAX_CONTACT_PERSONS) {
+      setFormData((prevData) => ({
+        ...prevData,
+        contactPersons: [...prevData.contactPersons, {}],
+      }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const contactPersons = [...Array(MAX_CONTACT_PERSONS)].map((_, index) => ({
+      name: formData[`contactPerson${index + 1}`],
+      role: formData[`contactPerson${index + 1}Role`],
+      email: formData[`contactPerson${index + 1}Email`],
+      phone: formData[`contactPerson${index + 1}Phone`],
+    }));
+
     const organizationContactInfo: OrganizationContactInfo = {
       ...formData,
+      contactPersons,
       userId: userData?.userId,
     };
 
     onSubmit(organizationContactInfo);
-    setIsFormModified(false); // Reset the form modified state after saving
   };
-
-  const isFormUnchanged = JSON.stringify(formData) === JSON.stringify(organizationContactInfo);
 
 
   return (
@@ -242,65 +283,67 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
           />
         </Grid>
 
-        {/* Contact Person */}
-        <Grid item xs={12}>
-          <Typography variant="h6" align="center">
-            Contact Person
-          </Typography>
-        </Grid>
+      {/* Contact Persons */}
+      {[...Array(MAX_CONTACT_PERSONS)].map((_, index) => (
+          <React.Fragment key={index}>
+            <Grid item xs={12}>
+              <Typography variant="h6">Contact Person {index + 1}</Typography>
+            </Grid>
 
-        {/* Contact Person Name */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Name"
-            name="contactPersonName"
-            value={formData.contactPersonName || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Name */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Name"
+                name={`contactPerson${index + 1}`}
+                value={formData[`contactPerson${index + 1}`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
 
-        {/* Contact Person Role */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Role"
-            name="contactPersonRole"
-            value={formData.contactPersonRole || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Role */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Role"
+                name={`contactPerson${index + 1}Role`}
+                value={formData[`contactPerson${index + 1}Role`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
 
-        {/* Contact Person Email */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Email"
-            name="contactPersonEmail"
-            value={formData.contactPersonEmail || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Email */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email"
+                name={`contactPerson${index + 1}Email`}
+                value={formData[`contactPerson${index + 1}Email`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
 
-        {/* Contact Person Phone */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Phone"
-            name="contactPersonPhone"
-            value={formData.contactPersonPhone || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Phone */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone"
+                name={`contactPerson${index + 1}Phone`}
+                value={formData[`contactPerson${index + 1}Phone`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
+          </React.Fragment>
+        ))}
 
-        {isFormModified && !isFormUnchanged && (
-          <Grid item xs={12} container justifyContent="center">
-            <button className={buttonStyles.button} type="submit">
-              Save Profile
+        {isFormModified && (
+          <Grid item xs={12}>
+            <button className={buttonStyles.button}  type="submit">
+              Save
             </button>
           </Grid>
         )}

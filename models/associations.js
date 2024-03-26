@@ -4,9 +4,9 @@ const models = require('./index');
 
 const { Photo, CameraModel, Series, Dates, ImageNumbers, 
     Artwork, Diptych, DiptychSVG, Frame, Pricing, PrintSizes, 
-    SizeCategories, Users, EntityType, Locations, PersonContactInfo, 
+    SizeCategories, Users, Locations, PersonContactInfo, 
     OrganizationContactInfo, Artists, ArtistsAdditionalPhotos, 
-    PrivacyPreferences, AuditTrail, Like, HiddenPhoto, UserLocations } = models;
+    PrivacyPreferences, AuditTrail, Like, HiddenPhoto, UserLocations, ProvenanceLocations } = models;
 
 Photo.belongsTo(CameraModel, { foreignKey: 'model' });
 CameraModel.hasMany(Photo, { foreignKey: 'model' });
@@ -41,20 +41,14 @@ PrintSizes.hasMany(Artwork, { foreignKey: 'printSizeId' });
 PrintSizes.belongsTo(SizeCategories, { foreignKey: 'sizeCategoryId' });
 SizeCategories.hasMany(PrintSizes, { foreignKey: 'sizeCategoryId' }); 
 
-Users.hasOne(EntityType, { foreignKey: 'userId' });
-EntityType.belongsTo(Users, { foreignKey: 'userId' });
+Users.hasOne(PersonContactInfo, { foreignKey: 'userId' });
+PersonContactInfo.belongsTo(Users, { foreignKey: 'userId' });
 
-EntityType.hasOne(PersonContactInfo, { foreignKey: 'entityId' });
-PersonContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
+Users.hasOne(OrganizationContactInfo, { foreignKey: 'userId' });
+OrganizationContactInfo.belongsTo(Users, { foreignKey: 'userId' });
 
-EntityType.hasOne(OrganizationContactInfo, { foreignKey: 'entityId' });
-OrganizationContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
-
-PersonContactInfo.hasMany(UserLocations, { foreignKey: 'personContactInfoId' });
-UserLocations.belongsTo(PersonContactInfo, { foreignKey: 'personContactInfoId' });
-
-OrganizationContactInfo.hasMany(UserLocations, { foreignKey: 'organizationContactInfoId' });
-UserLocations.belongsTo(OrganizationContactInfo, { foreignKey: 'organizationContactInfoId' });
+Users.hasMany(UserLocations, { foreignKey: 'userId' });
+UserLocations.belongsTo(Users, { foreignKey: 'userId' });
 
 Locations.hasMany(UserLocations, { foreignKey: 'locationId' });
 UserLocations.belongsTo(Locations, { foreignKey: 'locationId' });
@@ -85,3 +79,9 @@ HiddenPhoto.belongsTo(Photo, { foreignKey: 'photoId' });
 
 Users.hasMany(HiddenPhoto, { foreignKey: 'userId' });
 HiddenPhoto.belongsTo(Users, { foreignKey: 'userId' });
+
+//Artwork.hasMany(ProvenanceLocations, { foreignKey: 'artworkId' });
+//ProvenanceLocations.belongsTo(Artwork, { foreignKey: 'artworkId' });
+
+//Locations.hasMany(ProvenanceLocations, { foreignKey: 'locationId' });
+//ProvenanceLocations.belongsTo(Locations, { foreignKey: 'locationId' });

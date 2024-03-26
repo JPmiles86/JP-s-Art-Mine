@@ -45,15 +45,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption, isLikeTriggered, photoId, diptychIdCode, onSuccessfulAuth, isAnonymousUser }) => {
-  console.log("AuthModal rendered, open:", open);
-
   const classes = useStyles();
   const [isSignUp, setIsSignUp] = useState(false);
   const { setIsAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const isAnonymous = useStore((state) => state.userId !== null); // Define isAnonymous based on the userId in the store
-  console.log("isAnonymous:", isAnonymous);
 
   const handleAnonymous = async () => {
     try {

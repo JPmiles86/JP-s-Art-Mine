@@ -2,8 +2,8 @@
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const EntityType = require('./EntityType');
 const Locations = require('./Locations');
+const Users = require('./Users');
 
 const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   organizationContactId: {
@@ -11,12 +11,12 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
     autoIncrement: true,
     primaryKey: true
   },
-  entityId: {
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: EntityType,
-      key: 'entityId'
+      model: Users,
+      key: 'userId'
     }
   },
   organizationName: {
@@ -63,51 +63,19 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  contactPerson1: {
+  contactPersonName: {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  contactPerson1Role: {
+  contactPersonRole: {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  contactPerson1Email: {
+  contactPersonEmail: {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  contactPerson1Phone: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  contactPerson2: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  contactPerson2Role: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  contactPerson2Email: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  contactPerson2Phone: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  contactPerson3: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  contactPerson3Role: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  contactPerson3Email: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  contactPerson3Phone: {
+  contactPersonPhone: {
     type: DataTypes.STRING(20),
     allowNull: true
   }
@@ -117,6 +85,6 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   updatedAt: 'updatedDate'
 });
 
-OrganizationContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
+OrganizationContactInfo.belongsTo(Users, { foreignKey: 'userId' });
 
 module.exports = OrganizationContactInfo;

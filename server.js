@@ -20,7 +20,7 @@ const Pricing = require('./models/Pricing');
 const PrintSizes = require('./models/PrintSizes');
 const SizeCategories = require('./models/SizeCategories');
 const Users = require('./models/Users');
-const EntityType = require('./models/EntityType');
+// const EntityType = require('./models/EntityType');
 const Locations = require('./models/Locations');
 const PersonContactInfo = require('./models/PersonContactInfo');
 const OrganizationContactInfo = require('./models/OrganizationContactInfo');
@@ -785,18 +785,11 @@ app.get('/api/users/:userId/profile', async (req, res) => {
   try {
     const user = await Users.findByPk(userId, {
       include: [
+        PersonContactInfo,
+        OrganizationContactInfo,
         {
-          model: EntityType,
-          include: [
-            {
-              model: PersonContactInfo,
-              include: [{ model: UserLocations, include: [Locations] }],
-            },
-            {
-              model: OrganizationContactInfo,
-              include: [{ model: UserLocations, include: [Locations] }],
-            },
-          ],
+          model: UserLocations,
+          include: [Locations],
         },
       ],
     });
@@ -808,9 +801,9 @@ app.get('/api/users/:userId/profile', async (req, res) => {
 
     console.log('User found:', user.toJSON());
 
-    const entityType = user.EntityType;
-    const personContactInfo = entityType?.PersonContactInfo;
-    const organizationContactInfo = entityType?.OrganizationContactInfo;
+    const personContactInfo = user.PersonContactInfo;
+    const organizationContactInfo = user.OrganizationContactInfo;
+    const userLocations = user.UserLocations;
 
     const responseData = {
       user: {
@@ -819,24 +812,15 @@ app.get('/api/users/:userId/profile', async (req, res) => {
         username: user.username,
         isAnonymous: user.isAnonymous,
         profilePhotoUrl: user.profilePhotoUrl,
+        entityType: user.entityType,
       },
-      entityType: entityType?.entityType,
-      personContactInfo: personContactInfo
-        ? {
-            ...personContactInfo.toJSON(),
-            locations: personContactInfo.UserLocations?.map((ul) => ul.Location),
-          }
-        : null,
-      organizationContactInfo: organizationContactInfo
-        ? {
-            ...organizationContactInfo.toJSON(),
-            locations: organizationContactInfo.UserLocations?.map((ul) => ul.Location),
-          }
-        : null,
+      personContactInfo: personContactInfo ? personContactInfo.toJSON() : null,
+      organizationContactInfo: organizationContactInfo ? organizationContactInfo.toJSON() : null,
+      locations: userLocations ? userLocations.map((ul) => ul.Location) : [],
     };
-
+  
     console.log('Response data:', responseData);
-
+  
     res.json(responseData);
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -851,50 +835,25 @@ app.put('/api/users/:userId/profile', async (req, res) => {
   console.log('Updating user profile:', { userId, entityType });
 
   try {
-    const user = await Users.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Check if the EntityType record exists for the user
-    let userEntityType = await EntityType.findOne({ where: { userId } });
-
-    if (!userEntityType) {
-      // Create the EntityType record if it doesn't exist
-      userEntityType = await EntityType.create({ userId, entityType });
-    } else {
-      // Update the user's entity type if it exists
-      await userEntityType.update({ entityType });
-    }
+    // Update the user's entity type
+    await Users.update({ entityType }, { where: { userId } });
 
     if (entityType === 'Person') {
       // Update or create the person contact info
       await PersonContactInfo.upsert({
         ...personContactInfo,
-        entityId: userEntityType.entityId,
+        userId,
       });
     } else if (entityType === 'Organization') {
       // Update or create the organization contact info
       await OrganizationContactInfo.upsert({
         ...organizationContactInfo,
-        entityId: userEntityType.entityId,
+        userId,
       });
     }
 
-    // Update the user's locations
-   // await UserLocations.destroy({ where: { personContactInfoId: userEntityType.PersonContactInfo?.personContactId } });
-   // await UserLocations.destroy({ where: { organizationContactInfoId: userEntityType.OrganizationContactInfo?.organizationContactId } });
-
-  //  const userLocations = locations.map((location) => ({
-  //    ...location,
-  //    personContactInfoId: entityType === 'Person' ? userEntityType.PersonContactInfo?.personContactId : null,
-  //    organizationContactInfoId: entityType === 'Organization' ? userEntityType.OrganizationContactInfo?.organizationContactId : null,
-  //  }));
-
-  //  await UserLocations.bulkCreate(userLocations);
-
-  console.log('User profile updated successfully');  
-  res.json({ message: 'User profile updated successfully' });
+    console.log('User profile updated successfully');
+    res.json({ message: 'User profile updated successfully' });
   } catch (error) {
     console.error('Error updating user profile:', error);
     res.status(500).send('Server Error');
@@ -957,15 +916,17 @@ app.get('/api/users/:userId/locations', async (req, res) => {
   try {
     const locations = await UserLocations.findAll({
       where: {
-        [Op.or]: [
-          { personContactInfoId: { [Op.not]: null } },
-          { organizationContactInfoId: { [Op.not]: null } },
-        ],
+        userId: userId,
       },
       include: [Locations],
     });
 
-    res.json(locations);
+    const locationsWithType = locations.map((location) => ({
+      ...location.toJSON(),
+      locationType: location.Location.locationType,
+    }));
+
+    res.json(locationsWithType);
   } catch (error) {
     console.error('Error fetching user locations:', error);
     res.status(500).send('Server Error');
@@ -977,25 +938,14 @@ app.post('/api/users/:userId/locations', async (req, res) => {
   const { locationData } = req.body;
 
   try {
-    const user = await Users.findByPk(userId, {
-      include: [
-        {
-          model: EntityType,
-          include: [PersonContactInfo, OrganizationContactInfo],
-        },
-      ],
+    const location = await Locations.create({
+      ...locationData,
+      locationType: locationData.locationType === 'Other' ? locationData.customLocationType : locationData.locationType,
     });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const location = await Locations.create(locationData);
 
     const userLocation = {
       locationId: location.locationId,
-      personContactInfoId: user.EntityType.entityType === 'Person' ? user.EntityType.PersonContactInfo.personContactId : null,
-      organizationContactInfoId: user.EntityType.entityType === 'Organization' ? user.EntityType.OrganizationContactInfo.organizationContactId : null,
+      userId: userId,
     };
 
     const createdUserLocation = await UserLocations.create(userLocation);
@@ -1014,11 +964,8 @@ app.put('/api/users/:userId/locations/:locationId', async (req, res) => {
   try {
     const userLocation = await UserLocations.findOne({
       where: {
-        locationId,
-        [Op.or]: [
-          { personContactInfoId: { [Op.not]: null } },
-          { organizationContactInfoId: { [Op.not]: null } },
-        ],
+        userId: userId,
+        locationId: locationId,
       },
     });
 
@@ -1026,7 +973,13 @@ app.put('/api/users/:userId/locations/:locationId', async (req, res) => {
       return res.status(404).json({ error: 'User location not found' });
     }
 
-    await Locations.update(locationData, { where: { locationId: locationId } });
+    await Locations.update(
+      {
+        ...locationData,
+        locationType: locationData.locationType === 'Other' ? locationData.customLocationType : locationData.locationType,
+      },
+      { where: { locationId: locationId } }
+    );
 
     res.json({ message: 'User location updated successfully' });
   } catch (error) {
@@ -1041,11 +994,8 @@ app.delete('/api/users/:userId/locations/:locationId', async (req, res) => {
   try {
     const userLocation = await UserLocations.findOne({
       where: {
-        locationId,
-        [Op.or]: [
-          { personContactInfoId: { [Op.not]: null } },
-          { organizationContactInfoId: { [Op.not]: null } },
-        ],
+        userId: userId,
+        locationId: locationId,
       },
     });
 

@@ -25,7 +25,7 @@ interface OrganizationContactInfoFormProps {
   setIsFormModified: (isModified: boolean) => void;
 }
 
- interface OrganizationContactInfo {
+export interface OrganizationContactInfo {
   organizationContactId: number;
   userId?: number;
   username?: string;
@@ -41,10 +41,26 @@ interface OrganizationContactInfoFormProps {
   twitter?: string;
   linkedIn?: string;
   website?: string;
-  contactPersonName?: string;
-  contactPersonRole?: string;
-  contactPersonEmail?: string;
-  contactPersonPhone?: string;
+  contactPerson1?: string;
+  contactPerson1Role?: string;
+  contactPerson1Email?: string;
+  contactPerson1Phone?: string;
+  contactPerson2?: string;
+  contactPerson2Role?: string;
+  contactPerson2Email?: string;
+  contactPerson2Phone?: string;
+  contactPerson3?: string;
+  contactPerson3Role?: string;
+  contactPerson3Email?: string;
+  contactPerson3Phone?: string;
+  contactPersons: ContactPerson[];
+}
+
+interface ContactPerson {
+  name?: string;
+  role?: string;
+  email?: string;
+  phone?: string;
 }
 
 interface OrganizationContactInfoFormData extends OrganizationContactInfo {
@@ -63,10 +79,13 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
 
   // const [isFormModified, setIsFormModified] = useState(false);
 
+  const MAX_CONTACT_PERSONS = 3;
+  const [numContactPersons, setNumContactPersons] = useState(1);
 
   const [formData, setFormData] = useState<OrganizationContactInfoFormData>({
     ...organizationContactInfo,
     primaryEmail: userData?.email || organizationContactInfo?.primaryEmail || '',
+    contactPersons: organizationContactInfo?.contactPersons || [],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
@@ -90,13 +109,48 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
     }
   };
 
+  const handleContactPersonChange = (index: number, field: keyof ContactPerson, value: string) => {
+    setFormData((prevData) => {
+      const contactPersons = [...prevData.contactPersons];
+      contactPersons[index] = {
+        ...contactPersons[index],
+        [field]: value,
+      };
+      return { ...prevData, contactPersons };
+    });
+  };
 
+  const addContactPerson = () => {
+    if (formData.contactPersons.length < MAX_CONTACT_PERSONS) {
+      setFormData((prevData) => ({
+        ...prevData,
+        contactPersons: [...prevData.contactPersons, {}],
+      }));
+    }
+  };
+
+  const removeContactPerson = () => {
+    setFormData((prevData) => {
+      const contactPersons = [...prevData.contactPersons];
+      contactPersons.pop();
+      return { ...prevData, contactPersons };
+    });
+    setNumContactPersons((prev) => prev - 1);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const contactPersons = [...Array(numContactPersons)].map((_, index) => ({
+      name: formData[`contactPerson${index + 1}`],
+      role: formData[`contactPerson${index + 1}Role`],
+      email: formData[`contactPerson${index + 1}Email`],
+      phone: formData[`contactPerson${index + 1}Phone`],
+    }));
+
     const organizationContactInfo: OrganizationContactInfo = {
       ...formData,
+      contactPersons,
       userId: userData?.userId,
     };
 
@@ -242,68 +296,98 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
           />
         </Grid>
 
-        {/* Contact Person */}
-        <Grid item xs={12}>
-          <Typography variant="h6" align="center">
-            Contact Person
-          </Typography>
-        </Grid>
+       {/* Contact Persons */}
+       {[...Array(numContactPersons)].map((_, index) => (
+          <React.Fragment key={index}>
+            <Grid item xs={12}>
+              <Typography variant="h6" align="center">
+                Contact Person #{index + 1}
+              </Typography>
+            </Grid>
 
-        {/* Contact Person Name */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Name"
-            name="contactPersonName"
-            value={formData.contactPersonName || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Name */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Name"
+                name={`contactPerson${index + 1}`}
+                value={formData[`contactPerson${index + 1}`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
 
-        {/* Contact Person Role */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Role"
-            name="contactPersonRole"
-            value={formData.contactPersonRole || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Role */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Role"
+                name={`contactPerson${index + 1}Role`}
+                value={formData[`contactPerson${index + 1}Role`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
 
-        {/* Contact Person Email */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Email"
-            name="contactPersonEmail"
-            value={formData.contactPersonEmail || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Email */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email"
+                name={`contactPerson${index + 1}Email`}
+                value={formData[`contactPerson${index + 1}Email`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
 
-        {/* Contact Person Phone */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Phone"
-            name="contactPersonPhone"
-            value={formData.contactPersonPhone || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </Grid>
+            {/* Contact Person Phone */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone"
+                name={`contactPerson${index + 1}Phone`}
+                value={formData[`contactPerson${index + 1}Phone`] || ''}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+              </Grid>
+          </React.Fragment>
+        ))}
 
-        {isFormModified && !isFormUnchanged && (
-          <Grid item xs={12} container justifyContent="center">
-            <button className={buttonStyles.button} type="submit">
-              Save Profile
-            </button>
-          </Grid>
-        )}
+<Grid item xs={12} container justifyContent="center" spacing={2}>
+          {numContactPersons < MAX_CONTACT_PERSONS && (
+            <Grid item>
+              <button
+                className={buttonStyles.button}
+                type="button"
+                onClick={() => setNumContactPersons((prev) => prev + 1)}
+              >
+                Add Contact Person
+              </button>
+            </Grid>
+          )}
+
+          {numContactPersons > 1 && (
+            <Grid item>
+              <button
+                className={buttonStyles.button}
+                type="button"
+                onClick={removeContactPerson}
+              >
+                Remove Last Contact
+              </button>
+            </Grid>
+          )}
+
+          {isFormModified && !isFormUnchanged && (
+            <Grid item>
+              <button className={buttonStyles.button} type="submit">
+                Save Profile
+              </button>
+            </Grid>
+          )}
+        </Grid>
       </Grid>
     </form>
   );

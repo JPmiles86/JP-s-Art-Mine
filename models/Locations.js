@@ -34,9 +34,9 @@ const Locations = sequelize.define('Locations', {
     allowNull: false
   },
   locationType: {
-    type: DataTypes.ENUM('Home', 'Business', 'Other'),
-    allowNull: false
-  }
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
   timestamps: false
 });

@@ -11,6 +11,7 @@ interface UserData {
   username?: string;
   isAnonymous?: boolean;
   profilePhotoUrl?: string;
+  entityType?: string;
 }
 
 interface PersonContactInfoFormProps {
@@ -24,7 +25,7 @@ interface PersonContactInfoFormProps {
 
 export interface PersonalContactInfo {
   personContactId: number;
-  entityId: number;
+  userId?: number;
   username?: string;
   firstName?: string;
   middleName?: string;
@@ -54,8 +55,23 @@ const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
   console.log('PersonContactInfoForm props:', { userData, personContactInfo });
   
   const [formData, setFormData] = useState({
-    ...personContactInfo,
+    personContactId: personContactInfo?.personContactId || 0,
+    username: userData?.username || '',
+    firstName: personContactInfo?.firstName || '',
+    middleName: personContactInfo?.middleName || '',
+    lastName: personContactInfo?.lastName || '',
+    preferredName: personContactInfo?.preferredName || '',
     primaryEmail: userData?.email || personContactInfo?.primaryEmail || '',
+    secondaryEmail: personContactInfo?.secondaryEmail || '',
+    primaryPhone: personContactInfo?.primaryPhone || '',
+    secondaryPhone: personContactInfo?.secondaryPhone || '',
+    profession: personContactInfo?.profession || '',
+    locationId: personContactInfo?.locationId || 0,
+    instagram: personContactInfo?.instagram || '',
+    twitter: personContactInfo?.twitter || '',
+    linkedIn: personContactInfo?.linkedIn || '',
+    website: personContactInfo?.website || '',
+    relationshipToArtist: personContactInfo?.relationshipToArtist || '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
@@ -82,10 +98,10 @@ const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
  //   }
  // };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      onSubmit({ ...formData, userId: userData?.userId });
+    };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -135,7 +151,7 @@ const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
         {isFormModified && (
           <Grid item xs={12} display="flex" justifyContent="center">
             <button type="submit" className={buttonStyles.button}>
-              Save
+              Save Profile
             </button>
           </Grid>
         )}

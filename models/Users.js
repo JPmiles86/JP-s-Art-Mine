@@ -54,6 +54,10 @@ const Users = sequelize.define('Users', {
   role: {
     type: DataTypes.ENUM('Admin', 'RegularUser', 'AnonymousUser'),
     defaultValue: 'RegularUser'
+  },
+  entityType: {
+    type: DataTypes.ENUM('Person', 'Organization'),
+    allowNull: true
   }
 }, {
   timestamps: true

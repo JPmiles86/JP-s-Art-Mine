@@ -20,11 +20,11 @@ interface UserData {
   username?: string;
   isAnonymous?: boolean;
   profilePhotoUrl?: string;
+  entityType?: string;
 }
   
 interface PersonalContactInfo {
   personContactId: number;
-  entityId: number;
   username?: string;
   firstName?: string;
   middleName?: string;
@@ -45,7 +45,7 @@ interface PersonalContactInfo {
   
 interface OrganizationContactInfo {
   organizationContactId: number;
-  entityId: number;
+  userId?: number;
   username?: string;
   organizationName?: string;
   organizationType?: string;
@@ -59,21 +59,10 @@ interface OrganizationContactInfo {
   twitter?: string;
   linkedIn?: string;
   website?: string;
-  preferences?: string;
-  notes?: string;
-  contactPersons: ContactPerson[];
-}
-
-interface ContactPerson {
-  name?: string;
-  role?: string;
-  email?: string;
-  phone?: string;
-}
-
-interface EntityType {
-  entityId: number;
-  entityType: string; // 'Person', 'Company', 'Organization'
+  contactPersonName?: string;
+  contactPersonRole?: string;
+  contactPersonEmail?: string;
+  contactPersonPhone?: string;
 }
   
 interface Location {
@@ -138,21 +127,34 @@ const Profile: React.FC = () => {
   const fetchUserData = async () => {
     try {
       const response = await axios.get(`/api/users/${userId}/profile`);
-      const { user, entityType, personContactInfo, organizationContactInfo } = response.data;
+      const { user, personContactInfo, organizationContactInfo, locations } = response.data;
       setUserData(user);
-      setEntityType(entityType);
-      setSelectedEntityType(entityType || '');
+      setEntityType(user.entityType || '');
+      setSelectedEntityType(user.entityType || '');
   
-      if (entityType === 'Person') {
+      if (user.entityType === 'Person') {
         setPersonalContactInfo(personContactInfo);
-      } else if (entityType === 'Organization') {
+      } else if (user.entityType === 'Organization') {
         setOrganizationContactInfo(organizationContactInfo);
       }
   
-      setLocations(response.data.locations || []);
+      setLocations(locations || []);
       console.log('User data:', response.data);
     } catch (error) {
       console.error('Error fetching user data:', error);
+    }
+  };
+  
+
+  const handleSaveEntityType = async (selectedType: string) => {
+    try {
+      await axios.put(`/api/users/${userId}/profile`, {
+        entityType: selectedType,
+      });
+      setEntityType(selectedType);
+      setSelectedEntityType(selectedType);
+    } catch (error) {
+      console.error('Error updating entity type:', error);
     }
   };
 
@@ -191,6 +193,7 @@ const Profile: React.FC = () => {
         personContactInfo: updatedPersonContactInfo,
       });
       setPersonalContactInfo(updatedPersonContactInfo);
+      setIsFormModified(false); // Reset the isFormModified state
       toast.success('Profile information saved successfully!', {
         position: 'top-center',
         autoClose: 3000,
@@ -215,7 +218,14 @@ const Profile: React.FC = () => {
         organizationContactInfo: updatedOrganizationContactInfo,
       });
       setOrganizationContactInfo(updatedOrganizationContactInfo);
-      alert('Profile information saved successfully!');
+      toast.success('Organization information saved successfully!', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       console.error('Error updating organization contact info:', error);
     }
@@ -254,7 +264,7 @@ const Profile: React.FC = () => {
     if (file) {
       if (file.size > 3 * 1024 * 1024) {
         toast.error('The selected file exceeds the maximum allowed size of 3MB. Please choose a smaller file.', {
-          position: 'top-left',
+          position: 'top-center',
           autoClose: 3000,
           hideProgressBar: true,
           closeOnClick: true,
@@ -322,6 +332,11 @@ const Profile: React.FC = () => {
       axios.put(`/api/users/${userId}/profile`, {
         entityType: selectedEntityType,
       });
+    } else if (selectedEntityType === '' && entityType) {
+      setEntityType(null);
+      axios.put(`/api/users/${userId}/profile`, {
+        entityType: null,
+      });
     }
   }, [selectedEntityType, userId, entityType]);
 
@@ -348,13 +363,18 @@ return (
       <>
         {isAnonymous ? (
           <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="50vh">
-            <Typography variant="h6" align="center" gutterBottom>
-              Sign Up to Save Your Favorites
+            <Avatar
+              alt={`${userData?.username}`}
+              src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
+              sx={{ width: 150, height: 150 }}
+            />
+            <Typography variant="h6" style={{ marginTop: '20px' }}>
+              Username: <strong>{userData?.username}</strong>
             </Typography>
-            <button className={buttonStyles.button} onClick={() => {
-              console.log("Sign Up button clicked");
-              setOpenAuthModal(true);
-            }}>
+            <Typography variant="h6" align="center" style={{ marginTop: '40px' }}>
+              To update your profile, please sign up.
+            </Typography>
+            <button className={buttonStyles.button} onClick={() => setOpenAuthModal(true)}>
               Sign Up
             </button>
           </Box>
@@ -417,7 +437,13 @@ return (
             {entityType ? (
               <Box mt={4} display="flex" justifyContent="center" alignItems="center">
                 <Typography variant="h6" component="span">Account Type: {entityType}</Typography>
-                <Typography variant="body2" component="span" style={{ marginLeft: '10px', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setEntityType(null)}>Edit</Typography>
+                <button
+                  className={buttonStyles.navButton}
+                  style={{ marginLeft: '10px' }}
+                  onClick={() => setSelectedEntityType('')}
+                >
+                  Edit
+                </button>
               </Box>
             ) : (
               <Box mt={4} display="flex" flexDirection="column" alignItems="center">
@@ -436,6 +462,17 @@ return (
             )}
             <Box px={4}>
               {renderProfileForm()}
+              {selectedEntityType && (
+                <Box mt={4}>
+                  <LocationList
+                    userId={userId!}
+                    locations={locations}
+                    onUpdate={handleLocationUpdate}
+                    isRequired={false}
+                    selectedEntityType={selectedEntityType}
+                  />
+                </Box>
+              )}
             </Box>
             <Box mb={4} />
           </>

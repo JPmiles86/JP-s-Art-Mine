@@ -2,8 +2,8 @@
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const EntityType = require('./EntityType');
 const Locations = require('./Locations');
+const Users = require('./Users');
 
 const PersonContactInfo = sequelize.define('PersonContactInfo', {
   personContactId: {
@@ -11,12 +11,12 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
     autoIncrement: true,
     primaryKey: true
   },
-  entityId: {
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: EntityType,
-      key: 'entityId'
+      model: Users,
+      key: 'userId'
     }
   },
   firstName: {
@@ -81,6 +81,6 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   updatedAt: 'updatedDate'
 });
 
-PersonContactInfo.belongsTo(EntityType, { foreignKey: 'entityId' });
+PersonContactInfo.belongsTo(Users, { foreignKey: 'userId' });
 
 module.exports = PersonContactInfo;

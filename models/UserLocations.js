@@ -2,9 +2,8 @@
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const PersonContactInfo = require('./PersonContactInfo');
-const OrganizationContactInfo = require('./OrganizationContactInfo');
 const Locations = require('./Locations');
+const Users = require('./Users');
 
 const UserLocations = sequelize.define('UserLocations', {
   userLocationId: {
@@ -12,20 +11,12 @@ const UserLocations = sequelize.define('UserLocations', {
     autoIncrement: true,
     primaryKey: true
   },
-  personContactInfoId: {
+  userId: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    allowNull: false,
     references: {
-      model: PersonContactInfo,
-      key: 'personContactId'
-    }
-  },
-  organizationContactInfoId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: OrganizationContactInfo,
-      key: 'organizationContactId'
+      model: Users,
+      key: 'userId'
     }
   },
   locationId: {
@@ -35,15 +26,17 @@ const UserLocations = sequelize.define('UserLocations', {
       model: Locations,
       key: 'locationId'
     }
-  }
+  },
 }, {
   timestamps: true,
   createdAt: 'creationDate',
   updatedAt: 'updatedDate'
 });
 
-UserLocations.belongsTo(PersonContactInfo, { foreignKey: 'personContactInfoId' });
-UserLocations.belongsTo(OrganizationContactInfo, { foreignKey: 'organizationContactInfoId' });
+Users.hasMany(UserLocations, { foreignKey: 'userId' });
+UserLocations.belongsTo(Users, { foreignKey: 'userId' });
+
+Locations.hasMany(UserLocations, { foreignKey: 'locationId' });
 UserLocations.belongsTo(Locations, { foreignKey: 'locationId' });
 
 module.exports = UserLocations;

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import LocationForm, { Location } from './LocationForm';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface LocationListProps {
   userId: number;
@@ -45,6 +47,14 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
       const newLocation = response.data;
       setLocationList((prevList) => [...prevList, newLocation]);
       onUpdate([...locationList, newLocation]);
+      toast.success('Location added successfully!', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       console.error('Error adding location:', error);
     }
@@ -79,13 +89,14 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
 
   return (
     <div>
-      {locationList.map((location) => (
+      {locationList.map((location, index) => (
         <LocationForm
           key={location.locationId}
           location={location}
           onSubmit={handleUpdateLocation}
           onRemove={() => handleRemoveLocation(location.locationId)}
           isRequired={isRequired}
+          locationIndex={index + 1}
         />
       ))}
       {selectedEntityType && (
