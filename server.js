@@ -924,6 +924,7 @@ app.get('/api/users/:userId/locations', async (req, res) => {
     const locationsWithType = locations.map((location) => ({
       ...location.toJSON(),
       locationType: location.Location.locationType,
+      businessName: location.Location.businessName, // Add businessName field
     }));
 
     res.json(locationsWithType);
@@ -941,6 +942,7 @@ app.post('/api/users/:userId/locations', async (req, res) => {
     const location = await Locations.create({
       ...locationData,
       locationType: locationData.locationType === 'Other' ? locationData.customLocationType : locationData.locationType,
+      businessName: locationData.businessName, // Add businessName field
     });
 
     const userLocation = {
@@ -977,6 +979,7 @@ app.put('/api/users/:userId/locations/:locationId', async (req, res) => {
       {
         ...locationData,
         locationType: locationData.locationType === 'Other' ? locationData.customLocationType : locationData.locationType,
+        businessName: locationData.businessName, // Add businessName field
       },
       { where: { locationId: locationId } }
     );

@@ -11,11 +11,12 @@ interface LocationListProps {
   userId: number;
   locations: Location[];
   onUpdate: (locations: Location[]) => void;
+  onRemove: (locationId: number) => void;
   isRequired?: boolean;
   selectedEntityType: string;
 }
 
-const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate, isRequired = false, selectedEntityType }) => {
+const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate, onRemove, isRequired = false, selectedEntityType }) => {
   const [locationList, setLocationList] = useState<Location[]>(locations);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
     try {
       const response = await axios.get(`/api/users/${userId}/locations`);
       setLocationList(response.data);
-      onUpdate(response.data);
+      // onUpdate(response.data);
     } catch (error) {
       console.error('Error fetching locations:', error);
     }
@@ -41,20 +42,13 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
           stateProvince: '',
           postalCode: '',
           country: '',
-          locationType: 'Home',
+          locationType: '',
         },
       });
       const newLocation = response.data;
       setLocationList((prevList) => [...prevList, newLocation]);
-      onUpdate([...locationList, newLocation]);
-      toast.success('Location added successfully!', {
-        position: 'top-center',
-        autoClose: 3000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      // onUpdate([...locationList, newLocation]);
+     
     } catch (error) {
       console.error('Error adding location:', error);
     }
@@ -65,12 +59,11 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
       await axios.put(`/api/users/${userId}/locations/${updatedLocation.locationId}`, {
         locationData: updatedLocation,
       });
-      setLocationList((prevList) =>
-        prevList.map((location) => (location.locationId === updatedLocation.locationId ? updatedLocation : location))
+      const updatedLocations = locationList.map((location) =>
+        location.locationId === updatedLocation.locationId ? updatedLocation : location
       );
-      onUpdate(
-        locationList.map((location) => (location.locationId === updatedLocation.locationId ? updatedLocation : location))
-      );
+      setLocationList(updatedLocations);
+      onUpdate(updatedLocations);
     } catch (error) {
       console.error('Error updating location:', error);
     }
@@ -82,6 +75,7 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
       const updatedLocations = locationList.filter((location) => location.locationId !== locationId);
       setLocationList(updatedLocations);
       onUpdate(updatedLocations);
+      onRemove(locationId);
     } catch (error) {
       console.error('Error removing location:', error);
     }
@@ -100,9 +94,11 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
         />
       ))}
       {selectedEntityType && (
-        <button type="button" className={buttonStyles.button} onClick={handleAddLocation}>
-          Add Location
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <button type="button" className={buttonStyles.button} onClick={handleAddLocation}>
+            Add Location
+          </button>
+        </div>
       )}
     </div>
   );

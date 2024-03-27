@@ -209,6 +209,25 @@ const Profile: React.FC = () => {
 
   const handleLocationUpdate = (updatedLocations: Location[]) => {
     setLocations(updatedLocations);
+    toast.success('Location saved successfully!', {
+      position: 'top-center',
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
+  const handleLocationRemove = (locationId: number) => {
+    toast.success('Location removed successfully!', {
+      position: 'top-center',
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
 
   const handleOrganizationContactInfoSubmit = async (updatedOrganizationContactInfo: OrganizationContactInfo) => {
@@ -340,12 +359,6 @@ const Profile: React.FC = () => {
     }
   }, [selectedEntityType, userId, entityType]);
 
-// {userId && (
-//  <Box mt={4}>
-//  <Typography variant="h6">Locations:</Typography>
-//  <LocationList userId={userId} locations={locations} onUpdate={handleLocationUpdate} isRequired={false} selectedEntityType={selectedEntityType} />
-//</Box>
-//)}
 
 return (
   <Box>
@@ -468,6 +481,7 @@ return (
                     userId={userId!}
                     locations={locations}
                     onUpdate={handleLocationUpdate}
+                    onRemove={handleLocationRemove}
                     isRequired={false}
                     selectedEntityType={selectedEntityType}
                   />

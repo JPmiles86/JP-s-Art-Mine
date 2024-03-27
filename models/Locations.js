@@ -9,6 +9,10 @@ const Locations = sequelize.define('Locations', {
     autoIncrement: true,
     primaryKey: true
   },
+  businessName: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
   addressLine1: {
     type: DataTypes.STRING(255),
     allowNull: false
