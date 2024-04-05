@@ -1,13 +1,24 @@
 // my-gallery/src/components/layout/TopNavBar.tsx
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
 import { AccountCircle } from '@mui/icons-material';
 import AuthModal from '../modals/AuthModal';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
 import useStore from '../../utils/store';
+import axios from 'axios';
+import urlConfig from '../../utils/urlConfig';
+
+interface UserData {
+  userId?: number;
+  email?: string;
+  username?: string;
+  isAnonymous?: boolean;
+  profilePhotoUrl?: string;
+  entityType?: string;
+}
 
 const TopNavBar: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -15,6 +26,8 @@ const TopNavBar: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
   const isAnonymous = useStore((state) => state.isAnonymous);
   const navigate = useNavigate();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const userId = useStore((state) => state.userId);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -40,6 +53,21 @@ const TopNavBar: React.FC = () => {
     handleMenuClose();
     navigate(path);
   };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`/api/users/${userId}/profile`);
+        setUserData(response.data.user);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (userId) {
+      fetchUserData();
+    }
+  }, [userId]);
 
   return (
     <AppBar
@@ -69,7 +97,11 @@ const TopNavBar: React.FC = () => {
               color="inherit"
               aria-label="User Profile"
             >
-              <AccountCircle />
+              <Avatar
+                alt={userData?.username || ''}
+                src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
+                sx={{ width: 45, height: 45 }}
+              />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
