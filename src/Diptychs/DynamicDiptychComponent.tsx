@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { fabric } from 'fabric';
-import urlConfig from '../screens/urlConfig';
+import urlConfig from '../utils/urlConfig';
 import { scaleCanvas } from './scaleCanvas';
 import { layoutDiptych } from './layoutDiptych';
 import initializeCanvas from './initializeCanvas';
@@ -232,7 +232,7 @@ const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = ({
         );
       }
     };
-
+  
     console.log('[Resize Handling] Adding resize event listener');
     window.addEventListener('resize', handleResize);
     return () => {

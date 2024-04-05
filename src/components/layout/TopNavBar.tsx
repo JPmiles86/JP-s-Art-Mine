@@ -1,7 +1,7 @@
 // my-gallery/src/components/layout/TopNavBar.tsx
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Menu, MenuItem } from '@mui/material';
 import { AccountCircle } from '@mui/icons-material';
 import AuthModal from '../modals/AuthModal';
@@ -14,6 +14,7 @@ const TopNavBar: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const isAnonymous = useStore((state) => state.isAnonymous);
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -33,6 +34,11 @@ const TopNavBar: React.FC = () => {
 
   const handleSuccessfulAuth = () => {
     handleMenuClose(); // Close the menu when authentication is successful
+  };
+
+  const handleMenuItemClick = (path: string) => {
+    handleMenuClose();
+    navigate(path);
   };
 
   return (
@@ -70,13 +76,13 @@ const TopNavBar: React.FC = () => {
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
             >
-              <MenuItem component={Link} to="/profile">
+              <MenuItem onClick={() => handleMenuItemClick('/profile')}>
                 Profile
               </MenuItem>
-              <MenuItem component={Link} to="/favorites">
+              <MenuItem onClick={() => handleMenuItemClick('/favorites')}>
                 Favorites
               </MenuItem>
-              <MenuItem component={Link} to="/curation-lists">
+              <MenuItem onClick={() => handleMenuItemClick('/curation-lists')}>
                 Curation Lists
               </MenuItem>
               <MenuItem onClick={logout}>Logout</MenuItem>
@@ -96,10 +102,10 @@ const TopNavBar: React.FC = () => {
         onClose={handleAuthModalClose}
         showAnonymousOption={true}
         isLikeTriggered={false}
-        onSuccessfulAuth={handleSuccessfulAuth} 
+        onSuccessfulAuth={handleSuccessfulAuth}
         isAnonymousUser={isAnonymous}
-      />    
-   </AppBar>
+      />
+    </AppBar>
   );
 };
 

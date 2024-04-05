@@ -6,7 +6,7 @@ import useStore from '../utils/store';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
 import getPhotoUrl  from '../Diptychs/DynamicDiptychComponent'; // Import getPhotoUrl function
 import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
-import DownloadButton from '../Diptychs/DownloadButton'; 
+import DownloadButton from '../components/layout/DownloadButton'; 
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs'; 
 // import './Inquire.module.css'; 
 import useGalleryNavigation from '../utils/useGalleryNavigation'; // Import the hook

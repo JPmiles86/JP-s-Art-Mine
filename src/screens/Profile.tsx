@@ -9,7 +9,7 @@ import PersonContactInfoForm from '../components/forms/PersonContactInfoForm';
 import OrganizationContactInfoForm from '../components/forms/OrganizationContactInfoForm';
 import LocationList from '../components/forms/LocationList';
 import useStore from '../utils/store';
-import urlConfig from './urlConfig';
+import urlConfig from '../utils/urlConfig';
 import AuthModal from '../components/modals/AuthModal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

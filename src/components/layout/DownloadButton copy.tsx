@@ -2,8 +2,8 @@
 import React from 'react';
 import { fabric } from 'fabric';
 import { downloadDiptych, generateFilename } from './downloadDiptych';
-import { LayoutSpecs } from './LayoutSpecs'; // Import LayoutSpecs
-import { createOffScreenCanvas } from './createOffScreenCanvas';
+import { LayoutSpecs } from '../../Diptychs/LayoutSpecs'; // Import LayoutSpecs
+import { createOffScreenCanvas } from '../../Diptychs/createOffScreenCanvas';
 import buttonStyles from '../screens/ButtonStyles.module.css';
 
 

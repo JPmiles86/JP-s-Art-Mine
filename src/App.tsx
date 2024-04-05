@@ -15,6 +15,7 @@ import TopNavBar from './components/layout/TopNavBar';
 import { AuthProvider } from './contexts/AuthContext';
 import ResetPassword from './pages/auth/ResetPassword';
 import Profile from './screens/Profile';
+import Favorites from './screens/Favorites';
 
 // kick off the polyfill!
 smoothscroll.polyfill();
@@ -58,6 +59,7 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/profile" element={<Profile />} /> 
+            <Route path="/favorites" element={<Favorites />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/:filter" element={<ImageGrid />} />
             <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />

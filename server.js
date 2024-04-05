@@ -1016,6 +1016,51 @@ app.delete('/api/users/:userId/locations/:locationId', async (req, res) => {
   }
 });
 
+app.get('/api/favorites/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const favoriteItems = await Like.findAll({
+      where: { userId, isLiked: true },
+      include: [
+        {
+          model: Photo,
+          attributes: ['photoID', 'seriesCode', 'imagePath'],
+          include: [
+            {
+              model: Series,
+              attributes: ['seriesName'],
+            },
+          ],
+        },
+        {
+          model: DiptychSVG,
+          attributes: ['DiptychIdCode', 'fused', 'shapeInCenterEdge'],
+        },
+      ],
+      order: [
+        [Photo, 'photoID', 'ASC'],
+        [DiptychSVG, 'DiptychIdCode', 'ASC'],
+      ],
+    });
+
+    const formattedFavorites = favoriteItems.map((item) => ({
+      photoId: item.Photo.photoID,
+      seriesCode: item.Photo.seriesCode,
+      seriesName: item.Photo.Series.seriesName,
+      imagePath: item.Photo.imagePath,
+      diptychIdCode: item.DiptychSVG.DiptychIdCode,
+      fused: item.DiptychSVG.fused,
+      shapeInCenterEdge: item.DiptychSVG.shapeInCenterEdge,
+    }));
+
+    res.json(formattedFavorites);
+  } catch (error) {
+    console.error('Error retrieving favorite items:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

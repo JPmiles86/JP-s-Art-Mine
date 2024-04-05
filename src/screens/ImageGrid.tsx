@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
 import ScrollContext from '../ScrollContext'; 
 import useStore, { Store, GridHeaderData, Photograph } from '../utils/store';
-import urlConfig from './urlConfig';  
+import urlConfig from '../utils/urlConfig';  
 import { fetchGridHeaderData } from '../utils/fetchGridHeaderData';
 import { fetchAllSeries } from '../utils/fetchAllSeries';
 import { fetchPhotosService } from '../utils/fetchPhotosService';

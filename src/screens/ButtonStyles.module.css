@@ -159,3 +159,7 @@ text-decoration: underline; /* Add underline */
   font-family: 'EB Garamond', serif;
   text-decoration: underline;
 }
+
+.clickable {
+  cursor: pointer;
+}

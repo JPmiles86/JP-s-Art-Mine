@@ -1,12 +1,12 @@
 // my-gallery/src/Diptychs/DiptychControls.js
 
 import React, { useEffect, useState } from 'react';
-import DownloadButton from './DownloadButton';
+import DownloadButton from '../components/layout/DownloadButton';
 import buttonStyles from '../screens/ButtonStyles.module.css';
 import useStore from '../utils/store'; 
 import { swapMapping, rotateMapping } from './DiptychIdCodeMapping'; 
 import LikeButton from '../components/layout/LikeButton';
-import useKeyboardNavigation from '../screens/useKeyboardNavigation';
+import useKeyboardNavigation from '../utils/useKeyboardNavigation';
 
 const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen, }) => {
     const { FrameId, isMerged, shapeCode, selectedDiptychIdCode, setFrameId, setIsMerged, setShapeCode, setSelectedDiptychIdCode } = useStore(state => ({
