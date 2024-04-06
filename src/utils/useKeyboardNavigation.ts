@@ -2,6 +2,16 @@
 
 import { useEffect } from 'react';
 
+// const { isAuthModalOpen } = useStore((state) => state);
+
+// useKeyboardNavigation(
+//  isAuthModalOpen ? () => {} : wrappedHandleNextPhoto,
+//  isAuthModalOpen ? () => {} : wrappedHandlePrevPhoto,
+//  isAuthModalOpen ? () => {} : handleSwapShape,
+//  isAuthModalOpen ? () => {} : handleRotateShape,
+//  isAuthModalOpen ? () => {} : handleToggleMergeStatus
+// );
+
 const useKeyboardNavigation = (
   handleNextPhoto: (() => void) | undefined,
   handlePrevPhoto: (() => void) | undefined,

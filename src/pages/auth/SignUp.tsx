@@ -45,21 +45,19 @@ interface SignUpProps {
       return;
     }
     try {
-      const userId = useStore.getState().userId;
-      const response = await axios.put(`/api/users/${userId}/profile`, {
+      console.log('Sending sign-up request');
+      const response = await axios.post('/api/auth/register', {
         email,
         password,
-        isAnonymous: false,
-        role: 'RegularUser',
       });
+      console.log('Sign-up response:', response.data);
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
-      useStore.getState().setUserId(response.data.userData.userId); // Store the userId in the store
-      login(response.data.token); // Call the login function with only the token
+      useStore.getState().setUserId(response.data.userData.userId);
+      login(response.data.token);
       setSuccess(true);
       setShowSuccessPage(true);
   
-      // Send the sign-up email
       await axios.post('/api/auth/send-signup-email', { email });
   
       onSuccessfulAuth?.();
@@ -125,7 +123,7 @@ interface SignUpProps {
             margin="normal"
             InputProps={{
               endAdornment: (
-                <IconButton onClick={togglePasswordVisibility} tabIndex={-1}>
+                <IconButton onClick={toggleConfirmPasswordVisibility} tabIndex={-1}>
                   {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               ),
