@@ -28,9 +28,18 @@ router.post('/register', async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user with lowercase email
-    const newUser = await Users.create({ email: lowercaseEmail, password: hashedPassword, authMethod: 'email' });
+     // Generate a random number between 1 and 20
+     const randomNumber = Math.floor(Math.random() * 20) + 1;
+     const paddedNumber = randomNumber.toString().padStart(2, '0'); 
 
+    // Create a new user with lowercase email and assign a random profile picture URL
+    const newUser = await Users.create({
+      email: lowercaseEmail,
+      password: hashedPassword,
+      authMethod: 'email',
+      profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
+    });
+    
     // Generate username based on email and userId
     const username = `${lowercaseEmail.split('@')[0]}#${newUser.userId}`;
 
