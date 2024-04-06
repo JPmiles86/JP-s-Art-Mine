@@ -17,10 +17,13 @@ const useKeyboardNavigation = (
   handlePrevPhoto: (() => void) | undefined,
   swapShape: () => void,
   rotateShape: () => void,
-  toggleMergeStatus: () => void
+  toggleMergeStatus: () => void,
+  isAuthModalOpen: boolean
 ) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Only execute keyboard navigation logic if AuthModal is not open
+      if (!isAuthModalOpen) {
       switch (e.key) {
         case 'ArrowRight':
           handleNextPhoto?.();
@@ -47,6 +50,7 @@ const useKeyboardNavigation = (
         default:
           break;
       }
+     }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -54,7 +58,7 @@ const useKeyboardNavigation = (
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleNextPhoto, handlePrevPhoto, rotateShape, swapShape, toggleMergeStatus]);
+  }, [handleNextPhoto, handlePrevPhoto, rotateShape, swapShape, toggleMergeStatus, isAuthModalOpen]);
 };
 
 export default useKeyboardNavigation;

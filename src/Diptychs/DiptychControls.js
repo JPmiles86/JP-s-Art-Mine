@@ -8,7 +8,7 @@ import { swapMapping, rotateMapping } from './DiptychIdCodeMapping';
 import LikeButton from '../components/layout/LikeButton';
 import useKeyboardNavigation from '../utils/useKeyboardNavigation';
 
-const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen, }) => {
+const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen, isAuthModalOpen, }) => {
     const { FrameId, isMerged, shapeCode, selectedDiptychIdCode, setFrameId, setIsMerged, setShapeCode, setSelectedDiptychIdCode } = useStore(state => ({
         FrameId: state.FrameId,
         isMerged: state.isMerged,
@@ -83,7 +83,8 @@ useKeyboardNavigation(
     null, // handlePrevPhoto (not applicable in this component)
     handleSwapShape, // Function to swap shape
     handleRotateShape, // Function to rotate shape
-    handleToggleMergeStatus // Function to toggle merge status
+    handleToggleMergeStatus, // Function to toggle merge status
+    isAuthModalOpen // Pass the isAuthModalOpen state
   );
   
 useEffect(() => {

@@ -121,7 +121,8 @@ const ExhibitionSpace = () => {
       wrappedHandlePrevPhoto, // Function to handle previous photo
       () => {}, // Empty function for swapShape
       () => {}, // Empty function for rotateShape
-      () => {} // Empty function for toggleMergeStatus
+      () => {}, // Empty function for toggleMergeStatus
+      isAuthModalOpen // Pass the isAuthModalOpen state
     );
   
   useEffect(() => {
@@ -275,6 +276,7 @@ console.log('[ExhibitionSpace] Render start:', { photoID, currentFilter, selecte
             areShapesVisible={areShapesVisible}
             toggleShapesVisibility={toggleShapesVisibility}
             setIsAuthModalOpen={setIsAuthModalOpen}
+            isAuthModalOpen={isAuthModalOpen}
           >
             <GalleryBackgroundSelector onChange={handleChangeGalleryBackground} />
         </DiptychControls>
