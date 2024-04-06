@@ -303,10 +303,16 @@ const Profile: React.FC = () => {
         });
   
         if (response.status === 200) {
+          const newProfilePhotoUrl = response.data.profilePhotoUrl;
           setUserData((prevData) => ({
             ...prevData,
-            profilePhotoUrl: response.data.profilePhotoUrl,
+            profilePhotoUrl: newProfilePhotoUrl,
           }));
+          // Emit a custom event to notify the TopNavBar component
+          const profilePhotoChangeEvent = new CustomEvent('profilePhotoChange', {
+            detail: { profilePhotoUrl: newProfilePhotoUrl }
+          });
+          window.dispatchEvent(profilePhotoChangeEvent);
           toast.success('Profile photo uploaded successfully!', {
             position: 'top-left',
             autoClose: 1500,

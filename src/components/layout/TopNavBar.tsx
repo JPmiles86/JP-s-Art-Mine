@@ -28,6 +28,7 @@ const TopNavBar: React.FC = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
   const userId = useStore((state) => state.userId);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -69,6 +70,20 @@ const TopNavBar: React.FC = () => {
     }
   }, [userId]);
 
+  useEffect(() => {
+    const handleProfilePhotoChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ profilePhotoUrl: string }>;
+      setProfilePhotoUrl(customEvent.detail.profilePhotoUrl);
+    };
+  
+    window.addEventListener('profilePhotoChange', handleProfilePhotoChange as EventListener);
+  
+    return () => {
+      window.removeEventListener('profilePhotoChange', handleProfilePhotoChange as EventListener);
+    };
+  }, []);
+
+
   return (
     <AppBar
       position="static"
@@ -99,7 +114,7 @@ const TopNavBar: React.FC = () => {
             >
               <Avatar
                 alt={userData?.username || ''}
-                src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
+                src={profilePhotoUrl ? `${urlConfig.baseURL}${profilePhotoUrl}` : userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
                 sx={{ width: 45, height: 45 }}
               />
             </IconButton>
