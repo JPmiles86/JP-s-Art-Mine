@@ -112,7 +112,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
   return (
     <form onSubmit={handleSubmit}>
       <Typography variant="h6" gutterBottom style={{ marginTop: '20px' }}>
-        Location #{locationIndex}
+      <strong>Location #{locationIndex}</strong>
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12}>

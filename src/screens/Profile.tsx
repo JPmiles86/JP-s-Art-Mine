@@ -95,7 +95,6 @@ const Profile: React.FC = () => {
   const [isFormModified, setIsFormModified] = useState(false);
   const isAnonymous = useStore((state) => state.isAnonymous);
 
-
   const handleCancelUsername = () => {
     setNewUsername(userData?.username || '');
     setEditingUsername(false);
@@ -125,25 +124,32 @@ const Profile: React.FC = () => {
   };
 
   const fetchUserData = async () => {
-    try {
-      const response = await axios.get(`/api/users/${userId}/profile`);
-      const { user, personContactInfo, organizationContactInfo, locations } = response.data;
-      setUserData(user);
-      setEntityType(user.entityType || '');
-      setSelectedEntityType(user.entityType || '');
+    const userId = useStore.getState().userId;
+    if (userId) {
+      try {
+        const response = await axios.get(`/api/users/${userId}/profile`);
+        const { user, personContactInfo, organizationContactInfo, locations } = response.data;
+        setUserData(user);
+        setEntityType(user.entityType || '');
+        setSelectedEntityType(user.entityType || '');
   
-      if (user.entityType === 'Person') {
-        setPersonalContactInfo(personContactInfo);
-      } else if (user.entityType === 'Organization') {
-        setOrganizationContactInfo(organizationContactInfo);
+        if (user.entityType === 'Person') {
+          setPersonalContactInfo(personContactInfo);
+        } else if (user.entityType === 'Organization') {
+          setOrganizationContactInfo(organizationContactInfo);
+        }
+  
+        setLocations(locations || []);
+        console.log('User data:', response.data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
       }
-  
-      setLocations(locations || []);
-      console.log('User data:', response.data);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
     }
   };
+  
+  useEffect(() => {
+    fetchUserData();
+  }, [userId]);
   
 
   const handleSaveEntityType = async (selectedType: string) => {
@@ -158,11 +164,11 @@ const Profile: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (userId) {
-      fetchUserData();
-    }
-  }, [userId]);
+// useEffect(() => {
+//    if (userId) {
+//      fetchUserData();
+//    }
+//  }, [userId]);
 
   useEffect(() => {
     fetchUserData();
@@ -388,7 +394,7 @@ return (
               sx={{ width: 150, height: 150 }}
             />
             <Typography variant="h6" style={{ marginTop: '20px' }}>
-              Username: <strong>{userData?.username}</strong>
+            <strong>Username:</strong> {userData?.username}
             </Typography>
             <Typography variant="h6" align="center" style={{ marginTop: '40px' }}>
               To update your profile, please sign up.
@@ -441,7 +447,7 @@ return (
                 ) : (
                   <>
                     <Typography style={{ marginTop: '60px' }} variant="h6">
-                      Username: <strong>{userData?.username}</strong>
+                    <strong>Username:</strong> {userData?.username}
                     </Typography>
                     <button className={buttonStyles.navButton} onClick={() => {
                       setNewUsername(userData?.username || '');
@@ -455,7 +461,7 @@ return (
             </Grid>
             {entityType ? (
               <Box mt={4} display="flex" justifyContent="center" alignItems="center">
-                <Typography variant="h6" component="span">Account Type: {entityType}</Typography>
+                <Typography variant="h6" component="span"><strong>Account Type:</strong> {entityType}</Typography>
                 <button
                   className={buttonStyles.navButton}
                   style={{ marginLeft: '10px' }}
@@ -500,7 +506,7 @@ return (
       </>
     )}
     <AuthModal
-          open={openAuthModal}
+          open={openAuthModal && !isAuthenticated}
           onClose={() => setOpenAuthModal(false)}
           showAnonymousOption={false}
           isLikeTriggered={false}

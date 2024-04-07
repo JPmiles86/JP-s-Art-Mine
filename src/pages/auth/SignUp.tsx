@@ -51,16 +51,12 @@ interface SignUpProps {
         password,
       });
       console.log('Sign-up response:', response.data);
-      localStorage.setItem('token', response.data.token);
-      setIsAuthenticated(true);
-      useStore.getState().setUserId(response.data.userData.userId);
       login(response.data.token);
       setSuccess(true);
       setShowSuccessPage(true);
-  
       await axios.post('/api/auth/send-signup-email', { email });
-  
       onSuccessfulAuth?.();
+      console.log('Sign-up successful');
     } catch (error: any) {
       console.error('Error during sign-up:', error);
       if (error.response && error.response.status === 400) {

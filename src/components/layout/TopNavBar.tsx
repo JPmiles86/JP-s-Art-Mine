@@ -1,6 +1,6 @@
 // my-gallery/src/components/layout/TopNavBar.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
 import { AccountCircle } from '@mui/icons-material';
@@ -29,17 +29,21 @@ const TopNavBar: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const userId = useStore((state) => state.userId);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const anchorElRef = useRef<HTMLButtonElement | null>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    anchorElRef.current = event.currentTarget;
+    setMenuOpen(true);
   };
-
+  
   const handleMenuClose = () => {
-    setAnchorEl(null);
+    setMenuOpen(false);
   };
 
   const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true);
+    setMenuOpen(false); // Close the menu when opening the AuthModal
   };
 
   const handleAuthModalClose = () => {
@@ -47,7 +51,8 @@ const TopNavBar: React.FC = () => {
   };
 
   const handleSuccessfulAuth = () => {
-    handleMenuClose(); // Close the menu when authentication is successful
+    setMenuOpen(false); // Close the menu when authentication is successful
+    setIsAuthModalOpen(false); // Close the AuthModal when authentication is successful
   };
 
   const handleMenuItemClick = (path: string) => {
@@ -55,20 +60,22 @@ const TopNavBar: React.FC = () => {
     navigate(path);
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
+  const fetchUserData = async () => {
+    const userId = useStore.getState().userId;
+    if (userId) {
       try {
         const response = await axios.get(`/api/users/${userId}/profile`);
         setUserData(response.data.user);
+        console.log('User data in TopNavBar:', response.data.user);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error fetching user data in TopNavBar:', error);
       }
-    };
-
-    if (userId) {
-      fetchUserData();
     }
-  }, [userId]);
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [userId]);  
 
   useEffect(() => {
     const handleProfilePhotoChange = (event: Event) => {
@@ -83,6 +90,15 @@ const TopNavBar: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserData();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    console.log('Updated userData in TopNavBar:', userData);
+  }, [userData]);
 
   return (
     <AppBar
@@ -111,6 +127,7 @@ const TopNavBar: React.FC = () => {
               onClick={handleMenuOpen}
               color="inherit"
               aria-label="User Profile"
+              ref={anchorElRef}
             >
               <Avatar
                 alt={userData?.username || ''}
@@ -119,9 +136,17 @@ const TopNavBar: React.FC = () => {
               />
             </IconButton>
             <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
+              anchorEl={anchorElRef.current}
+              open={menuOpen}
               onClose={handleMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
             >
               <MenuItem onClick={() => handleMenuItemClick('/profile')}>
                 Profile

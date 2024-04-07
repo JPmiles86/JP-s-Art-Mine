@@ -7,6 +7,7 @@ const { Users, PasswordResetToken } = require('../models');
 const jwt = require('jsonwebtoken');
 const { sendSignUpEmail, sendPasswordResetEmail } = require('../src/utils/emailService');
 const crypto = require('crypto');
+const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 
 function generateResetToken() {
   return crypto.randomBytes(20).toString('hex');
@@ -273,6 +274,27 @@ router.post('/reset-password', async (req, res) => {
   } catch (error) {
     console.error('Error resetting password:', error);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+router.get('/user', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET_KEY);
+    const user = await Users.findByPk(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('User data retrieved:', user);
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'Failed to fetch user data' });
   }
 });
 

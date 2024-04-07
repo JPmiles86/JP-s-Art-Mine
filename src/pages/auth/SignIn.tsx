@@ -28,24 +28,25 @@ const SignIn: React.FC<SignInProps> = ({ onClose, setIsForgotPassword, onSuccess
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const lowercaseEmail = email.toLowerCase();
-      const response = await axios.post('/api/auth/login', { email: lowercaseEmail, password });
-      localStorage.setItem('token', response.data.token);
-      setIsAuthenticated(true);
-      useStore.getState().setUserId(response.data.userData.userId);
-      useStore.getState().setUserRole(response.data.userData.role); 
-      login(response.data.token); // Call the login function with only the token
-      onClose();
-      onSuccessfulAuth?.();
-    } catch (error) {
-      console.error('Error during sign-in:', error);
-      setError('Invalid email or password.');
-    }
-  };
-
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const lowercaseEmail = email.toLowerCase();
+    const response = await axios.post('/api/auth/login', { email: lowercaseEmail, password });
+    const user = response.data.userData;
+    login(response.data.token);
+    useStore.getState().setUserId(user.userId);
+    useStore.getState().setUserRole(user.role);
+    useStore.getState().setIsAnonymous(user.isAnonymous);
+    onClose();
+    onSuccessfulAuth?.();
+    console.log('Sign-in successful');
+  } catch (error) {
+    console.error('Error during sign-in:', error);
+    setError('Invalid email or password.');
+  }
+};
+  
   {error && <Typography color="error">{error}</Typography>}
 
   return (

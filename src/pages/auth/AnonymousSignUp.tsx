@@ -37,7 +37,7 @@ const AnonymousSignUp: React.FC<AnonymousSignUpProps> = ({ onClose, onSuccessful
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -51,17 +51,13 @@ const handleSubmit = async (e: React.FormEvent) => {
         password,
         username: newUsername,
       });
-      localStorage.setItem('token', response.data.token);
-      setIsAuthenticated(true);
       login(response.data.token);
       setSuccess(true);
       setShowSuccessPage(true);
       useStore.getState().setIsAnonymous(false);
-
-      // Send the sign-up email
       await axios.post('/api/auth/send-signup-email', { email });
-      
       onSuccessfulAuth?.();
+      console.log('Anonymous sign-up successful');
     } catch (error: any) {
       console.error('Error during anonymous sign-up:', error);
       if (error.response && error.response.status === 400) {

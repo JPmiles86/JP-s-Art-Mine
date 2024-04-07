@@ -51,6 +51,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const isAnonymous = useStore((state) => state.userId !== null); // Define isAnonymous based on the userId in the store
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleAnonymous = async () => {
     try {
