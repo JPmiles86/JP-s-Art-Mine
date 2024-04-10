@@ -41,10 +41,4 @@ const ProvenanceLocations = sequelize.define('ProvenanceLocations', {
   updatedAt: 'updatedDate'
 });
 
-Artwork.hasMany(ProvenanceLocations, { foreignKey: 'artworkId' });
-ProvenanceLocations.belongsTo(Artwork, { foreignKey: 'artworkId' });
-
-Locations.hasMany(ProvenanceLocations, { foreignKey: 'locationId' });
-ProvenanceLocations.belongsTo(Locations, { foreignKey: 'locationId' });
-
 module.exports = ProvenanceLocations;

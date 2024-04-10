@@ -81,6 +81,4 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   updatedAt: 'updatedDate'
 });
 
-PersonContactInfo.belongsTo(Users, { foreignKey: 'userId' });
-
 module.exports = PersonContactInfo;

@@ -58,9 +58,20 @@ const Users = sequelize.define('Users', {
   entityType: {
     type: DataTypes.ENUM('Person', 'Organization'),
     allowNull: true
+  },
+  createdBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  creationReason: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   timestamps: true
 });
+
+// Define the self-reference association separately
+Users.belongsTo(Users, { as: 'CreatedByUser', foreignKey: 'createdBy', constraints: false });
 
 module.exports = Users;

@@ -375,7 +375,6 @@ const Profile: React.FC = () => {
 return (
   <Box>
     {!isAuthenticated ? (
-      // Render the message and trigger the AuthModal
       <Box>
         <Typography variant="h6" align="center" style={{ marginTop: '60px' }}>
           In order to update your profile, you must be signed in. Please sign in or sign up.
@@ -506,10 +505,11 @@ return (
       </>
     )}
     <AuthModal
-          open={openAuthModal && !isAuthenticated}
+          open={openAuthModal}
           onClose={() => setOpenAuthModal(false)}
           showAnonymousOption={false}
           isLikeTriggered={false}
+          onSuccessfulAuth={() => {}}
           isAnonymousUser={isAnonymous}
         />
     <ToastContainer />

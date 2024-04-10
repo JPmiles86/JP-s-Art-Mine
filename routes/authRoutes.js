@@ -18,7 +18,6 @@ router.post('/register', async (req, res) => {
   const lowercaseEmail = email.toLowerCase();
   const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
 
-
   try {
     // Check if the user already exists
     const existingUser = await Users.findOne({ where: { email: lowercaseEmail } });
@@ -29,9 +28,9 @@ router.post('/register', async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-     // Generate a random number between 1 and 20
-     const randomNumber = Math.floor(Math.random() * 20) + 1;
-     const paddedNumber = randomNumber.toString().padStart(2, '0'); 
+    // Generate a random number between 1 and 20
+    const randomNumber = Math.floor(Math.random() * 20) + 1;
+    const paddedNumber = randomNumber.toString().padStart(2, '0'); 
 
     // Create a new user with lowercase email and assign a random profile picture URL
     const newUser = await Users.create({
@@ -39,6 +38,12 @@ router.post('/register', async (req, res) => {
       password: hashedPassword,
       authMethod: 'email',
       profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
+    });
+
+    // Set the 'createdBy' and 'creationReason' fields after creating the user
+    await newUser.update({
+      createdBy: newUser.userId,
+      creationReason: 'User Sign-up',
     });
     
     // Generate username based on email and userId
@@ -174,12 +179,19 @@ router.post('/login', async (req, res) => {
       const randomNumber = Math.floor(Math.random() * 20) + 1;
       const paddedNumber = randomNumber.toString().padStart(2, '0');
 
-       // Create an anonymous user with the next available userId and random profile picture URL
+      // Create an anonymous user with the next available userId and random profile picture URL
       const anonymousUser = await Users.create({
         isAnonymous: true,
         role: 'AnonymousUser',
+        authMethod: 'email',
         username: `Anonymous#${maxUserId + 1}`,
         profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
+      });
+
+      // Set the 'createdBy' and 'creationReason' fields after creating the anonymous user
+      await anonymousUser.update({
+        createdBy: anonymousUser.userId,
+        creationReason: 'Anonymous Sign-up',
       });
 
       // Generate a JWT token for the anonymous user

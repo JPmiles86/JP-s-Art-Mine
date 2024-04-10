@@ -88,7 +88,7 @@ DiptychId,fused,FrameId,aspectRatio,orientation,leftSide,leftRotation,rightSide,
 1,Entangled,3,3:4,Portrait,Reflection,180°,Original,-180°,Circle,Triangle,CT,3x4_Entangled_Diptych_Circle_Triangle_Portrait_Unframed,E_3x4_CT_P_U
 1,Entangled,3,3:4,Landscape,Reflection,270°,Original,-270°,Diamond,Circle,DC,3x4_Entangled_Diptych_Diamond_Circle_Landscape_Unframed,E_3x4_DC_L_U
 2,Fused,3,3:4,Portrait,Original,0°,Reflection,0°,Circle,Diamond,CD,3x4_Fused_Diptych_Circle_Diamond_Portrait_Unframed,F_3x4_CD_P_U
-3,Fused,3,3:4,Landscape,Original,90°,Reflection,-90°,Diamond,Square,DS,3x4_Fused_Diptych_Diamond_Square_Landscape_Unframed,F_3x4_DS_L_U
+3,Fused,3,3:4,Landscape,Original,90°,Reflection,-90°,Diamond,Square,DS,3x4_Fused_Diptych__Square_Landscape_Unframed,F_3x4_DS_L_U
 4,Fused,3,3:4,Portrait,Original,180°,Reflection,-180°,Square,Triangle,ST,3x4_Fused_Diptych_Square_Triangle_Portrait_Unframed,F_3x4_ST_P_U
 5,Fused,3,3:4,Landscape,Original,270°,Reflection,-270°,Triangle,Circle,TC,3x4_Fused_Diptych_Triangle_Circle_Landscape_Unframed,F_3x4_TC_L_U
 4,Fused,3,3:4,Portrait,Reflection,0°,Original,0°,Square,Diamond,SD,3x4_Fused_Diptych_Square_Diamond_Portrait_Unframed,F_3x4_SD_P_U

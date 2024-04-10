@@ -48,6 +48,4 @@ const ArtistsAdditionalPhotos = sequelize.define('ArtistsAdditionalPhotos', {
   updatedAt: 'updatedDate'
 });
 
-ArtistsAdditionalPhotos.belongsTo(Artists, { foreignKey: 'artistId' });
-
 module.exports = ArtistsAdditionalPhotos;

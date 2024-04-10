@@ -33,10 +33,4 @@ const UserLocations = sequelize.define('UserLocations', {
   updatedAt: 'updatedDate'
 });
 
-Users.hasMany(UserLocations, { foreignKey: 'userId' });
-UserLocations.belongsTo(Users, { foreignKey: 'userId' });
-
-Locations.hasMany(UserLocations, { foreignKey: 'locationId' });
-UserLocations.belongsTo(Locations, { foreignKey: 'locationId' });
-
 module.exports = UserLocations;

@@ -1,4 +1,4 @@
-// Artwork.js
+// my-gallery/models/Artwork.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Photo = require('./Photo');
@@ -58,21 +58,5 @@ const Artwork = sequelize.define('Artwork', {
     }
   },  
 });
-
-Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
-Photo.hasMany(Artwork, { foreignKey: 'photoRefId' });
-
-Artwork.belongsTo(Diptych, { foreignKey: 'diptychId' });
-Diptych.hasMany(Artwork, { foreignKey: 'diptychId' });
-
-Artwork.belongsTo(SizeCategories, { foreignKey: 'sizeCategoryId' });
-SizeCategories.hasMany(Artwork, { foreignKey: 'sizeCategoryId' });
-
-Artwork.belongsTo(Pricing, { foreignKey: 'pricingId' });
-Pricing.hasMany(Artwork, { foreignKey: 'pricingId' });
-
-Artwork.belongsTo(PrintSizes, { foreignKey: 'printSizeId' });
-PrintSizes.hasMany(Artwork, { foreignKey: 'printSizeId' });
-
 
 module.exports = Artwork;

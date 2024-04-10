@@ -32,6 +32,4 @@ const PrivacyPreferences = sequelize.define('PrivacyPreferences', {
   updatedAt: 'updatedDate'
 });
 
-PrivacyPreferences.belongsTo(Users, { foreignKey: 'userId' });
-
 module.exports = PrivacyPreferences;

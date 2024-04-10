@@ -7,7 +7,6 @@ import buttonStyles from '../screens/ButtonStyles.module.css';
 import styles from './DiptychAvailabilityStyles.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-
 interface ArtworkDetail {
   artworkId: string;
   edition: string;
@@ -31,108 +30,119 @@ interface DiptychAvailabilityModuleProps {
 
 const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ photoId, diptychId }) => {
   const [artworkDetails, setArtworkDetails] = useState<ArtworkDetail[]>([]);
-  const [showInInches, setShowInInches] = useState(true); // New state for toggling size display
+  const [showInInches, setShowInInches] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const currentFilter = location.pathname.split('/')[1];
 
-  const handleBuyNowClick = (artworkId:string) => {
+  const handleBuyNowClick = (artworkId: string) => {
     navigate(`/${currentFilter}/${photoId}/purchase/${artworkId}`);
   };
 
-  const handleRequestAccessClick = (artworkId: string) => {
-    navigate(`/${currentFilter}/${photoId}/request/${artworkId}`);
+  const handleRequestAccessClick = (cpArtworkId: string) => {
+    const apArtworkId = cpArtworkId.replace('-CP', '-AP');
+    navigate(`/${currentFilter}/${photoId}/request/${apArtworkId}`);
   };
 
-
-   // Handler to toggle between inches and centimeters
-   const handleSizeToggle = () => {
+  const handleSizeToggle = () => {
     setShowInInches((prev) => !prev);
   };
 
   useEffect(() => {
     const fetchArtworkDetails = async () => {
       try {
-        // Adjust the URL to match your API route
         const response = await axios.get(`http://localhost:4000/api/artworks/details/${photoId}/${diptychId}`);
-        console.log('Fetched artwork details:',response.data);
+        console.log('Fetched artwork details:', response.data);
         setArtworkDetails(response.data);
       } catch (error) {
         console.error('Error fetching artwork details:', error);
       }
     };
 
+    console.log('Fetching artwork details for photoId:', photoId, 'and diptychId:', diptychId);
     fetchArtworkDetails();
   }, [photoId, diptychId]);
 
-  // Separate CP and AP editions into different arrays
-const cpArtworks = artworkDetails.filter(artwork => artwork.edition === 'CP');
-const apArtworks = artworkDetails.filter(artwork => artwork.edition === 'AP');
+  const cpArtworks = artworkDetails.filter(artwork => artwork.edition === 'CP');
+  const apArtworks = artworkDetails.filter(artwork => artwork.edition === 'AP');
 
-// A function to find the corresponding AP artwork status based on a CP artwork
-const findApStatus = (cpArtworkId: string) => {
-  const apArtwork = apArtworks.find(ap => ap.artworkId.replace('-CP', '-AP') === cpArtworkId.replace('-CP', '-AP'));
-  return apArtwork?.status || 'Unavailable'; // default status if not found
-};
+    // Define the desired size order
+  const sizeOrder = ['Small', 'Medium', 'Large', 'X-Large'];
+
+  // Sort the cpArtworks array using the custom sorting function
+  const sortedCpArtworks = [...cpArtworks].sort((a, b) => {
+    const indexA = sizeOrder.indexOf(a.sizeName);
+    const indexB = sizeOrder.indexOf(b.sizeName);
+    return indexA - indexB;
+  });
+  
+  const findApStatus = (cpArtworkId: string) => {
+    const apArtwork = apArtworks.find(ap => ap.artworkId.replace('-CP', '-AP') === cpArtworkId.replace('-CP', '-AP'));
+    return apArtwork?.status || 'Unavailable';
+  };
 
   return (
     <Box>
       <Typography variant="h6" style={{ marginTop: '10px', textAlign: 'center' }}>
-      <strong>Photograph ID:</strong> {photoId}</Typography>
-      {/* You will dynamically fetch and map diptychName from diptychId */}
+        <strong>Photograph ID:</strong> {photoId}
+      </Typography>
       <Typography variant="h6" style={{ textAlign: 'center' }}>
-      <strong>Diptych Variation:</strong> {artworkDetails[0]?.diptychName || 'Unknown'}</Typography>
+        <strong>Diptych Variation:</strong> {artworkDetails[0]?.diptychName || 'Unknown'}
+      </Typography>
       <table style={{ marginTop: '20px' }}>
         <thead>
           <tr>
             <th className={styles.tableCell}>Size</th>
-            <th className={styles.tableCell}>Print Size</th>
-            <th className={styles.tableCell}>CP Price</th>
+            <th className={styles.tableCell}>
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <Typography><strong>Print Size</strong></Typography>
+              <Typography><strong>{showInInches ? '(inches)' : '(cm)'}</strong></Typography>
+            </Box>
+            </th>
+            <th className={styles.tableCell}>CP Price (USD)</th>
             <th className={styles.tableCell}>Artwork Availability (CP)</th>
             <th className={styles.tableCell}>Artwork Availability (AP)</th>
           </tr>
         </thead>
         <tbody>
-          {cpArtworks.map((cpArtwork) => (
+          {sortedCpArtworks.map((cpArtwork) => (
             <tr key={cpArtwork.artworkId}>
               <td className={styles.tableCellContents}>{cpArtwork.sizeName}</td>
-              <td className={styles.tableCellContents}>{showInInches ? cpArtwork.printSizeInInches : cpArtwork.printSizeInCm}</td>
-              <td className={styles.tableCellContents}>${cpArtwork.price.toFixed(0)}</td> {/* the (0) indicated decimal places */}
+              <td className={styles.tableCellContents}>
+                {showInInches ? cpArtwork.printSizeInInches : cpArtwork.printSizeInCm}
+              </td>
+              <td className={styles.tableCellContents}>${cpArtwork.price.toFixed(0)}</td>
               <td className={styles.tableCellContents}>
                 {cpArtwork.status === 'Available' && (
-                  <button
-                    className={buttonStyles.button}
-                    onClick={() => handleBuyNowClick(cpArtwork.artworkId)}
-                  >
+                  <button className={`${buttonStyles.greenButton}`} onClick={() => handleBuyNowClick(cpArtwork.artworkId)}>
                     Buy Now
-                  </button>                
-                )}
-                {cpArtwork.status === 'Pending Sale' && (
-                  <button className={buttonStyles.button} disabled>
-                    Pending
                   </button>
                 )}
-                {cpArtwork.status === 'Sold' && <Typography>Sold</Typography>}
+                {cpArtwork.status === 'Pending Sale' && (
+                  <Typography style={{ fontWeight: 'bold', color: '#ff8c00' }}>Pending Sale</Typography>
+                )}
+                {cpArtwork.status === 'Sold' && (
+                  <Typography style={{ fontWeight: 'bold', color: '#d60000' }}>Sold</Typography>
+                )}
               </td>
               <td className={styles.tableCellContents}>
                 {findApStatus(cpArtwork.artworkId) === 'Available' && (
-                  <button
-                    className={buttonStyles.button}
-                    onClick={() => handleRequestAccessClick(cpArtwork.artworkId)}
-                  >
+                  <button className={buttonStyles.button} onClick={() => handleRequestAccessClick(cpArtwork.artworkId)}>
                     Request Access
-                  </button>                
-                )}                
+                  </button>
+                )}
+                {findApStatus(cpArtwork.artworkId) !== 'Available' && (
+                  <Typography style={{ fontWeight: 'bold', color: '#d60000' }}>Unavailable</Typography>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {/* Toggle switch for size display */}
       <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
         <FormControlLabel
           control={<Switch checked={showInInches} onChange={handleSizeToggle} />}
-          label={showInInches ? "Show Print Size in Inches" : "Show Print Size in Centimeters"}
+          label={showInInches ? 'Print Size in Inches' : 'Print Size in Centimeters'}
         />
       </Box>
     </Box>

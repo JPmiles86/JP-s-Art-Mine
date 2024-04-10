@@ -50,6 +50,11 @@ const TopNavBar: React.FC = () => {
     setIsAuthModalOpen(false);
   };
 
+  const handleAnonymousSignUp = () => {
+    setIsAuthModalOpen(true);
+    setMenuOpen(false);
+  };
+
   const handleSuccessfulAuth = () => {
     setMenuOpen(false); // Close the menu when authentication is successful
     setIsAuthModalOpen(false); // Close the AuthModal when authentication is successful
@@ -148,6 +153,9 @@ const TopNavBar: React.FC = () => {
                 horizontal: 'right',
               }}
             >
+              {isAuthenticated && isAnonymous && (
+                <MenuItem onClick={handleAnonymousSignUp}>Sign Up</MenuItem>
+              )}
               <MenuItem onClick={() => handleMenuItemClick('/profile')}>
                 Profile
               </MenuItem>

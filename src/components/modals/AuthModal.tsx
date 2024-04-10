@@ -122,7 +122,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
               {isForgotPassword ? (
                 <ForgotPassword setIsSignUp={setIsSignUp} setIsForgotPassword={setIsForgotPassword} />
               ) : isSignUp ? (
-                <SignUp onClose={handleClose} setIsSignUp={setIsSignUp} onSuccessfulAuth={handleSuccessfulAuth} />
+                <SignUp onClose={handleClose} setIsSignUp={setIsSignUp} onSuccessfulAuth={onSuccessfulAuth} />
               ) : (
                 <>
                   <SignIn onClose={handleClose} setIsForgotPassword={setIsForgotPassword} onSuccessfulAuth={handleSuccessfulAuth} />

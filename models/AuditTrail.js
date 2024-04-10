@@ -35,6 +35,4 @@ const AuditTrail = sequelize.define('AuditTrail', {
   timestamps: false
 });
 
-AuditTrail.belongsTo(Users, { foreignKey: 'UserID' });
-
 module.exports = AuditTrail;

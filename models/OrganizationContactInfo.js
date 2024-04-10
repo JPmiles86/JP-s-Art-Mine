@@ -85,6 +85,4 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   updatedAt: 'updatedDate'
 });
 
-OrganizationContactInfo.belongsTo(Users, { foreignKey: 'userId' });
-
 module.exports = OrganizationContactInfo;

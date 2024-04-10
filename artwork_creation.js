@@ -7,27 +7,27 @@ const PrintSizes = require('./models/PrintSizes');
 const sequelize = require('./config/database');
 
 const diptychNameToTypeMapping = {
-  'Entangled': 'Singles',
-  'Circle': 'mergedLandscape',
-  'Diamond': 'mergedPortrait',
-  'Square': 'mergedLandscape',
-  'Triangle': 'mergedPortrait'
+  'Entangled Prints': 'Singles',
+  'Fused Circle': 'mergedLandscape',
+  'Fused Diamond': 'mergedPortrait',
+  'Fused Square': 'mergedLandscape',
+  'Fused Triangle': 'mergedPortrait'
 };
 
 const aspectRatioToDiptychRatioMapping = {
   '2:3': {
-    'Entangled': '2x2:3',
-    'Circle': '3:1',
-    'Diamond': '4:3',
-    'Square': '3:1',
-    'Triangle': '4:3'
+    'Entangled Prints': '2x2:3',
+    'Fused Circle': '3:1',
+    'Fused Diamond': '4:3',
+    'Fused Square': '3:1',
+    'Fused Triangle': '4:3'
   },
   '3:4': {
-    'Entangled': '2x3:4',
-    'Circle': '8:3',
-    'Diamond': '3:2',
-    'Square': '8:3',
-    'Triangle': '3:2'
+    'Entangled Prints': '2x3:4',
+    'Fused Circle': '8:3',
+    'Fused Diamond': '3:2',
+    'Fused Square': '8:3',
+    'Fused Triangle': '3:2'
   }
 };
 

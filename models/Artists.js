@@ -70,6 +70,4 @@ const Artists = sequelize.define('Artists', {
   timestamps: false
 });
 
-Artists.belongsTo(Users, { foreignKey: 'userId' });
-
 module.exports = Artists;

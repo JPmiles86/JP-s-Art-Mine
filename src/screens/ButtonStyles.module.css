@@ -41,6 +41,29 @@
   margin-right: 0; /* Remove margin for the last button */
 }
 
+.greenButton {
+  background-color: #ffffff;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 16px;
+  padding: 5px 5px;
+  margin-left: 5px;
+  margin-right: 5px; 
+  margin-top: 5px; 
+  font-family: 'EB Garamond', serif;
+  width: 150px;
+  height: 40px;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.greenButton:hover {
+  background-color: rgb(0, 111, 0);
+  color: #ffffff;
+}
+
 .buttonContainer {
   display: flex;
   flex-wrap: wrap;

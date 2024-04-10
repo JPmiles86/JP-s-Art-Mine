@@ -1,5 +1,3 @@
-// my-gallery/models/Like.js
-
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -39,6 +37,10 @@ Like.init({
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: true,
+  },
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   },
 }, {
   sequelize,
