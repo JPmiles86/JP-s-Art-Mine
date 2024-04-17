@@ -1,11 +1,11 @@
-// my-gallery/routes/authRoutes.js
+// my-gallery/src/routes/authRoutes.js
 
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { Users, PasswordResetToken } = require('../models');
+const { Users, PasswordResetToken } = require('../../models');
 const jwt = require('jsonwebtoken');
-const { sendSignUpEmail, sendPasswordResetEmail } = require('../src/utils/emailService');
+const { sendSignUpEmail, sendPasswordResetEmail } = require('../../src/utils/emailService');
 const crypto = require('crypto');
 const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 
@@ -100,6 +100,8 @@ router.post('/anonymous-signup', async (req, res) => {
       username: username,
       role: 'RegularUser',
       isAnonymous: false,
+      createdBy: userId,
+      creationReason: 'Anonymous User Sign-up',
     });
 
     // Generate a new JWT token
@@ -213,7 +215,7 @@ router.post('/login', async (req, res) => {
       if (user) {
         // User exists, send password reset email
         // Implement your email sending logic here
-        res.status(200).json({ exists: true });
+        res.status(200).json({ exists: true, userId: user.userId });
       } else {
         res.status(404).json({ exists: false });
       }

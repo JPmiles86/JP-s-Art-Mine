@@ -10,7 +10,8 @@ const { Photo, CameraModel, Series, Dates, ImageNumbers,
     ProvenanceLocations, Event, EventType, EventRole, Role, Sale,
     Production, Shipping, ArtworkTransaction, Exhibition, ConditionReport,
     Document, Insurance, ArtworkTransfer, Loan, ArtworkImage, ExhibitionImage, 
-    ArtworkTag, PrintShop, PrinterMachine, ShippingCompany } = models;
+    ArtworkTag, PrintShop, PrinterMachine, ShippingCompany, APSaleEligibility, 
+    UserNotification, ArtworkPending, ArtworkLocations, PurchaseProvenanceRecords } = models;
 
 // Artwork associations
 Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
@@ -42,6 +43,21 @@ Shipping.belongsTo(Artwork, { foreignKey: 'artworkId' });
 
 Artwork.hasMany(ArtworkTransaction, { foreignKey: 'artworkId' });
 ArtworkTransaction.belongsTo(Artwork, { foreignKey: 'artworkId' });
+
+Artwork.hasOne(APSaleEligibility, { as: 'cpArtwork', foreignKey: 'cpArtworkId' });
+APSaleEligibility.belongsTo(Artwork, { as: 'cpArtwork', foreignKey: 'cpArtworkId' });
+
+Artwork.hasOne(APSaleEligibility, { as: 'apArtwork', foreignKey: 'apArtworkId' });
+APSaleEligibility.belongsTo(Artwork, { as: 'apArtwork', foreignKey: 'apArtworkId' });
+
+ArtworkLocations.belongsTo(Artwork, { foreignKey: 'artworkId' });
+Artwork.hasMany(ArtworkLocations, { foreignKey: 'artworkId' });
+
+ArtworkLocations.belongsTo(Locations, { foreignKey: 'locationId' });
+Locations.hasMany(ArtworkLocations, { foreignKey: 'locationId' });
+
+ArtworkLocations.belongsTo(Event, { foreignKey: 'eventId' });
+Event.hasMany(ArtworkLocations, { foreignKey: 'eventId' });
 
 Artwork.hasMany(ConditionReport, { foreignKey: 'artworkId' });
 ConditionReport.belongsTo(Artwork, { foreignKey: 'artworkId' });
@@ -137,8 +153,8 @@ EventType.hasMany(Event, { foreignKey: 'eventTypeId' });
 Event.hasMany(EventRole, { foreignKey: 'eventId' });
 EventRole.belongsTo(Event, { foreignKey: 'eventId' });
 
-Event.belongsTo(Location, { foreignKey: 'locationId' });
-Location.hasMany(Event, { foreignKey: 'locationId' });
+Event.belongsTo(Locations, { foreignKey: 'locationId' });
+Locations.hasMany(Event, { foreignKey: 'locationId' });
 
 Event.hasMany(Document, { foreignKey: 'eventId' });
 Document.belongsTo(Event, { foreignKey: 'eventId' });
@@ -193,8 +209,8 @@ Production.belongsTo(PrinterMachine, { foreignKey: 'printerId' });
 Document.belongsTo(Production, { foreignKey: 'productionId' });
 
 // Shipping associations
-Shipping.belongsTo(Location, { as: 'origin', foreignKey: 'originLocationId' });
-Shipping.belongsTo(Location, { as: 'destination', foreignKey: 'destinationLocationId' });
+Shipping.belongsTo(Locations, { as: 'origin', foreignKey: 'originLocationId' });
+Shipping.belongsTo(Locations, { as: 'destination', foreignKey: 'destinationLocationId' });
 
 Shipping.hasMany(Document, { foreignKey: 'shippingId' });
 Document.belongsTo(Shipping, { foreignKey: 'shippingId' });
@@ -264,12 +280,19 @@ Artwork.hasMany(UserNotification, { foreignKey: 'artworkId' });
 Loan.belongsTo(Users, { as: 'lender', foreignKey: 'lenderId' });
 Loan.belongsTo(Users, { as: 'borrower', foreignKey: 'borrowerId' });
 
-Loan.belongsTo(Location, { foreignKey: 'locationId' });
-Location.hasMany(Loan, { foreignKey: 'locationId' });
+Loan.belongsTo(Locations, { foreignKey: 'locationId' });
+Locations.hasMany(Loan, { foreignKey: 'locationId' });
 
 Loan.belongsTo(ConditionReport, { as: 'startConditionReport', foreignKey: 'startConditionReportId' });
 Loan.belongsTo(ConditionReport, { as: 'endConditionReport', foreignKey: 'endConditionReportId' });
 
 Loan.belongsTo(Document, { as: 'loanAgreement', foreignKey: 'loanAgreementId' });
+
+// PurchaseProvenanceRecords associations
+PurchaseProvenanceRecords.belongsTo(Artwork, { foreignKey: 'artworkId' });
+Artwork.hasMany(PurchaseProvenanceRecords, { foreignKey: 'artworkId' });
+
+PurchaseProvenanceRecords.belongsTo(Sale, { foreignKey: 'purchaseId' });
+Sale.hasMany(PurchaseProvenanceRecords, { foreignKey: 'purchaseId' });
 
 // Users.belongsTo(Users, { as: 'CreatedByUser', foreignKey: 'createdBy', constraints: false });

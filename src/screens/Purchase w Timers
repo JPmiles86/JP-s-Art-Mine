@@ -1,0 +1,161 @@
+// my-gallery/src/screens/Purchase.tsx
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Typography, Card, IconButton } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import useStore from '../utils/store';
+import buttonStyles from './ButtonStyles.module.css';
+import TimerOverModal from '../components/modals/TimerOverModal';
+
+interface Artwork {
+    id: number;
+    artworkID: string;
+    status: string;
+}
+
+const Purchase = () => {
+  const { artworkID, filter, photoID } = useParams<{ artworkID: string, filter: string, photoID: string }>();
+  const navigate = useNavigate();
+  const [artwork, setArtwork] = useState<Artwork | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [remainingTime, setRemainingTime] = useState(1200);
+  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
+  const [minimized, setMinimized] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const userId = useStore((state) => state.userId);
+
+  useEffect(() => {
+    if (!userId) {
+      console.log("Waiting for user data...");
+      return;
+    }
+
+    const checkAndInitialize = async () => {
+      try {
+        const response = await axios.get(`/api/artworks/${artworkID}`);
+        setArtwork(response.data);
+        if (response.data.status === 'Available') {
+          await updateArtworkStatus(response.data.id);
+          startCountdownTimer();
+        }
+      } catch (error) {
+        console.error('Error fetching artwork details:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAndInitialize();
+  }, [artworkID, userId]);
+
+  const updateArtworkStatus = async (id: number) => {
+    try {
+      const updateResponse = await axios.put(`/api/artworks/${id}`, { status: 'Pending Sale' });
+      if (updateResponse.status === 200) {
+        console.log('Artwork status updated to Pending Sale, creating pending entry...');
+        await createArtworkPendingEntry(id);
+      } else {
+        console.error('Failed to update artwork status. Received:', updateResponse.data);
+      }
+    } catch (error) {
+      console.error('Error updating artwork status:', error);
+    }
+  };
+
+  const createArtworkPendingEntry = async (id: number) => {
+    try {
+        const pendingUntil = new Date(new Date().getTime() + 1200 * 1000);
+        console.log(`Creating ArtworkPending entry with artworkId: ${id}, userId: ${userId}, pendingUntil: ${pendingUntil.toISOString()}`);
+        const pendingResponse = await axios.post('/api/artworkPending', {
+            artworkId: id,
+            userId: userId,
+            pendingUntil: pendingUntil.toISOString()
+        });
+        console.log('ArtworkPending entry created:', pendingResponse.data);
+    } catch (error) {
+        console.error('Error creating ArtworkPending entry:', error);
+    }
+  };
+
+  const startCountdownTimer = () => {
+    const newTimerId = setInterval(() => {
+      setRemainingTime(prevTime => {
+        const newTime = prevTime - 1;
+        if (newTime <= 0) {
+          clearInterval(newTimerId);
+          setShowModal(true); // Show the modal when the timer expires
+          setRemainingTime(0); // Set time to 0 when expired
+        }
+        return newTime;
+      });
+    }, 1000);
+    setTimerId(newTimerId);
+  };
+
+  const handleTimerExpiration = () => {
+    console.log('Timer expired, updating artwork status to Available');
+    axios.put(`/api/artworks/${artwork?.id}`, { status: 'Available' })
+      .then(() => {
+        console.log('Artwork status reset to Available');
+      })
+      .catch(error => {
+        console.error('Failed to reset artwork status:', error);
+      });
+    if (timerId) clearInterval(timerId);
+  };
+
+  const renewTimer = () => {
+    setRemainingTime(1200); // Reset the timer back to 20 minutes
+    startCountdownTimer(); // Restart the timer
+    setShowModal(false); // Close the modal
+  };
+
+  const handleBackToInquire = () => {
+    navigate(`/${filter}/${photoID}/inquire`);
+  };
+
+  const formatTime = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const toggleTimerDisplay = () => {
+    setMinimized(!minimized);
+  };
+
+  if (isLoading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  return (
+    <div>
+      <Typography variant="h4">Purchase Page</Typography>
+      <Typography>{artwork?.artworkID} - {artwork?.status}</Typography>
+      <button className={buttonStyles.button} onClick={handleBackToInquire}>Back to Inquire</button>
+      <Card style={{ position: 'fixed', bottom: 20, right: 20, padding: minimized ? '8px' : '16px', display: 'flex', flexDirection: 'row', alignItems: 'center', backgroundColor: '#fafafa', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+        {minimized ? (
+          <>
+            <Typography variant="body1">{formatTime(remainingTime)}</Typography>
+            <IconButton onClick={toggleTimerDisplay}><ExpandLessIcon /></IconButton>
+          </>
+        ) : (
+          <>
+            <Typography variant="body2" style={{ flexGrow: 1, textAlign: 'left' }}>
+              This artwork has been reserved.<br/>
+              You have <strong>{formatTime(remainingTime)}</strong> to complete the sale.
+            </Typography>
+            <button className={buttonStyles.button} onClick={renewTimer}>Renew Timer</button>
+            <IconButton onClick={toggleTimerDisplay}><ExpandMoreIcon /></IconButton>
+          </>
+        )}
+      </Card>
+      {showModal && <TimerOverModal renewTimer={renewTimer} backToInquire={handleBackToInquire} onClose={handleCloseModal} />}
+    </div>
+  );
+};
+
+export default Purchase;

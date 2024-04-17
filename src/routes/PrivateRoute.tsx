@@ -1,8 +1,8 @@
-// my-gallery/routes/PrivateRoute.tsx
+// my-gallery/src/routes/PrivateRoute.tsx
 
 import React from 'react';
 import { Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../src/contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const PrivateRoute: React.FC<{ path: string; element: React.ReactElement }> = ({ path, element }) => {
     const { isAuthenticated } = useAuth();

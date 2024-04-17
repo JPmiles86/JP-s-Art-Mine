@@ -1,9 +1,10 @@
 // my-gallery/src/components/forms/PersonContactInfoForm.tsx
 
-import React, { useState } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { FormLabel, TextFieldProps, TextField, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Grid } from '@mui/material';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { countries } from './countries';
 
 interface UserData {
   userId?: number;
@@ -42,6 +43,9 @@ export interface PersonalContactInfo {
   linkedIn?: string;
   website?: string;
   relationshipToArtist?: string;
+  dateOfBirth?: string | null;
+  countryOfBirth?: string;
+  countryOfResidence?: string;
 }
 
 const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
@@ -53,7 +57,7 @@ const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
   setIsFormModified,
 }) => {
   console.log('PersonContactInfoForm props:', { userData, personContactInfo });
-  
+
   const [formData, setFormData] = useState({
     personContactId: personContactInfo?.personContactId || 0,
     username: userData?.username || '',
@@ -72,36 +76,73 @@ const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
     linkedIn: personContactInfo?.linkedIn || '',
     website: personContactInfo?.website || '',
     relationshipToArtist: personContactInfo?.relationshipToArtist || '',
+    dateOfBirth: personContactInfo?.dateOfBirth || null,
+    countryOfBirth: personContactInfo?.countryOfBirth || '',
+    countryOfResidence: personContactInfo?.countryOfResidence || '',
   });
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 125 }, (_, index) => currentYear - index);
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const days = Array.from({ length: 31 }, (_, index) => index + 1);
+
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
+
+  const handleYearChange = (event: SelectChangeEvent<string>) => {
+    const selectedYear = event.target.value as string;
+    setSelectedYear(selectedYear);
+    setIsFormModified(true);
+  };
+
+  const handleMonthChange = (event: SelectChangeEvent<string>) => {
+    const selectedMonth = event.target.value as string;
+    setSelectedMonth(selectedMonth);
+    setIsFormModified(true);
+  };
+
+  const handleDayChange = (event: SelectChangeEvent<string>) => {
+    const selectedDay = event.target.value as string;
+    const formattedDay = selectedDay.padStart(2, '0');
+    setSelectedDay(formattedDay);
+    setIsFormModified(true);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     const normalizedValue = name === 'primaryEmail' || name === 'secondaryEmail' ? value.toLowerCase() : value;
-    setFormData((prevData) => {
-      const updatedData = {
-        ...prevData,
-        [name as keyof PersonalContactInfo]: value as string,
-      };
-      setIsFormModified(true);
-            return updatedData;
-    });
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name as keyof PersonalContactInfo]: normalizedValue,
+    }));
+    setIsFormModified(true);
   };
 
- // const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
- //   const { name, value } = e.target;
- //   const phoneNumber = parsePhoneNumberFromString(value);
- //   if (phoneNumber && phoneNumber.isValid()) {
- //     setFormData((prevData) => ({
- //       ...prevData,
- //       [name as keyof PersonalContactInfo]: phoneNumber.format('E.164') as string,
- //     }));
- //   }
- // };
-
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      onSubmit({ ...formData, userId: userData?.userId });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formDataToSubmit: PersonalContactInfo = {
+      ...formData,
+      dateOfBirth: selectedYear && selectedMonth && selectedDay
+        ? `${selectedYear}-${selectedMonth}-${selectedDay}`
+        : null,
+      userId: userData?.userId,
     };
+    onSubmit(formDataToSubmit);
+  };
+
+  useEffect(() => {
+    if (personContactInfo?.dateOfBirth) {
+      const [year, month, day] = personContactInfo.dateOfBirth.split('-');
+      setSelectedYear(year);
+      setSelectedMonth(month);
+      setSelectedDay(day);
+    }
+  }, [personContactInfo]);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -147,6 +188,92 @@ const PersonContactInfoForm: React.FC<PersonContactInfoFormProps> = ({
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextField label="Website" name="website" value={formData.website} onChange={handleChange} fullWidth margin="normal" />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <FormLabel component="legend">Date of Birth</FormLabel>
+          <Grid container spacing={0} alignItems="center">
+            <Select
+              value={selectedMonth}
+              onChange={handleMonthChange}
+              displayEmpty
+              inputProps={{ 'aria-label': 'month' }}
+            >
+              <MenuItem value="" disabled>
+                Month
+              </MenuItem>
+              {months.map((month, index) => (
+                <MenuItem key={month} value={(index + 1).toString().padStart(2, '0')}>
+                  {month}
+                </MenuItem>
+              ))}
+            </Select>
+            <Select
+              value={selectedDay}
+              onChange={handleDayChange}
+              displayEmpty
+              inputProps={{ 'aria-label': 'day' }}
+            >
+              <MenuItem value="" disabled>
+                Day
+              </MenuItem>
+              {days.map((day) => (
+                <MenuItem key={day} value={day.toString().padStart(2, '0')}>
+                  {day.toString().padStart(2, '0')}
+                </MenuItem>
+              ))}
+            </Select>
+            <Select
+              value={selectedYear}
+              onChange={handleYearChange}
+              displayEmpty
+              inputProps={{ 'aria-label': 'year' }}
+            >
+              <MenuItem value="" disabled>
+                Year
+              </MenuItem>
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Country of Birth</InputLabel>
+            <Select
+              value={formData.countryOfBirth}
+              onChange={handleChange}
+              name="countryOfBirth"
+              label="Country of Birth"
+            >
+              <MenuItem value="">Select Country</MenuItem>
+              {countries.map((country) => (
+                <MenuItem key={country.code} value={country.code}>
+                  {country.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Country of Residence</InputLabel>
+            <Select
+              value={formData.countryOfResidence}
+              onChange={handleChange}
+              name="countryOfResidence"
+              label="Country of Residence"
+            >
+              <MenuItem value="">Select Country</MenuItem>
+              {countries.map((country) => (
+                <MenuItem key={country.code} value={country.code}>
+                  {country.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Grid>
         {isFormModified && (
           <Grid item xs={12} display="flex" justifyContent="center">

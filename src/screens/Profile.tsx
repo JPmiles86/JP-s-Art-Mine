@@ -337,10 +337,14 @@ const Profile: React.FC = () => {
   };
   
   useEffect(() => {
-    if (!isAuthenticated) {
-      setOpenAuthModal(true);
-    }
-  }, [isAuthenticated]);
+    const timer = setTimeout(() => {
+      if (!isAuthenticated || !userId) {
+        setOpenAuthModal(true);
+      }
+    }, 500); // Adjust the delay as needed
+  
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, userId]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

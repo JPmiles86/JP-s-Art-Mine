@@ -9,7 +9,10 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   personContactId: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true
+    primaryKey: true,
+    allowNull: false,
+    autoIncrementIdentity: true,
+    autoIncrementStart: 1,
   },
   userId: {
     type: DataTypes.INTEGER,
@@ -68,6 +71,18 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
     allowNull: true
   },
   website: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  dateOfBirth: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  countryOfBirth: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  countryOfResidence: {
     type: DataTypes.STRING(255),
     allowNull: true
   },

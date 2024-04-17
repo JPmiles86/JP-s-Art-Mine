@@ -25,7 +25,7 @@ interface OrganizationContactInfoFormProps {
   setIsFormModified: (isModified: boolean) => void;
 }
 
- interface OrganizationContactInfo {
+ export interface OrganizationContactInfo {
   organizationContactId: number;
   userId?: number;
   username?: string;

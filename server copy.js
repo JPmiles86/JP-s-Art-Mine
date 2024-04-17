@@ -1155,17 +1155,17 @@ app.post('/api/artworks/:artworkID/purchase', async (req, res) => {
 app.post('/api/artworkPending', async (req, res) => {
   console.log("Received request to create ArtworkPending with:", req.body);
   try {
-    const { artworkId, userId, pendingUntil } = req.body;
-    const artworkPending = await ArtworkPending.create({
-      artworkId,
-      userId: userId || null,
-      pendingUntil,
-    });
-    console.log('ArtworkPending created:', artworkPending);
-    res.status(201).json(artworkPending);
+      const { artworkId, userId, pendingUntil } = req.body;
+      const artworkPending = await ArtworkPending.create({
+          artworkId,
+          userId,
+          pendingUntil,
+      });
+      console.log('ArtworkPending created:', artworkPending);
+      res.status(201).json(artworkPending);
   } catch (error) {
-    console.error('Error creating artwork pending entry:', error);
-    res.status(500).send('Server Error');
+      console.error('Error creating artwork pending entry:', error);
+      res.status(500).send('Server Error');
   }
 });
 
@@ -1174,14 +1174,15 @@ app.put('/api/artworkPending', async (req, res) => {
 
   try {
     const [numUpdated, updatedEntries] = await ArtworkPending.update(
-      { pendingUntil, userId: userId || null },
-      { where: { artworkId }, returning: true }
+      { pendingUntil },
+      { where: { artworkId, userId }, returning: true }
     );
 
     if (numUpdated === 0) {
+      // If no existing entry is found, create a new one
       const newEntry = await ArtworkPending.create({
         artworkId,
-        userId: userId || null,
+        userId,
         pendingUntil,
       });
       res.status(201).json(newEntry);

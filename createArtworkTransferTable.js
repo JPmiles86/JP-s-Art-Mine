@@ -2,7 +2,7 @@
 const sequelize = require('./config/database');
 const ArtworkTransfer = require('./models/ArtworkTransfer');
 
-const createTransferTable = async () => {
+const createArtworkTransferTable = async () => {
   try {
     await ArtworkTransfer.sync({ alter: true });
     console.log("ArtworkTransfer table created or updated!");

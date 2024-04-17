@@ -38,9 +38,129 @@ const APSaleEligibility = sequelize.define('APSaleEligibility', {
   timestamps: false
 });
 
-module.exports = APSaleEligibility;
+module.exports = APSaleEligibility;// my-gallery/models/Artists.js
 
-// my-gallery/models/Artwork.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const Users = require('./Users');
+
+const Artists = sequelize.define('Artists', {
+  artistId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Users,
+      key: 'userId'
+    }
+  },
+  firstName: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  middleName: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  lastName: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  birthYear: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  deathYear: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  shortBio: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  extendedBio: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  birthCountry: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  cityOfResidence: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  countryOfResidence: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  profilePhotoUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  exhibitionHistory: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
+}, {
+  timestamps: false
+});
+
+module.exports = Artists;// my-gallery/models/ArtistsAdditionalPhotos.js
+
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const Artists = require('./Artists');
+
+const ArtistsAdditionalPhotos = sequelize.define('ArtistsAdditionalPhotos', {
+  artistImageId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  artistId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Artists,
+      key: 'artistId'
+    }
+  },
+  photoUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  photographer: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  dateTaken: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  yearTaken: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  location: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  timestamps: true,
+  createdAt: 'creationDate',
+  updatedAt: 'updatedDate'
+});
+
+module.exports = ArtistsAdditionalPhotos;// my-gallery/models/Artwork.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Photo = require('./Photo');
@@ -102,8 +222,48 @@ const Artwork = sequelize.define('Artwork', {
 });
 
 module.exports = Artwork;
+// my-gallery/models/ArtworkImage.js
 
-// my-gallery/models/ArtworkLocations.js
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class ArtworkImage extends Model {}
+
+ArtworkImage.init({
+  artworkImageId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  artworkId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Artworks',
+      key: 'id'
+    }
+  },
+  imageUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  isPrimary: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  caption: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'ArtworkImage',
+  tableName: 'ArtworkImages',
+  timestamps: true
+});
+
+module.exports = ArtworkImage;// my-gallery/models/ArtworkLocations.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -155,9 +315,7 @@ ArtworkLocations.init({
   timestamps: true
 });
 
-module.exports = ArtworkLocations;
-
-// my-gallery/models/ArtworkPending.js
+module.exports = ArtworkLocations;// my-gallery/models/ArtworkPending.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -197,11 +355,43 @@ ArtworkPending.init({
   timestamps: true
 });
 
-module.exports = ArtworkPending;
-
-// my-gallery/models/ArtworkTransaction.js
+module.exports = ArtworkPending;// my-gallery/models/ArtworkTag.js
 
 const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class ArtworkTag extends Model {}
+
+ArtworkTag.init({
+  artworkTagId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  artworkId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Artworks',
+      key: 'id'
+    }
+  },
+  tagType: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
+  tagValue: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  }
+}, {
+  sequelize,
+  modelName: 'ArtworkTag',
+  tableName: 'ArtworkTags',
+  timestamps: true
+});
+
+module.exports = ArtworkTag;const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 class ArtworkTransaction extends Model {}
@@ -291,9 +481,7 @@ ArtworkTransaction.init({
   timestamps: true
 });
 
-module.exports = ArtworkTransaction;
-
-// my-gallery/models/ArtworkTransfer.js
+module.exports = ArtworkTransaction;// my-gallery/models/ArtworkTransfer.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -367,9 +555,7 @@ ArtworkTransfer.init({
   timestamps: true
 });
 
-module.exports = ArtworkTransfer;
-
-// my-gallery/models/AuditTrail.js
+module.exports = ArtworkTransfer;// my-gallery/models/AuditTrail.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -406,9 +592,107 @@ const AuditTrail = sequelize.define('AuditTrail', {
   timestamps: false
 });
 
-module.exports = AuditTrail;
+module.exports = AuditTrail;//CameraModels.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
+const CameraModel = sequelize.define('CameraModel', {
+  Model: {
+    type: DataTypes.STRING,
+    primaryKey: true
+  },
+  cameraMake: DataTypes.STRING,
+  cameraModel: DataTypes.STRING
+});
 
+module.exports = CameraModel;
+// my-gallery/models/ConditionReport.js
+
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class ConditionReport extends Model {}
+
+ConditionReport.init({
+  conditionReportId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  artworkId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Artworks',
+      key: 'id'
+    }
+  },
+  dateReported: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  reporterId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'userId'
+    }
+  },
+  conditionSummary: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  detailedReport: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  images: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'ConditionReport',
+  tableName: 'ConditionReports',
+  timestamps: true
+});
+
+module.exports = ConditionReport;// my-gallery/models/Dates.js
+
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+const Dates = sequelize.define('Dates', {
+  date: {
+    type: DataTypes.STRING,
+    primaryKey: true
+  },
+  dateFormal: {
+    type: DataTypes.STRING,
+  },
+  shortDescription: {
+    type: DataTypes.STRING(150),  // Instagram bios are typically up to 150 characters
+  },
+  extendedDescription: {
+    type: DataTypes.TEXT,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+  }
+}, {
+  freezeTableName: true,
+
+  // Add this instance method
+  instanceMethods: {
+    async updateImageUrl(imageUrl) {
+      this.imageUrl = imageUrl;
+      await this.save();
+    }
+  }
+});
+
+module.exports = Dates;
 // Diptych.js
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -433,7 +717,6 @@ Diptych.init({
 });
 
 module.exports = Diptych;
-
 // DiptychSVG.js
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -517,7 +800,6 @@ DiptychSVG.init({
 });
 
 module.exports = DiptychSVG;
-
 // my-gallery/models/Document.js
 
 const { Model, DataTypes } = require('sequelize');
@@ -595,9 +877,7 @@ Document.init({
   createdAt: 'creationDate'
 });
 
-module.exports = Document;
-
-// my-gallery/models/Event.js
+module.exports = Document;// my-gallery/models/Event.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -649,9 +929,7 @@ Event.init({
   timestamps: true
 });
 
-module.exports = Event;
-
-// my-gallery/models/EventRole.js
+module.exports = Event;// my-gallery/models/EventRole.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -703,9 +981,7 @@ EventRole.init({
   timestamps: false
 });
 
-module.exports = EventRole;
-
-// my-gallery/models/EventType.js
+module.exports = EventRole;// my-gallery/models/EventType.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -729,9 +1005,370 @@ EventType.init({
   timestamps: false
 });
 
-module.exports = EventType;
+module.exports = EventType;// my-gallery/models/Exhibition.js
 
-// my-gallery/models/Locations.js
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class Exhibition extends Model {}
+
+Exhibition.init({
+  exhibitionId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  title: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  location: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  curator: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'Exhibition',
+  tableName: 'Exhibitions',
+  timestamps: true
+});
+
+module.exports = Exhibition;// my-gallery/models/ExhibitionImage.js
+
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class ExhibitionImage extends Model {}
+
+ExhibitionImage.init({
+  exhibitionImageId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  exhibitionId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Exhibitions',
+      key: 'exhibitionId'
+    }
+  },
+  imageUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  caption: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'ExhibitionImage',
+  tableName: 'ExhibitionImages',
+  timestamps: true
+});
+
+module.exports = ExhibitionImage;const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class Frame extends Model {}
+
+Frame.init({
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  frameType: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, {
+  sequelize,
+  modelName: 'Frame',
+  tableName: 'Frames',  // Specify the correct table name
+});
+
+module.exports = Frame;
+// my-gallery/models/HiddenPhoto.js
+
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class HiddenPhoto extends Model {}
+
+HiddenPhoto.init({
+  hiddenPhotoId: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  photoId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Photos',
+      key: 'id',
+    },
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'userId',
+    },
+  },
+}, {
+  sequelize,
+  modelName: 'HiddenPhoto',
+  tableName: 'HiddenPhotos',
+});
+
+module.exports = HiddenPhoto;//my-gallery/models/ImageNumbers.js
+
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+const ImageNumbers = sequelize.define('ImageNumbers', {
+  number: {
+    type: DataTypes.STRING,
+    primaryKey: true
+  },
+  shortDescription: {
+    type: DataTypes.STRING(150),
+  },
+  extendedDescription: {
+    type: DataTypes.TEXT,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+  }
+}, {
+  freezeTableName: true
+});
+
+module.exports = ImageNumbers;
+// my-gallery/models/Insurance.js
+
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class Insurance extends Model {}
+
+Insurance.init({
+  insuranceId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  artworkId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Artworks',
+      key: 'id'
+    }
+  },
+  insurerId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'userId'
+    }
+  },
+  policyNumber: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  coverageAmount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  premium: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  deductible: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true
+  },
+  termsConditions: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'Insurance',
+  tableName: 'Insurances',
+  timestamps: true
+});
+
+module.exports = Insurance;const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class Like extends Model {}
+
+Like.init({
+  likeId: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'userId',
+    },
+  },
+  photoId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Photos',
+      key: 'id',
+    },
+  },
+  diptychIdCode: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'DiptychSVGs',
+      key: 'id',
+    },
+  },
+  isLiked: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  },
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+}, {
+  sequelize,
+  modelName: 'Like',
+  tableName: 'Likes',
+});
+
+module.exports = Like;// my-gallery/models/Loan.js
+
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class Loan extends Model {}
+
+Loan.init({
+  loanId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  artworkId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Artworks',
+      key: 'id'
+    }
+  },
+  lenderId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'userId'
+    }
+  },
+  borrowerId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'userId'
+    }
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  locationId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Locations',
+      key: 'locationId'
+    }
+  },
+  loanStatus: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
+  loanPurpose: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  startConditionReportId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'ConditionReports',
+      key: 'conditionReportId'
+    }
+  },
+  endConditionReportId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'ConditionReports',
+      key: 'conditionReportId'
+    }
+  },
+  loanAgreementId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Documents',
+      key: 'documentId'
+    }
+  }
+}, {
+  sequelize,
+  modelName: 'Loan',
+  tableName: 'Loans',
+  timestamps: true
+});
+
+module.exports = Loan;// my-gallery/models/Locations.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -778,9 +1415,7 @@ const Locations = sequelize.define('Locations', {
   timestamps: false
 });
 
-module.exports = Locations;
-
-// my-gallery/models/OrganizationContactInfo.js
+module.exports = Locations;// my-gallery/models/OrganizationContactInfo.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -867,9 +1502,27 @@ const OrganizationContactInfo = sequelize.define('OrganizationContactInfo', {
   updatedAt: 'updatedDate'
 });
 
-module.exports = OrganizationContactInfo;
+module.exports = OrganizationContactInfo;// my-gallery/models/PasswordResetToken.js
 
-// my-gallery/models/PersonContactInfo.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+const PasswordResetToken = sequelize.define('PasswordResetToken', {
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  token: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  expires: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+});
+
+module.exports = PasswordResetToken;// my-gallery/models/PersonContactInfo.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -952,9 +1605,65 @@ const PersonContactInfo = sequelize.define('PersonContactInfo', {
   updatedAt: 'updatedDate'
 });
 
-module.exports = PersonContactInfo;
+module.exports = PersonContactInfo;// my-gallery/models/Photo.js
+const {  Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const CameraModel = require('./CameraModel');
+const Series = require('./Series');
+const Dates = require('./Dates');
+const ImageNumbers = require('./ImageNumbers');
+const HiddenPhoto = require('./HiddenPhoto');
+// const Artwork = require('./Artwork');
+
+const Photo = sequelize.define('Photo', {
+    photoID: DataTypes.STRING,
+    series: DataTypes.STRING,
+    seriesCode: {
+        type: DataTypes.STRING,
+        references: {
+            model: 'Series',
+            key: 'seriesCode'
+        }
+    },
+    seriesName: DataTypes.STRING,
+    date: {
+        type: DataTypes.STRING,
+        references: {
+            model: 'Dates',
+            key: 'date'
+        }
+    },
+    number: {
+        type: DataTypes.STRING,
+        references: {
+            model: 'ImageNumbers',
+            key: 'number'
+        }
+    },
+    model: {
+        type: DataTypes.STRING,
+        references: {
+            model: 'CameraModels',
+            key: 'Model'
+        }
+    },
+    lens: DataTypes.STRING,
+    focalLength: DataTypes.STRING,
+    shutterSpeed: DataTypes.STRING,
+    aperture: DataTypes.STRING,
+    iso: DataTypes.STRING,
+    dimensions: DataTypes.STRING, 
+    aspectRatio: DataTypes.STRING,
+    dateOriginal: DataTypes.DATE,
+    imagePath: DataTypes.STRING,
+    uniqueKey: {
+        type: DataTypes.STRING,
+        unique: true
+    },
+});
 
 
+module.exports = Photo;
 // Pricing.js
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1047,9 +1756,43 @@ Pricing.init({
     modelName: 'Pricing'
   });
   
-  module.exports = Pricing;
-  
-  // PrintSizes.js
+  module.exports = Pricing;// my-gallery/models/PrintShop.js
+
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class PrintShop extends Model {}
+
+PrintShop.init({
+  printShopId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  companyName: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  locationId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Locations',
+      key: 'locationId'
+    }
+  },
+  contactPerson: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'PrintShop',
+  tableName: 'PrintShops',
+  timestamps: false
+});
+
+module.exports = PrintShop;// PrintSizes.js
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -1093,8 +1836,35 @@ PrintSizes.init({
 });
 
 module.exports = PrintSizes;
+// my-gallery/models/PrinterMachine.js
 
-// my-gallery/models/PrivacyPreferences.js
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+class PrinterMachine extends Model {}
+
+PrinterMachine.init({
+  printerId: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  printerName: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  printerLocation: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'PrinterMachine',
+  tableName: 'PrinterMachines',
+  timestamps: false
+});
+
+module.exports = PrinterMachine;// my-gallery/models/PrivacyPreferences.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1128,9 +1898,7 @@ const PrivacyPreferences = sequelize.define('PrivacyPreferences', {
   updatedAt: 'updatedDate'
 });
 
-module.exports = PrivacyPreferences;
-
-// my-gallery/models/Production.js
+module.exports = PrivacyPreferences;// my-gallery/models/Production.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1216,9 +1984,7 @@ Production.init({
   updatedAt: 'updatedDate'
 });
 
-module.exports = Production;
-
-// my-gallery/models/ProvenanceLocations.js
+module.exports = Production;// my-gallery/models/ProvenanceLocations.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1236,7 +2002,7 @@ const ProvenanceLocations = sequelize.define('ProvenanceLocations', {
     allowNull: false,
     references: {
       model: Artwork,
-      key: 'id'
+      key: 'artworkId'
     }
   },
   locationId: {
@@ -1261,9 +2027,7 @@ const ProvenanceLocations = sequelize.define('ProvenanceLocations', {
   updatedAt: 'updatedDate'
 });
 
-module.exports = ProvenanceLocations;
-
-// my-gallery/models/Role.js
+module.exports = ProvenanceLocations;// my-gallery/models/Role.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1287,9 +2051,7 @@ Role.init({
   timestamps: false
 });
 
-module.exports = Role;
-
-// my-gallery/models/Sale.js
+module.exports = Role;// my-gallery/models/Sale.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1449,9 +2211,34 @@ Sale.init({
   timestamps: true
 });
 
-module.exports = Sale;
+module.exports = Sale;// Series.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-// my-gallery/models/Shipping.js
+const Series = sequelize.define('Series', {
+  seriesCode: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    primaryKey: true
+  },
+  seriesName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  shortDescription: {
+    type: DataTypes.STRING(150),
+  },
+  extendedDescription: {
+    type: DataTypes.TEXT,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+  }
+}, {
+  freezeTableName: true
+});
+
+module.exports = Series;
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -1538,9 +2325,7 @@ Shipping.init({
   timestamps: true
 });
 
-module.exports = Shipping;
-
-// my-gallery/models/ShippingCompany.js
+module.exports = Shipping;// my-gallery/models/ShippingCompany.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1568,9 +2353,7 @@ ShippingCompany.init({
   timestamps: false
 });
 
-module.exports = ShippingCompany;
-
-// SizeCategories.js
+module.exports = ShippingCompany;// SizeCategories.js
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -1597,7 +2380,6 @@ SizeCategories.init({
 });
 
 module.exports = SizeCategories;
-
 // my-gallery/models/UserLocations.js
 
 const { DataTypes } = require('sequelize');
@@ -1633,9 +2415,7 @@ const UserLocations = sequelize.define('UserLocations', {
   updatedAt: 'updatedDate'
 });
 
-module.exports = UserLocations;
-
-// my-gallery/models/UserNotification.js
+module.exports = UserLocations;// my-gallery/models/UserNotification.js
 
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1676,9 +2456,7 @@ UserNotification.init({
   timestamps: true
 });
 
-module.exports = UserNotification;
-
-// my-gallery/models/Users.js
+module.exports = UserNotification;// my-gallery/models/Users.js
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
@@ -1754,9 +2532,7 @@ const Users = sequelize.define('Users', {
 // Define the self-reference association separately
 Users.belongsTo(Users, { as: 'CreatedByUser', foreignKey: 'createdBy', constraints: false });
 
-module.exports = Users;
-
-// my-gallery/models/associations.js
+module.exports = Users;// my-gallery/models/associations.js
 
 const models = require('./index');
 
@@ -1769,7 +2545,7 @@ const { Photo, CameraModel, Series, Dates, ImageNumbers,
     Production, Shipping, ArtworkTransaction, Exhibition, ConditionReport,
     Document, Insurance, ArtworkTransfer, Loan, ArtworkImage, ExhibitionImage, 
     ArtworkTag, PrintShop, PrinterMachine, ShippingCompany, APSaleEligibility, 
-    UserNotification, ArtworkPending, ArtworkLocations } = models;
+    ArtworkLocations } = models;
 
 // Artwork associations
 Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
@@ -1911,8 +2687,8 @@ EventType.hasMany(Event, { foreignKey: 'eventTypeId' });
 Event.hasMany(EventRole, { foreignKey: 'eventId' });
 EventRole.belongsTo(Event, { foreignKey: 'eventId' });
 
-Event.belongsTo(Locations, { foreignKey: 'locationId' });
-Locations.hasMany(Event, { foreignKey: 'locationId' });
+Event.belongsTo(Location, { foreignKey: 'locationId' });
+Location.hasMany(Event, { foreignKey: 'locationId' });
 
 Event.hasMany(Document, { foreignKey: 'eventId' });
 Document.belongsTo(Event, { foreignKey: 'eventId' });
@@ -1967,8 +2743,8 @@ Production.belongsTo(PrinterMachine, { foreignKey: 'printerId' });
 Document.belongsTo(Production, { foreignKey: 'productionId' });
 
 // Shipping associations
-Shipping.belongsTo(Locations, { as: 'origin', foreignKey: 'originLocationId' });
-Shipping.belongsTo(Locations, { as: 'destination', foreignKey: 'destinationLocationId' });
+Shipping.belongsTo(Location, { as: 'origin', foreignKey: 'originLocationId' });
+Shipping.belongsTo(Location, { as: 'destination', foreignKey: 'destinationLocationId' });
 
 Shipping.hasMany(Document, { foreignKey: 'shippingId' });
 Document.belongsTo(Shipping, { foreignKey: 'shippingId' });
@@ -2038,19 +2814,15 @@ Artwork.hasMany(UserNotification, { foreignKey: 'artworkId' });
 Loan.belongsTo(Users, { as: 'lender', foreignKey: 'lenderId' });
 Loan.belongsTo(Users, { as: 'borrower', foreignKey: 'borrowerId' });
 
-Loan.belongsTo(Locations, { foreignKey: 'locationId' });
-Locations.hasMany(Loan, { foreignKey: 'locationId' });
+Loan.belongsTo(Location, { foreignKey: 'locationId' });
+Location.hasMany(Loan, { foreignKey: 'locationId' });
 
 Loan.belongsTo(ConditionReport, { as: 'startConditionReport', foreignKey: 'startConditionReportId' });
 Loan.belongsTo(ConditionReport, { as: 'endConditionReport', foreignKey: 'endConditionReportId' });
 
 Loan.belongsTo(Document, { as: 'loanAgreement', foreignKey: 'loanAgreementId' });
 
-// Users.belongsTo(Users, { as: 'CreatedByUser', foreignKey: 'createdBy', constraints: false });
-
-
-
-// my-gallery/models/index.js
+// Users.belongsTo(Users, { as: 'CreatedByUser', foreignKey: 'createdBy', constraints: false });// my-gallery/models/index.js
 module.exports = {
     Artwork: require('./Artwork'),
     CameraModel: require('./CameraModel'),
@@ -2100,6 +2872,5 @@ module.exports = {
     UserNotification: require('./UserNotification'),
     APSaleEligibility: require('./APSaleEligibility'),
     ArtworkLocations: require('./ArtworkLocations'),
-    ProvenanceLocations: require('./ProvenanceLocations'),
   };
   

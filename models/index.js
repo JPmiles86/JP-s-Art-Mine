@@ -46,5 +46,9 @@ module.exports = {
     ShippingCompany: require('./ShippingCompany'),
     ArtworkPending: require('./ArtworkPending'),
     UserNotification: require('./UserNotification'),
+    APSaleEligibility: require('./APSaleEligibility'),
+    ArtworkLocations: require('./ArtworkLocations'),
+    ProvenanceLocations: require('./ProvenanceLocations'),
+    PurchaseProvenanceRecords: require('./PurchaseProvenanceRecords'),
   };
   

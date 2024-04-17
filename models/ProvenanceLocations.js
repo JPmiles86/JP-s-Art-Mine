@@ -16,7 +16,7 @@ const ProvenanceLocations = sequelize.define('ProvenanceLocations', {
     allowNull: false,
     references: {
       model: Artwork,
-      key: 'artworkId'
+      key: 'id'
     }
   },
   locationId: {

@@ -16,13 +16,15 @@ import { AuthProvider } from './contexts/AuthContext';
 import ResetPassword from './pages/auth/ResetPassword';
 import Profile from './screens/Profile';
 import Favorites from './screens/Favorites';
+import Purchase from './screens/Purchase';
+import RequestAccess from './screens/RequestAccess';
 
 // kick off the polyfill!
 smoothscroll.polyfill();
 
 const AppContent: React.FC = () => {
   const scrollableElement = useRef<HTMLDivElement>(null);
-  const { loadMorePhotos } = useStore();  // Get `loadMorePhotos` from the store
+  const { loadMorePhotos } = useStore();
   const location = useLocation();
   const isResetPasswordPage = location.pathname === '/reset-password';
 
@@ -31,10 +33,10 @@ const AppContent: React.FC = () => {
     if (!current) return;
     const { scrollTop, scrollHeight, clientHeight } = current;
     const isBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight * 0.9;
-    if (isBottom && scrollTop > 0 && location.pathname !== '/profile') {
+    if (isBottom && scrollTop > 0 && location.pathname.startsWith('/ImageGrid')) {
       loadMorePhotos();
     }
-  };   
+  };
 
   const scrollToTop = () => {
     const current = scrollableElement.current;
@@ -64,6 +66,8 @@ const AppContent: React.FC = () => {
             <Route path="/:filter" element={<ImageGrid />} />
             <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />
             <Route path="/:filter/:photoID/inquire" element={<Inquire />} />
+            <Route path="/:filter/:photoID/purchase/:artworkID" element={<Purchase />} />
+            <Route path="/:filter/:photoID/request/:artworkID" element={<RequestAccess />} />
             {/* Other routes go here */}
           </Routes>
         </ScrollContext.Provider>
