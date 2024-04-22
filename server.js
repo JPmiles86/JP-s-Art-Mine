@@ -568,6 +568,51 @@ app.get('/api/artworks/details/:photoId/:diptychId', async (req, res) => {
   }  
 });
 
+app.get('/api/diptychs/details/:photoId/:diptychIdCode', async (req, res) => {
+  const { photoId, diptychIdCode } = req.params;
+
+  try {
+    const photo = await Photo.findOne({
+      where: { photoID: photoId },
+      attributes: ['seriesName', 'date', 'number', 'shutterSpeed', 'aspectRatio', 'model', 'lens', 'focalLength', 'aperture', 'iso']
+    });
+
+    if (!photo) {
+      return res.status(404).send('Photo not found');
+    }
+
+    const diptychSVG = await DiptychSVG.findOne({
+      where: { DiptychIdCode: diptychIdCode },
+      include: [{ model: Diptych, attributes: ['diptychName'] }]
+    });
+
+    if (!diptychSVG) {
+      return res.status(404).send('Diptych not found');
+    }
+
+    const details = {
+      photoId: photoId,
+      seriesName: photo.seriesName,
+      date: photo.date,
+      number: photo.number,
+      shutterSpeed: photo.shutterSpeed,
+      aspectRatio: photo.aspectRatio,
+      model: photo.model,
+      lens: photo.lens,
+      focalLength: photo.focalLength,
+      aperture: photo.aperture,
+      iso: photo.iso,
+      diptychName: diptychSVG.Diptych.diptychName,
+      diptychId: diptychSVG.DiptychId
+    };
+
+    res.json(details);
+  } catch (error) {
+    console.error("Detailed error: ", error);
+    res.status(500).send('Server Error');
+  }
+});
+
 app.post('/api/likes', async (req, res) => {
   const { userId, photoId, diptychIdCode, isLiked } = req.body;
   console.log('Received data:', { userId, photoId, diptychIdCode, isLiked });

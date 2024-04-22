@@ -254,22 +254,6 @@ const Purchase: React.FC = () => {
     }
   };
 
- // useEffect(() => {
- //   const checkArtworkStatus = async () => {
- //     try {
- //       const response = await axios.get(`/api/artworks/${artworkID}/status`);
- //       setIsPending(response.data.status === 'Pending');
- //       setIsSold(response.data.status === 'Sold');
-  //    } catch (error) {
-  //      console.error('Error checking artwork status:', error);
-  //    }
-  //  };
-
-   // if (artworkID) {
-   //   checkArtworkStatus();
-   // }
-  //}, [artworkID]);
-
   const handleBuyNow = async () => {
     try {
       await axios.post(`/api/artworks/${artworkID}/purchase`, {
@@ -314,7 +298,7 @@ const Purchase: React.FC = () => {
       {/* Display photo and artwork details */}
       {diptychId === 1 ? (
         <DiptychCarouselDynamic
-          photoId={photoID}
+          photoId={photoID ?? ''}
           imagePath={photo.imagePath}
           frameId={3}
           diptychId={diptychId}
@@ -327,7 +311,7 @@ const Purchase: React.FC = () => {
         />
       ) : (
         <DiptychCarousel
-          photoId={photoID}
+          photoId={photoID ?? ''}
           imagePath={photo.imagePath}
           frameId={3}
           diptychId={diptychId}

@@ -1,15 +1,13 @@
 // my-gallery/src/screens/Inquire.tsx
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
+import axios from 'axios';
+import { Box, Typography, Divider } from '@mui/material';
 import { useLocation, useParams } from 'react-router-dom';
 import useStore from '../utils/store';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
-import getPhotoUrl  from '../Diptychs/DynamicDiptychComponent'; // Import getPhotoUrl function
-import { diptychConfigurations } from '../Diptychs/diptychFabricConfigurations';
-import DownloadButton from '../components/layout/DownloadButton'; 
-import { LayoutSpecs } from '../Diptychs/LayoutSpecs'; 
-// import './Inquire.module.css'; 
-import useGalleryNavigation from '../utils/useGalleryNavigation'; // Import the hook
+import DownloadButton from '../components/layout/DownloadButton';
+import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
+import useGalleryNavigation from '../utils/useGalleryNavigation';
 import { useNavigate } from 'react-router-dom';
 import styles from './Inquire.module.css';
 import buttonStyles from './ButtonStyles.module.css';
@@ -20,33 +18,37 @@ import DiptychAvailabilityModule from '../Diptychs/DiptychAvailabilityModule';
 import LikeButton from '../components/layout/LikeButton';
 import AuthModal from '../components/modals/AuthModal';
 
-interface DownloadButtonProps {
+
+interface DiptychDetail {
   photoId: string;
-  DiptychIdCode: string;
-  fabricCanvasRef: React.RefObject<fabric.Canvas>;
-  layoutSpecs: LayoutSpecs; // Add layoutSpecs to props
+  seriesName: string;
+  date: string;
+  number: string;
+  shutterSpeed: string;
+  aspectRatio: string;
+  model: string;
+  lens: string;
+  focalLength: string;
+  aperture: string;
+  iso: string;
+  diptychName: string;
+  diptychId: number;
 }
 
 const Inquiry: React.FC = () => {
   const navigate = useNavigate();
   const { photoID } = useParams<{ photoID: string }>();
   const location = useLocation();
-  const containerRef = useRef<HTMLDivElement>(null); 
-  const {photos, initialPhotoFetch, sortValue, 
-    setPhotos, setSortedPhotos, setInitialPhotoFetch, 
-    sortedPhotos, selectedDiptychIdCode } = useStore(state => ({
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { photos, initialPhotoFetch, sortValue, setPhotos, setSortedPhotos, setInitialPhotoFetch, sortedPhotos, selectedDiptychIdCode } = useStore(state => ({
     ...state,
     selectedDiptychIdCode: state.selectedDiptychIdCode
   }));
   const currentFilter = location.pathname.split('/')[1];
-  // Find the Photograph object that matches the photoID
-  const selectedPhotograph = useMemo(() => 
-    sortedPhotos.find(photo => photo.photoID === photoID), 
-    [sortedPhotos, photoID]
-  );
+  const selectedPhotograph = useMemo(() => sortedPhotos.find(photo => photo.photoID === photoID), [sortedPhotos, photoID]);
   const { handlePrevPhoto, handleNextPhoto } = useGalleryNavigation(sortedPhotos, currentFilter, '/inquire');
+  const [diptychDetails, setDiptychDetails] = useState<DiptychDetail | null>(null);
   const [areShapesVisible, setAreShapesVisible] = useState(false);
- // const [selectedCarouselDiptychIdCode, setSelectedCarouselDiptychIdCode] = useState('');
   const [carousel1SelectedDiptychIdCode, setCarousel1SelectedDiptychIdCode] = useState('');
   const [carousel2SelectedDiptychIdCode, setCarousel2SelectedDiptychIdCode] = useState('');
   const [carousel3SelectedDiptychIdCode, setCarousel3SelectedDiptychIdCode] = useState('');
@@ -61,13 +63,11 @@ const Inquiry: React.FC = () => {
   const userRole = useStore((state) => state.userRole);
   const isAnonymous = useStore((state) => state.isAnonymous);
 
-  
-  // Add a callback function to update the selected code for each carousel
-  const handleCarousel1DiptychIdCodeChange = (code: string) => {setCarousel1SelectedDiptychIdCode(code);};
-  const handleCarousel2DiptychIdCodeChange = (code: string) => {setCarousel2SelectedDiptychIdCode(code);};
-  const handleCarousel3DiptychIdCodeChange = (code: string) => {setCarousel3SelectedDiptychIdCode(code);};
-  const handleCarousel4DiptychIdCodeChange = (code: string) => {setCarousel4SelectedDiptychIdCode(code);};
-  const handleCarousel5DiptychIdCodeChange = (code: string) => {setCarousel5SelectedDiptychIdCode(code);};
+  const handleCarousel1DiptychIdCodeChange = (code: string) => { setCarousel1SelectedDiptychIdCode(code); };
+  const handleCarousel2DiptychIdCodeChange = (code: string) => { setCarousel2SelectedDiptychIdCode(code); };
+  const handleCarousel3DiptychIdCodeChange = (code: string) => { setCarousel3SelectedDiptychIdCode(code); };
+  const handleCarousel4DiptychIdCodeChange = (code: string) => { setCarousel4SelectedDiptychIdCode(code); };
+  const handleCarousel5DiptychIdCodeChange = (code: string) => { setCarousel5SelectedDiptychIdCode(code); };
 
   const renderLikeButton = (photoId: string, diptychIdCode: string) => {
     const handleLikeButtonClick = () => {
@@ -76,7 +76,7 @@ const Inquiry: React.FC = () => {
         setIsAuthModalOpen(true);
       }
     };
-  
+
     return (
       <LikeButton
         photoId={photoId}
@@ -93,12 +93,10 @@ const Inquiry: React.FC = () => {
     }
   };
 
-  // Function to handle canvas ready from Diptych component
   const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, diptychIdCode: string) => {
     console.log("handleCanvasReady called", { canvasRef, diptychIdCode });
     updateFabricCanvas(diptychIdCode, canvasRef);
-  }, []);    
-
+  }, []);
 
   const updateFabricCanvas = (diptychIdCode: string, canvas: fabric.Canvas) => {
     setFabricCanvas(prevMap => {
@@ -106,13 +104,12 @@ const Inquiry: React.FC = () => {
       newMap.set(diptychIdCode, canvas);
       return newMap;
     });
-  };    
-  
+  };
+
   const handleLayoutSpecsReady = useCallback((layoutSpecs: LayoutSpecs) => {
     setLayoutSpecsMap(prevMap => new Map(prevMap).set(layoutSpecs.DiptychIdCode, layoutSpecs));
   }, []);
 
-  // Add this useEffect for mounting and unmounting logs
   useEffect(() => {
     console.log("Inquiry Component Mounted");
 
@@ -123,264 +120,220 @@ const Inquiry: React.FC = () => {
 
   useEffect(() => {
     if (!selectedPhotograph && photoID && sortedPhotos.length === 0) {
-      // Fetch photos as they are not loaded yet
       fetchPhotosService(
         setPhotosError,
         setLoading,
         setPhotos,
         setInitialPhotoFetch,
         currentFilter,
-        initialPhotoFetch, 
+        initialPhotoFetch,
         userRole
       );
     }
   }, [photoID, sortedPhotos, setPhotos, setInitialPhotoFetch, currentFilter, initialPhotoFetch]);
+
+  useEffect(() => {
+    if (selectedPhotograph && !selectedDiptychIdCode) {
+      const defaultFrameType = useStore.getState().frames[useStore.getState().FrameId - 1]?.frameType;
+      const defaultDiptychIdCode = `E_${selectedPhotograph.aspectRatio.replace(':', 'x')}_CD_P_${defaultFrameType.charAt(0).toUpperCase()}`;
+      useStore.getState().setSelectedDiptychIdCode(defaultDiptychIdCode);
+
+      setCarousel1SelectedDiptychIdCode(defaultDiptychIdCode);
+      setCarousel2SelectedDiptychIdCode(defaultDiptychIdCode);
+      setCarousel3SelectedDiptychIdCode(defaultDiptychIdCode);
+      setCarousel4SelectedDiptychIdCode(defaultDiptychIdCode);
+      setCarousel5SelectedDiptychIdCode(defaultDiptychIdCode);
+    }
+  }, [selectedPhotograph, selectedDiptychIdCode]);
+
+  useEffect(() => {
+    const fetchDiptychDetails = async () => {
+      try {
+        const response = await axios.get(`/api/diptychs/details/${photoID}/${selectedDiptychIdCode}`);
+        setDiptychDetails(response.data);
+      } catch (error) {
+        console.error('Error fetching diptych details:', error);
+      }
+    };
   
-useEffect(() => {
-  // Check if there's a selected photo and no selectedDiptychIdCode
-  if (selectedPhotograph && !selectedDiptychIdCode) {
-    const defaultFrameType = useStore.getState().frames[useStore.getState().FrameId - 1]?.frameType;
-    const defaultDiptychIdCode = `E_${selectedPhotograph.aspectRatio.replace(':', 'x')}_CD_P_${defaultFrameType.charAt(0).toUpperCase()}`;
-    useStore.getState().setSelectedDiptychIdCode(defaultDiptychIdCode);
-}
-}, [selectedPhotograph, selectedDiptychIdCode]);
+    if (selectedPhotograph && selectedDiptychIdCode) {
+      fetchDiptychDetails();
+    }
+  }, [photoID, selectedDiptychIdCode]);
 
-// Function to update DiptychIdCode based on frame color
-const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
-  let newFrameId;
-  switch (frameType) {
-    case 'White':
-      newFrameId = 1;
-      break;
-    case 'Black':
-      newFrameId = 2;
-      break;
-    case 'Unframed':
-      newFrameId = 3;
-      break;
-    default:
-      newFrameId = 1; // Default to white if no match
-  }
-  useStore.getState().setFrameId(newFrameId);
+  const updateDiptychIdCodeForFrame = useCallback((frameType: string) => {
+    let newFrameId;
+    switch (frameType) {
+      case 'White':
+        newFrameId = 1;
+        break;
+      case 'Black':
+        newFrameId = 2;
+        break;
+      case 'Unframed':
+        newFrameId = 3;
+        break;
+      default:
+        newFrameId = 1;
+    }
+    useStore.getState().setFrameId(newFrameId);
 
-  // Update selectedDiptychIdCode for the top diptych based on new frame color
-  if (selectedPhotograph) {
-    const newDiptychIdCode = `E_${selectedPhotograph.aspectRatio.replace(':', 'x')}_CD_P_${frameType.charAt(0).toUpperCase()}`;
-    useStore.getState().setSelectedDiptychIdCode(newDiptychIdCode);
-  }
-}, [selectedPhotograph]);
+    if (selectedPhotograph) {
+      const newDiptychIdCode = `E_${selectedPhotograph.aspectRatio.replace(':', 'x')}_CD_P_${frameType.charAt(0).toUpperCase()}`;
+      useStore.getState().setSelectedDiptychIdCode(newDiptychIdCode);
+    }
+  }, [selectedPhotograph]);
 
-    const handleReturnToGallery = () => {
-    // Update the selectedDiptychIdCode in the global store before navigating
+  const handleReturnToGallery = () => {
     useStore.getState().setSelectedDiptychIdCode(selectedDiptychIdCode);
     navigate(`/${currentFilter}/${photoID}`);
-  };  
-    
- const renderDiptych = useCallback((diptychIdCode: string, photoId?: string) => {
+  };
 
-  return (
-    <div className={styles.diptychContainer}>
-      <DynamicDiptychComponent
-        photoId={selectedPhotograph?.photoID || ''}
-        imagePath={selectedPhotograph?.imagePath || ''}
-        containerRef={containerRef}
-        onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
-        DiptychIdCode={diptychIdCode}
-        areShapesVisible={areShapesVisible}
-        onLayoutSpecsReady={handleLayoutSpecsReady} 
-      />
-    </div>
-  );
-}, [selectedPhotograph, areShapesVisible, handleCanvasReady, handleLayoutSpecsReady]);
-
-    
-  
-const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
-  const fabricCanvasRef = fabricCanvas.get(diptychIdCode);
-  const layoutSpecs = layoutSpecsMap.get(diptychIdCode);
-  
-  if (fabricCanvasRef && layoutSpecs) {
+  const renderDiptych = useCallback((diptychIdCode: string, photoId?: string) => {
     return (
-      <DownloadButton
-        photoId={photoId}
-        DiptychIdCode={diptychIdCode}
-        fabricCanvasRef={fabricCanvasRef}
-        layoutSpecs={layoutSpecs}
-        areShapesVisible={areShapesVisible} 
-      />
+      <div className={styles.diptychContainer}>
+        <DynamicDiptychComponent
+          photoId={selectedPhotograph?.photoID || ''}
+          imagePath={selectedPhotograph?.imagePath || ''}
+          containerRef={containerRef}
+          onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
+          DiptychIdCode={diptychIdCode}
+          areShapesVisible={areShapesVisible}
+          onLayoutSpecsReady={handleLayoutSpecsReady}
+        />
+      </div>
     );
-  }
-  return null;
-};
+  }, [selectedPhotograph, areShapesVisible, handleCanvasReady, handleLayoutSpecsReady]);
+
+  const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
+    const fabricCanvasRef = fabricCanvas.get(diptychIdCode);
+    const layoutSpecs = layoutSpecsMap.get(diptychIdCode);
+
+    if (fabricCanvasRef && layoutSpecs) {
+      return (
+        <DownloadButton
+          photoId={photoId}
+          DiptychIdCode={diptychIdCode}
+          fabricCanvasRef={fabricCanvasRef}
+          layoutSpecs={layoutSpecs}
+          areShapesVisible={areShapesVisible}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-        Thanks for inquiring about purchasing my art, which Diptych are you interested in purchasing?
-      </Typography>
-      <div style={{ display: 'flex', justifyContent: 'center'}}>
-        <button className={buttonStyles.button} onClick={() => handlePrevPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Previous Photo</button>
-        <button className={buttonStyles.button} onClick={handleReturnToGallery}>Return to Gallery</button>
-        <button className={buttonStyles.button} onClick={() => handleNextPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Next Photo</button>
-      </div>
-        <div className={buttonStyles.dropdownSelector} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-          <Typography variant="h6" gutterBottom style={{ marginTop: '7.5px' }}>Frame Color:</Typography>
-          <select
-            className={buttonStyles.button} // Apply the button class to the select element
-            onChange={(e) => updateDiptychIdCodeForFrame(e.target.value)}
-            value={useStore.getState().frames[useStore.getState().FrameId - 1]?.frameType}
-          >
-            <option value="White">White</option>
-            <option value="Black">Black</option>
-            <option value="Unframed">Unframed</option>
-          </select>
-        </div>
-      
-      {selectedPhotograph && selectedDiptychIdCode? (
+      <Box position="sticky" top={55} bgcolor="white" zIndex={1000} display="flex" justifyContent="space-between" alignItems="center" padding="10px">
+        <Box width="100%" display="flex" justifyContent="center">
+          <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginRight: '10px' }} onClick={() => handlePrevPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Previous Photo</button>
+          <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginLeft: '10px', marginRight: '10px' }} onClick={handleReturnToGallery}>Return to Gallery</button>
+          <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginLeft: '10px', marginRight: '10px' }} onClick={() => setAreShapesVisible(prev => !prev)}>
+            {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
+          </button>
+          <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginLeft: '10px' }} onClick={() => handleNextPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Next Photo</button>
+        </Box>
+      </Box>
+      {selectedPhotograph && selectedDiptychIdCode ? (
         <Box>
-          <div style={{ display: 'flex', justifyContent: 'center'}}>
-            {renderDiptych(selectedDiptychIdCode || '', selectedPhotograph.photoID)}
-          </div>
-          <Typography style={{ textAlign: 'center' }}>
-            Diptych Variation: {selectedDiptychIdCode}
+          <Typography variant="h5" gutterBottom style={{ display: 'flex', justifyContent: 'center', textAlign: 'center', marginTop: '70px' }}>
+            Thank you for inquiring about purchasing my art, I truely appreciate it.<br />
+            Which diptych variation are you interested in purchasing?
           </Typography>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')}
-            {renderLikeButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> 
-              {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} 
-            </button>
-          </div>
+          <Divider style={{ margin: '40px 0' }} />
+          <Box style={{ display: 'flex', marginTop: '20px', alignItems: 'center' }}>
+            <Box style={{ width: '50%', paddingRight: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography variant="h6" style={{ marginBottom: '20px', textAlign: 'center' }}>
+              While in the Exhibition Gallery,<br />
+              the last artwork you were viewing was...
+            </Typography>
+            <Typography variant="h6">
+            <Divider style={{ margin: '10px 0' }} />
+            </Typography>
+            <Typography variant="h6">
+              <strong>Photograph ID:</strong> {diptychDetails?.photoId}
+            </Typography>
+            <Typography variant="h6">
+              <strong>Diptych Variation:</strong> {diptychDetails?.diptychName}
+            </Typography>
+            <Typography variant="h6">
+            <Divider style={{ margin: '10px 0' }} />
+            </Typography>
+              <div style={{ marginTop: '10px' }}>
+  {/* {renderDownloadButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')} */}
+  {/*  {renderLikeButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')} */}
+  {/* <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}>
+    {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
+   </button> */}
+              </div>
+              <Typography variant="body1" style={{ marginTop: '20px', textAlign: 'center' }}>
+                See below to find the {diptychDetails?.diptychName}'s availability. <br/>
+                It is located at Diptych Variation #{diptychDetails?.diptychId} <br/>
+                <Divider style={{ margin: '10px 0' }} />
+                If it says Buy Now, it's available for purchase. <br/>
+                If it says Pending Sale, someone else it trying to purchase it. <br/>
+                If it says Sold, then someone has already bought it, sorry.
+              </Typography>
+            </Box>
+            <Box style={{ width: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {renderDiptych(selectedDiptychIdCode || '', selectedPhotograph.photoID)}
+            </Box>
+          </Box>
 
-          <DiptychCarouselDynamic
-            photoId={selectedPhotograph.photoID}
-            imagePath={selectedPhotograph.imagePath}
-            frameId={useStore.getState().FrameId}
-            diptychId={1}
-            aspectRatio={selectedPhotograph.aspectRatio}
-            areShapesVisible={areShapesVisible}
-            containerRef={containerRef}
-            handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarousel1DiptychIdCodeChange}
-            handleLayoutSpecsReady={handleLayoutSpecsReady}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, carousel1SelectedDiptychIdCode)}
-            {renderLikeButton(selectedPhotograph.photoID, carousel1SelectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {selectedPhotograph && (
-              <DiptychAvailabilityModule
-                photoId={selectedPhotograph.photoID}
-                diptychId={1} 
-              />
-            )}
-          </div>
+          <Divider style={{ margin: '40px 0' }} />
 
-          <DiptychCarousel
-            photoId={selectedPhotograph.photoID}
-            imagePath={selectedPhotograph.imagePath}
-            frameId={useStore.getState().FrameId}
-            diptychId={2}
-            aspectRatio={selectedPhotograph.aspectRatio}
-            areShapesVisible={areShapesVisible}
-            containerRef={containerRef}
-            handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarousel2DiptychIdCodeChange}
-            handleLayoutSpecsReady={handleLayoutSpecsReady}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, carousel2SelectedDiptychIdCode)}
-            {renderLikeButton(selectedPhotograph.photoID, carousel2SelectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {selectedPhotograph && (
-              <DiptychAvailabilityModule
-                photoId={selectedPhotograph.photoID}
-                diptychId={2} 
-              />
-            )}
-          </div>
+          {[1, 2, 3, 4, 5].map((diptychId) => (
+            <Box key={diptychId}>
+              <Typography variant="h5" style={{ textAlign: 'center', marginBottom: '20px' }}>
+                Diptych Variation #{diptychId}
+              </Typography>
+              <Box style={{ display: 'flex', marginTop: '20px', alignItems: 'center' }}>
+                <Box style={{ width: '50%', paddingRight: '20px' }}>
+                  <DiptychAvailabilityModule photoId={selectedPhotograph.photoID} diptychId={diptychId} />
+                </Box>
+                <Box style={{ width: '50%' }}>
+                  {diptychId === 1 ? (
+                    <DiptychCarouselDynamic
+                      photoId={selectedPhotograph.photoID}
+                      imagePath={selectedPhotograph.imagePath}
+                      frameId={useStore.getState().FrameId}
+                      diptychId={diptychId}
+                      aspectRatio={selectedPhotograph.aspectRatio}
+                      areShapesVisible={areShapesVisible}
+                      containerRef={containerRef}
+                      handleCanvasReady={handleCanvasReady}
+                      onDiptychIdCodeChange={handleCarousel1DiptychIdCodeChange}
+                      handleLayoutSpecsReady={handleLayoutSpecsReady}
+                    />
+                  ) : (
+                    <DiptychCarousel
+                      photoId={selectedPhotograph.photoID}
+                      imagePath={selectedPhotograph.imagePath}
+                      frameId={useStore.getState().FrameId}
+                      diptychId={diptychId}
+                      aspectRatio={selectedPhotograph.aspectRatio}
+                      areShapesVisible={areShapesVisible}
+                      containerRef={containerRef}
+                      handleCanvasReady={handleCanvasReady}
+                      onDiptychIdCodeChange={
+                        diptychId === 2
+                          ? handleCarousel2DiptychIdCodeChange
+                          : diptychId === 3
+                          ? handleCarousel3DiptychIdCodeChange
+                          : diptychId === 4
+                          ? handleCarousel4DiptychIdCodeChange
+                          : handleCarousel5DiptychIdCodeChange
+                      }
+                      handleLayoutSpecsReady={handleLayoutSpecsReady}
+                    />
+                  )}
+                </Box>
+              </Box>
+              <Divider style={{ margin: '40px 0' }} />
+            </Box>
+          ))}
 
-          <DiptychCarousel
-            photoId={selectedPhotograph.photoID}
-            imagePath={selectedPhotograph.imagePath}
-            frameId={useStore.getState().FrameId}
-            diptychId={3}
-            aspectRatio={selectedPhotograph.aspectRatio}
-            areShapesVisible={areShapesVisible}
-            containerRef={containerRef}
-            handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarousel3DiptychIdCodeChange}
-            handleLayoutSpecsReady={handleLayoutSpecsReady}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, carousel3SelectedDiptychIdCode)}
-            {renderLikeButton(selectedPhotograph.photoID, carousel3SelectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {selectedPhotograph && (
-              <DiptychAvailabilityModule
-                photoId={selectedPhotograph.photoID}
-                diptychId={3} 
-              />
-            )}
-          </div>
-
-          <DiptychCarousel
-            photoId={selectedPhotograph.photoID}
-            imagePath={selectedPhotograph.imagePath}
-            frameId={useStore.getState().FrameId}
-            diptychId={4}
-            aspectRatio={selectedPhotograph.aspectRatio}
-            areShapesVisible={areShapesVisible}
-            containerRef={containerRef}
-            handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarousel4DiptychIdCodeChange}
-            handleLayoutSpecsReady={handleLayoutSpecsReady}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, carousel4SelectedDiptychIdCode)}
-            {renderLikeButton(selectedPhotograph.photoID, carousel4SelectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {selectedPhotograph && (
-              <DiptychAvailabilityModule
-                photoId={selectedPhotograph.photoID}
-                diptychId={4} 
-              />
-            )}
-          </div>
-
-          <DiptychCarousel
-            photoId={selectedPhotograph.photoID}
-            imagePath={selectedPhotograph.imagePath}
-            frameId={useStore.getState().FrameId}
-            diptychId={5}
-            aspectRatio={selectedPhotograph.aspectRatio}
-            areShapesVisible={areShapesVisible}
-            containerRef={containerRef}
-            handleCanvasReady={handleCanvasReady}
-            onDiptychIdCodeChange={handleCarousel5DiptychIdCodeChange}
-            handleLayoutSpecsReady={handleLayoutSpecsReady}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {renderDownloadButton(selectedPhotograph.photoID, carousel5SelectedDiptychIdCode)}
-            {renderLikeButton(selectedPhotograph.photoID, carousel5SelectedDiptychIdCode || '')}
-            <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}> {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'} </button>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            {selectedPhotograph && (
-              <DiptychAvailabilityModule
-                photoId={selectedPhotograph.photoID}
-                diptychId={5} 
-              />
-            )}
-          </div>
           <AuthModal
             open={isAuthModalOpen}
             onClose={() => setIsAuthModalOpen(false)}
@@ -395,8 +348,6 @@ const renderDownloadButton = (photoId: string, diptychIdCode: string) => {
       ) : (
         <Typography>Loading... Please be patient. If nothing loads, I guess there's a problem. Please Inform JPM</Typography>
       )}
-     
-
     </Box>
   );
 };

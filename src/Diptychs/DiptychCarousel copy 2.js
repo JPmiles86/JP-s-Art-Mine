@@ -1,6 +1,6 @@
 // my-gallery/src/Diptychs/DiptychCarousel.js
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Slider from 'react-slick';
 import DynamicDiptychComponent from './DynamicDiptychComponent';
 import './DiptychCarousel.css'; 
@@ -27,7 +27,6 @@ const CustomRightArrow = ({ onClick }) => (
 const DiptychCarousel = ({ photoId, imagePath, frameId, diptychId, aspectRatio, areShapesVisible, containerRef, handleCanvasReady, onDiptychIdCodeChange, handleLayoutSpecsReady }) => {
   const { diptychIdCodes, totalSlides } = useDiptychData(aspectRatio, frameId, diptychId);
   const [currentSlide, setCurrentSlide] = useState(0); 
-  const [selectedDiptychIdCode, setSelectedDiptychIdCode] = useState('');
 
   const settings = useMemo(() => ({
     dots: true,
@@ -41,18 +40,11 @@ const DiptychCarousel = ({ photoId, imagePath, frameId, diptychId, aspectRatio, 
     //lazyload: true,
     lazyLoad: 'progressive',
     afterChange: current => {
+      const currentCode = diptychIdCodes[current].DiptychIdCode;
+      onDiptychIdCodeChange(currentCode);
       setCurrentSlide(current);
-      setSelectedDiptychIdCode(diptychIdCodes[current].DiptychIdCode);
-      onDiptychIdCodeChange(diptychIdCodes[current].DiptychIdCode);
     }
   }), [diptychIdCodes, onDiptychIdCodeChange]);
-
-  useEffect(() => {
-    if (diptychIdCodes.length > 0 && !selectedDiptychIdCode) {
-      setSelectedDiptychIdCode(diptychIdCodes[0].DiptychIdCode);
-      onDiptychIdCodeChange(diptychIdCodes[0].DiptychIdCode);
-    }
-  }, [diptychIdCodes, onDiptychIdCodeChange, selectedDiptychIdCode]);
 
   return (
     <div>

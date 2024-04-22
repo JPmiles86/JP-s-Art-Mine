@@ -216,7 +216,7 @@ const Purchase: React.FC = () => {
       {/* Display photo and artwork details */}
       {diptychId === 1 ? (
         <DiptychCarouselDynamic
-          photoId={photoID}
+          photoId={photoID ?? ''}
           imagePath={photo.imagePath}
           frameId={3}
           diptychId={diptychId}
@@ -229,7 +229,7 @@ const Purchase: React.FC = () => {
         />
       ) : (
         <DiptychCarousel
-          photoId={photoID}
+          photoId={photoID ?? ''}
           imagePath={photo.imagePath}
           frameId={3}
           diptychId={diptychId}

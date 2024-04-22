@@ -14,7 +14,7 @@ const Landing: React.FC = () => {
   };
 
   return (
-    <div className="landing">
+    <div className="landing" style={{ marginTop: '60px' }}>
       <h1 className="header">THE ART MINE</h1>
       <p className="subtext">
         Welcome to <b>"THE ART MINE".</b> <br></br>

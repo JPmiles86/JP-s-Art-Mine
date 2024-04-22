@@ -41,9 +41,6 @@ const Favorites: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isListView, setIsListView] = useState(false);
   const { handleScroll, scrollToTop } = useContext(ScrollContext);  
-  const [renderedItems, setRenderedItems] = useState<number[]>([]);
-  const renderDelay = 100; // Adjust this value to control the delay between renderings (in milliseconds)
-
 
   const handleOpenFullScreen = (index: number) => {
     setSelectedIndex(index);
@@ -155,18 +152,6 @@ const Favorites: React.FC = () => {
     fetchFavoriteItems();
   }, [useStore.getState().userId]);
 
-  useEffect(() => {
-    const renderItem = (index: number) => {
-      setTimeout(() => {
-        setRenderedItems((prevItems) => [...prevItems, index]);
-      }, index * renderDelay);
-    };
-
-    favoriteItems.forEach((_, index) => {
-      renderItem(index);
-    });
-  }, [favoriteItems, renderDelay]);
-
   const renderCurrentView = () => (
     <Grid container spacing={0} style={{ marginTop: '40px' }}>
       {favoriteItems.map((item, index) => (
@@ -222,21 +207,18 @@ const Favorites: React.FC = () => {
                 </Grid>
               </Box>
             </Box>
-            <Box flex="1" className={buttonStyles.clickable} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: `${diptychHeights[item.diptychIdCode]?.height || 0}px` }}>
-              <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+            <Box flex="1" className={buttonStyles.clickable} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: `${diptychHeights[item.diptychIdCode]?.height || 0}px` }}>              <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {renderedItems.includes(index) && (
-                    <DynamicDiptychComponent
-                      photoId={item.photoId}
-                      imagePath={item.imagePath}
-                      DiptychIdCode={item.diptychIdCode}
-                      containerRef={containerRef}
-                      onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
-                      areShapesVisible={areShapesVisible}
-                      onLayoutSpecsReady={handleLayoutSpecsReady}
-                      updateHeight={(height) => updateDiptychHeight(item.diptychIdCode, height, 0)}
-                    />
-                  )}
+                <DynamicDiptychComponent
+                  photoId={item.photoId}
+                  imagePath={item.imagePath}
+                  DiptychIdCode={item.diptychIdCode}
+                  containerRef={containerRef}
+                  onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
+                  areShapesVisible={areShapesVisible}
+                  onLayoutSpecsReady={handleLayoutSpecsReady}
+                  updateHeight={(height) => updateDiptychHeight(item.diptychIdCode, height, 0)}
+                />
                 </div>
               </div>
             </Box>
@@ -246,38 +228,29 @@ const Favorites: React.FC = () => {
     </Grid>
   );
 
-
   const renderListView = () => (
     <Grid container spacing={2} style={{ marginTop: '45px' }}>
       {favoriteItems.map((item, index) => (
-        <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '10px 0', marginLeft: '100px', marginRight: '100px', }} >
+        <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '10px 0', marginLeft: '20px', marginRight: '20px' }}>
           <Box display="flex" alignItems="center" width="100%">
-            <Box
-              flex="0 0 200px"
-              marginRight="20px"
-              className={buttonStyles.clickable}
-              onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}
-            >
+            <Box flex="0 0 200px" marginRight="20px" className={buttonStyles.clickable} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}>
               <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ transform: `translateY(${(diptychHeights[item.diptychIdCode]?.marginTop || 0) / 20}px)` }}>
-                    {renderedItems.includes(index) && (
-                      <DynamicDiptychComponent
-                        photoId={item.photoId}
-                        imagePath={item.imagePath}
-                        DiptychIdCode={item.diptychIdCode}
-                        containerRef={containerRef}
-                        onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
-                        areShapesVisible={areShapesVisible}
-                        onLayoutSpecsReady={handleLayoutSpecsReady}
-                        updateHeight={(height) => {
-                          const containerHeight = 150;
-                          const marginTop = (containerHeight - height) / 2;
-                          updateDiptychHeight(item.diptychIdCode, height, marginTop);
-                        }}
-                      />
-                    )}
+                    <DynamicDiptychComponent
+                      photoId={item.photoId}
+                      imagePath={item.imagePath}
+                      DiptychIdCode={item.diptychIdCode}
+                      containerRef={containerRef}
+                      onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
+                      areShapesVisible={areShapesVisible}
+                      onLayoutSpecsReady={handleLayoutSpecsReady}
+                      updateHeight={(height) => {
+                        const containerHeight = 150;
+                        const marginTop = (containerHeight - height) / 2;
+                        updateDiptychHeight(item.diptychIdCode, height, marginTop);
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -291,15 +264,10 @@ const Favorites: React.FC = () => {
                 <strong>Diptych Variation:</strong> {item.fused} - {item.shapeInCenterEdge}
               </Typography>
               <Box marginTop="10px">
-                <button
-                  className={`${buttonStyles.button} ${buttonStyles.small}`}
-                  onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}
-                >
-                  Inquire
-                </button>
-                <button className={buttonStyles.button} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
-                  Exhibition View
-                </button>
+              <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}>
+                Inquire
+              </button>
+                <button className={buttonStyles.button} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>Exhibition View</button>
                 <DownloadButton
                   photoId={item.photoId}
                   DiptychIdCode={item.diptychIdCode}
@@ -308,9 +276,7 @@ const Favorites: React.FC = () => {
                   areShapesVisible={areShapesVisible}
                   size="large"
                 />
-                <button className={buttonStyles.button} onClick={() => handleOpenFullScreen(index)}>
-                  Full Screen
-                </button>
+                <button className={buttonStyles.button} onClick={() => handleOpenFullScreen(index)}>Full Screen</button>
               </Box>
             </Box>
           </Box>

@@ -100,8 +100,8 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
             </Box>
             </th>
             <th className={styles.tableCell}>CP Price (USD)</th>
-            <th className={styles.tableCell}>Artwork Availability (CP)</th>
-            <th className={styles.tableCell}>Artwork Availability (AP)</th>
+            <th className={styles.tableCell}>Artwork Availability <br></br>(CP)</th>
+            <th className={styles.tableCell}>Artwork Availability <br></br>(AP)</th>
           </tr>
         </thead>
         <tbody>

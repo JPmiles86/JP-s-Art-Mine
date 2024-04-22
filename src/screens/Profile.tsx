@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Avatar, Typography, Grid, Box, Button, TextField, MenuItem, Select, Link } from '@mui/material';
+import { Avatar, Typography, Grid, Box, Button, TextField, MenuItem, Select, Link, Divider } from '@mui/material';
 import axios from 'axios';
 import buttonStyles from './ButtonStyles.module.css';
 import PersonContactInfoForm from '../components/forms/PersonContactInfoForm';
@@ -380,7 +380,7 @@ return (
   <Box>
     {!isAuthenticated ? (
       <Box>
-        <Typography variant="h6" align="center" style={{ marginTop: '60px' }}>
+        <Typography variant="h6" align="center" style={{ marginTop: '80px' }}>
           In order to update your profile, you must be signed in. Please sign in or sign up.
         </Typography>
         <Typography variant="body1" align="center">
@@ -390,13 +390,13 @@ return (
     ) : (
       <>
         {isAnonymous ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="50vh">
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="50vh" style={{ marginTop: '60px' }}>
             <Avatar
               alt={`${userData?.username}`}
               src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
               sx={{ width: 150, height: 150 }}
             />
-            <Typography variant="h6" style={{ marginTop: '20px' }}>
+            <Typography variant="h6" style={{ marginTop: '140px' }}>
             <strong>Username:</strong> {userData?.username}
             </Typography>
             <Typography variant="h6" align="center" style={{ marginTop: '40px' }}>
@@ -409,7 +409,7 @@ return (
         ) : (
           <>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4} style={{ marginTop: '30px', display: 'flex', alignItems: 'flex-end' }}>
+              <Grid item xs={12} md={4} style={{ marginTop: '60px', display: 'flex', alignItems: 'flex-end' }}>
                 <Avatar
                   alt={`${userData?.username}`}
                   src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
@@ -449,7 +449,7 @@ return (
                   </>
                 ) : (
                   <>
-                    <Typography style={{ marginTop: '60px' }} variant="h6">
+                    <Typography style={{ marginTop: '140px' }} variant="h6">
                     <strong>Username:</strong> {userData?.username}
                     </Typography>
                     <button className={buttonStyles.navButton} onClick={() => {
@@ -463,7 +463,8 @@ return (
               </Grid>
             </Grid>
             {entityType ? (
-              <Box mt={4} display="flex" justifyContent="center" alignItems="center">
+              <Box mt={4} display="flex" justifyContent="center" alignItems="center" style={{ marginTop: '40px' }}>
+                
                 <Typography variant="h6" component="span"><strong>Account Type:</strong> {entityType}</Typography>
                 <button
                   className={buttonStyles.navButton}

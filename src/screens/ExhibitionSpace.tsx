@@ -4,6 +4,7 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import styles from './ExhibitionSpace.module.css';
 import useStore from '../utils/store';
 import { fetchPhotosService } from '../utils/fetchPhotosService';
+import { parseDiptychIdCode } from '../Diptychs/DiptychDynamicUtils';
 import { parseUrlService } from '../utils/parseUrlService';
 import ExhibitionHeader from './ExhibitionHeader';
 import GalleryBackgroundSelector from '../components/layout/GalleryBackgroundSelector';
@@ -212,6 +213,16 @@ const ExhibitionSpace = () => {
         window.removeEventListener('resize', checkContainerSize);
       };
     }, [photoID, isLoading]);
+
+    useEffect(() => {
+      if (selectedDiptychIdCode) {
+        const { mergedStatus, color, shape } = parseDiptychIdCode(selectedDiptychIdCode);
+        useStore.getState().setIsMerged(mergedStatus === 'entangled' ? 'Entangled' : 'Fused');
+        useStore.getState().setFrameId(color);
+        useStore.getState().setShapeCode(shape);
+      }
+    }, [selectedDiptychIdCode]);
+  
     
 if (!photoID) {
   return <div>No photo selected.</div>;

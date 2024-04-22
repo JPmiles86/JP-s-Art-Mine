@@ -1,9 +1,9 @@
 // my-gallery/src/components/layout/TopNavBar.tsx
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
-import { AccountCircle } from '@mui/icons-material';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Avatar, Box, Typography } from '@mui/material';
+// import { AccountCircle } from '@mui/icons-material';
 import AuthModal from '../modals/AuthModal';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
@@ -31,6 +31,7 @@ const TopNavBar: React.FC = () => {
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const anchorElRef = useRef<HTMLButtonElement | null>(null);
+  const location = useLocation();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     anchorElRef.current = event.currentTarget;
@@ -105,29 +106,155 @@ const TopNavBar: React.FC = () => {
     console.log('Updated userData in TopNavBar:', userData);
   }, [userData]);
 
+  const renderBackButton = () => {
+    if (location.pathname !== '/') {
+      return (
+        <Box display="flex" alignItems="center" marginRight="auto" whiteSpace="nowrap">
+          <Typography
+            variant="body1"
+            onClick={() => navigate(-1)}
+            style={{ cursor: 'pointer' }}
+          >
+            ← Back
+          </Typography>
+        </Box>
+      );
+    }
+    return null;
+  };
+
+  const renderLinks = () => {
+    const pathSegments = location.pathname.split('/');
+    const filter = pathSegments[1];
+    const photoID = pathSegments[2];
+  
+    if (location.pathname === '/favorites') {
+      // Favorites page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to="/profile" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Profile
+          </Link>
+        </>
+      );
+    } else if (location.pathname === '/profile') {
+      // Profile page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+        </>
+      );
+    } else if (location.pathname === '/') {
+      return null;
+    } else if (location.pathname.startsWith(`/${filter}`) && !location.pathname.includes(`/${photoID}`)) {
+      // Image Grid page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+        </>
+      );
+    } else if (location.pathname === `/${filter}/${photoID}`) {
+      // Exhibition Space page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to={`/${filter}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Image Grid
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+          <Link to={`/${filter}/${photoID}/inquire`} className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            Inquire
+          </Link>
+        </>
+      );
+    } else if (location.pathname === `/${filter}/${photoID}/inquire`) {
+      // Inquire page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to={`/${filter}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Image Grid
+          </Link>
+          <Link to={`/${filter}/${photoID}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Exhibition Gallery
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+        </>
+      );
+    } else if (location.pathname.startsWith(`/${filter}/${photoID}/purchase`) || location.pathname.startsWith(`/${filter}/${photoID}/request`)) {
+      // Purchase or Request Access page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to={`/${filter}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Image Grid
+          </Link>
+          <Link to={`/${filter}/${photoID}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Exhibition Gallery
+          </Link>
+          <Link to={`/${filter}/${photoID}/inquire`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Inquire
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+        </>
+      );
+    }
+  
+    return null;
+  };
+  
   return (
     <AppBar
-      position="static"
+      position="fixed"
       sx={{
-        backgroundColor: 'white',
+        backgroundColor: location.pathname === '/' ? 'transparent' : 'white',
         color: 'black',
         boxShadow: 'none',
         width: '100%',
-        height: '0px',
-        maxWidth: '1200px',
+        height: '60px',
         margin: '0 auto',
       }}
     >
       <Toolbar
         sx={{
           display: 'flex',
-          justifyContent: 'flex-end',
-          height: '30px',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          height: '100%',
           minHeight: 'unset',
         }}
       >
+        {renderBackButton()}
+        <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+          {renderLinks()}
+        </Box>
         {isAuthenticated ? (
-          <>
+          <Box display="flex" alignItems="center" marginLeft="auto">
             <IconButton
               onClick={handleMenuOpen}
               color="inherit"
@@ -167,7 +294,7 @@ const TopNavBar: React.FC = () => {
               </MenuItem>
               <MenuItem onClick={logout}>Logout</MenuItem>
             </Menu>
-          </>
+          </Box>
         ) : (
           <button
             onClick={handleAuthModalOpen}

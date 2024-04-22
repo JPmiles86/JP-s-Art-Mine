@@ -13,7 +13,6 @@ const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspect
   const [carouselHeight, setCarouselHeight] = useState(0);
   const [diptychHeights, setDiptychHeights] = useState({});
   const [diptychTopMargins, setDiptychTopMargins] = useState({});
-  const [selectedDiptychIdCode, setSelectedDiptychIdCode] = useState('');
 
   // Function to update height and re-calculate top margins
   const updateHeight = useCallback((newHeight, diptychIdCode) => {
@@ -58,17 +57,9 @@ const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspect
     lazyLoad: 'progressive',
     afterChange: current => {
       setCurrentSlide(current);
-      setSelectedDiptychIdCode(diptychIdCodes[current].DiptychIdCode);
       onDiptychIdCodeChange(diptychIdCodes[current].DiptychIdCode);
     }
   }), [diptychIdCodes, onDiptychIdCodeChange]);
-
-  useEffect(() => {
-    if (diptychIdCodes.length > 0 && !selectedDiptychIdCode) {
-      setSelectedDiptychIdCode(diptychIdCodes[0].DiptychIdCode);
-      onDiptychIdCodeChange(diptychIdCodes[0].DiptychIdCode);
-    }
-  }, [diptychIdCodes, onDiptychIdCodeChange, selectedDiptychIdCode]);
 
   return (
     <div>
