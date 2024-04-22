@@ -15,7 +15,9 @@ import FullScreenView from '../components/layout/FullScreenView';
 import LikeButtonFavs from '../components/layout/LikeButtonFavs';
 import FullScreenButton from '../components/layout/FullScreenButton';
 import DownloadButton from '../components/layout/DownloadButton';
+import DownloadFavsButton from '../components/layout/DownloadFavsButton';
 import { useInView } from 'react-intersection-observer';
+import urlConfig from '../utils/urlConfig';  
 
 interface FavoriteItem {
   photoId: string;
@@ -25,6 +27,7 @@ interface FavoriteItem {
   seriesName: string;
   fused: string;
   shapeInCenterEdge: string;
+  layoutSpecs?: LayoutSpecs;
 }
 
 const Favorites: React.FC = () => {
@@ -44,6 +47,10 @@ const Favorites: React.FC = () => {
   const [renderedItems, setRenderedItems] = useState<number[]>([]);
   const renderDelay = 100; // Adjust this value to control the delay between renderings (in milliseconds)
 
+  function getPhotoUrl(imagePath: string) {
+    const pathIndex = imagePath.indexOf('/originals');
+    return pathIndex >= 0 ? `${urlConfig.baseURL}${imagePath.slice(pathIndex + '/originals'.length)}` : imagePath;
+  }
 
   const handleOpenFullScreen = (index: number) => {
     setSelectedIndex(index);
@@ -100,9 +107,21 @@ const Favorites: React.FC = () => {
     }));
   }, []);
 
-  const handleLayoutSpecsReady = useCallback((layoutSpecs: LayoutSpecs) => {
-    console.log('handleLayoutSpecsReady called with:', layoutSpecs);
-    setLayoutSpecsMap(prevMap => new Map(prevMap).set(layoutSpecs.DiptychIdCode, layoutSpecs));
+  const handleLayoutSpecsReady = useCallback((layoutSpecs: LayoutSpecs, diptychIdCode: string) => {
+    setFavoriteItems(prevItems =>
+      prevItems.map(item => {
+        if (item.diptychIdCode === diptychIdCode) {
+          const updatedLayoutSpecs = {
+            ...layoutSpecs,
+            photoId: item.photoId,
+            photoUrl: getPhotoUrl(item.imagePath),
+            mirroredPhotoUrl: getPhotoUrl(item.imagePath),
+          };
+          return { ...item, layoutSpecs: updatedLayoutSpecs };
+        }
+        return item;
+      })
+    );
   }, []);
 
   const handleFavoriteClick = (photoId: string, diptychIdCode: string, seriesCode: string) => {
@@ -196,14 +215,14 @@ const Favorites: React.FC = () => {
                     <FullScreenButton onClick={() => handleOpenFullScreen(index)} />
                   </Grid>
                   <Grid item>
-                    <DownloadButton
-                      photoId={item.photoId}
-                      DiptychIdCode={item.diptychIdCode}
-                      fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
-                      layoutSpecs={layoutSpecsMap.get(item.diptychIdCode) || {} as LayoutSpecs}
-                      areShapesVisible={areShapesVisible}
-                      size="small"
-                    />
+                  <DownloadFavsButton
+                    photoId={item.photoId}
+                    diptychIdCode={item.diptychIdCode}
+                    fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
+                    layoutSpecs={item.layoutSpecs} // Use the layoutSpecs from the favoriteItems state
+                    areShapesVisible={areShapesVisible}
+                    size="small"
+                  />
                   </Grid>
                   <Grid item>
                     <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={() => setAreShapesVisible(prev => !prev)}>
@@ -233,7 +252,7 @@ const Favorites: React.FC = () => {
                       containerRef={containerRef}
                       onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
                       areShapesVisible={areShapesVisible}
-                      onLayoutSpecsReady={handleLayoutSpecsReady}
+                      onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, item.diptychIdCode)}
                       updateHeight={(height) => updateDiptychHeight(item.diptychIdCode, height, 0)}
                     />
                   )}
@@ -270,7 +289,7 @@ const Favorites: React.FC = () => {
                         containerRef={containerRef}
                         onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
                         areShapesVisible={areShapesVisible}
-                        onLayoutSpecsReady={handleLayoutSpecsReady}
+                        onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, item.diptychIdCode)}
                         updateHeight={(height) => {
                           const containerHeight = 150;
                           const marginTop = (containerHeight - height) / 2;
@@ -300,14 +319,16 @@ const Favorites: React.FC = () => {
                 <button className={buttonStyles.button} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
                   Exhibition View
                 </button>
-                <DownloadButton
+                <Grid item>
+                <DownloadFavsButton
                   photoId={item.photoId}
-                  DiptychIdCode={item.diptychIdCode}
+                  diptychIdCode={item.diptychIdCode}
                   fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
-                  layoutSpecs={layoutSpecsMap.get(item.diptychIdCode) || {} as LayoutSpecs}
+                  layoutSpecs={item.layoutSpecs} // Use the layoutSpecs from the favoriteItems state
                   areShapesVisible={areShapesVisible}
-                  size="large"
+                  size="small"
                 />
+                </Grid>
                 <button className={buttonStyles.button} onClick={() => handleOpenFullScreen(index)}>
                   Full Screen
                 </button>
@@ -360,7 +381,7 @@ const Favorites: React.FC = () => {
             containerRef={fullScreenContainerRef}
             onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
             areShapesVisible={areShapesVisible}
-            onLayoutSpecsReady={handleLayoutSpecsReady}
+            onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, favoriteItems[selectedIndex].diptychIdCode)}
             updateHeight={(height) => updateDiptychHeight(favoriteItems[selectedIndex].diptychIdCode, height, 0)}
           />
         )}
