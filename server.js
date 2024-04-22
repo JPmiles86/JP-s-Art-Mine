@@ -657,45 +657,43 @@ app.post('/api/likes', async (req, res) => {
   }
 });
 
-app.put('/api/likes/:photoId/:diptychIdCode', async (req, res) => {
-  const { photoId, diptychIdCode } = req.params;
-  const { userId, isLiked } = req.body;
+app.put('/api/likes/:photoID/:DiptychIdCode', async (req, res) => {
+  const { photoID, DiptychIdCode } = req.params;
+  const { userId, notes } = req.body;
 
   try {
-    // Find the photo by its photoID and extract the id
-    const photo = await Photo.findOne({ where: { photoID: photoId } });
+    // Find the Photo record based on the photoID
+    const photo = await Photo.findOne({ where: { photoID } });
     if (!photo) {
       return res.status(404).json({ error: 'Photo not found' });
     }
-    const photoIdInt = photo.id;
 
-    // Find the diptych by its DiptychIdCode and extract the id
-    const diptych = await DiptychSVG.findOne({ where: { DiptychIdCode: diptychIdCode } });
-    if (!diptych) {
-      return res.status(404).json({ error: 'Diptych not found' });
+    // Find the DiptychSVG record based on the DiptychIdCode
+    const diptychSVG = await DiptychSVG.findOne({ where: { DiptychIdCode } });
+    if (!diptychSVG) {
+      return res.status(404).json({ error: 'DiptychSVG not found' });
     }
-    const diptychIdInt = diptych.id;
 
-    // Find the like record
+    // Find the Like record based on the userId, photoId, and diptychIdCode
     const like = await Like.findOne({
       where: {
         userId,
-        photoId: photoIdInt,
-        diptychIdCode: diptychIdInt,
+        photoId: photo.id,
+        diptychIdCode: diptychSVG.id,
       },
     });
 
     if (like) {
-      // Update the isLiked value
-      like.isLiked = isLiked;
+      // Update the notes field of the Like record
+      like.notes = notes;
       await like.save();
       res.json(like);
     } else {
-      res.status(404).send('Like not found');
+      res.status(404).json({ error: 'Like record not found' });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
+    console.error('Error updating notes:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -1100,6 +1098,7 @@ app.get('/api/favorites/:userId', async (req, res) => {
       diptychIdCode: item.DiptychSVG.DiptychIdCode,
       fused: item.DiptychSVG.fused,
       shapeInCenterEdge: item.DiptychSVG.shapeInCenterEdge,
+      notes: item.notes, // Include the notes field
     }));
 
     res.json(formattedFavorites);

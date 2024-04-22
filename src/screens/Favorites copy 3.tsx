@@ -48,8 +48,7 @@ const Favorites: React.FC = () => {
   const [renderedItems, setRenderedItems] = useState<number[]>([]);
   const renderDelay = 100; // Adjust this value to control the delay between renderings (in milliseconds)
   const [favoriteNotes, setFavoriteNotes] = useState<{ [key: string]: string }>({});
-  const [modifiedNotes, setModifiedNotes] = useState<{ [key: string]: boolean }>({});
-
+  
   function getPhotoUrl(imagePath: string) {
     const pathIndex = imagePath.indexOf('/originals');
     return pathIndex >= 0 ? `${urlConfig.baseURL}${imagePath.slice(pathIndex + '/originals'.length)}` : imagePath;
@@ -158,21 +157,6 @@ const Favorites: React.FC = () => {
     useStore.getState().setFrameId(newFrameId);
   }, []);
 
-  const handleSaveNotes = async (photoId: string, diptychIdCode: string) => {
-    try {
-      await axios.put(`/api/likes/${photoId}/${diptychIdCode}`, {
-        userId: useStore.getState().userId,
-        notes: favoriteNotes[`${photoId}-${diptychIdCode}`],
-      });
-      setModifiedNotes({
-        ...modifiedNotes,
-        [`${photoId}-${diptychIdCode}`]: false,
-      });
-    } catch (error) {
-      console.error('Error saving notes:', error);
-    }
-  };
-  
   useEffect(() => {
     const fetchFavoriteItems = async () => {
       try {
@@ -181,14 +165,8 @@ const Favorites: React.FC = () => {
         if (userId) {
           const response = await axios.get(`/api/favorites/${userId}`);
           setFavoriteItems(response.data);
-          const initialNotes: { [key: string]: string } = {};
-          response.data.forEach((item: FavoriteItem) => {
-            initialNotes[`${item.photoId}-${item.diptychIdCode}`] = item.notes || '';
-          });
-          setFavoriteNotes(initialNotes);
         } else {
           setFavoriteItems([]);
-          setFavoriteNotes({});
         }
       } catch (error) {
         console.error('Error fetching favorite items:', error);
@@ -262,34 +240,6 @@ const Favorites: React.FC = () => {
                       onUnlikeConfirmed={handleConfirmUnlike}
                     />
                   </Grid>
-                  <Box marginTop="10px" marginLeft="15px">
-                    <Typography variant="subtitle2">Notes:</Typography>
-                    <div style={{ width: '400px' }}></div>
-                    <textarea
-                      className="notes-textbox"
-                      value={favoriteNotes[`${item.photoId}-${item.diptychIdCode}`] || ''}
-                      onChange={(e) => {
-                        setFavoriteNotes({
-                          ...favoriteNotes,
-                          [`${item.photoId}-${item.diptychIdCode}`]: e.target.value,
-                        });
-                        setModifiedNotes({
-                          ...modifiedNotes,
-                          [`${item.photoId}-${item.diptychIdCode}`]: true,
-                        });
-                      }}
-                      rows={2}
-                      style={{ width: '100%', resize: 'vertical', fontFamily: 'EB Garamond, serif' }}
-                    />
-                    {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
-                      <button
-                        onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
-                        className={`${buttonStyles.button} ${buttonStyles.small}`}
-                      >
-                        Save Notes
-                      </button>
-                    )}
-                  </Box>
                 </Grid>
               </Box>
             </Box>
@@ -361,65 +311,29 @@ const Favorites: React.FC = () => {
                 <br />
                 <strong>Diptych Variation:</strong> {item.fused} - {item.shapeInCenterEdge}
               </Typography>
-              <Box marginTop="10px" display="flex" alignItems="center">
+              <Box marginTop="10px">
                 <button
-                  className={`${buttonStyles.button}`}
+                  className={`${buttonStyles.button} ${buttonStyles.small}`}
                   onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}
-                  style={{ marginRight: '10px' }}
                 >
                   Inquire
                 </button>
-                <button
-                  className={`${buttonStyles.button}`}
-                  onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}
-                  style={{ marginRight: '10px' }}
-                >
+                <button className={buttonStyles.button} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
                   Exhibition View
                 </button>
+                <Grid item>
                 <DownloadFavsButton
                   photoId={item.photoId}
                   diptychIdCode={item.diptychIdCode}
                   fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
-                  layoutSpecs={item.layoutSpecs}
+                  layoutSpecs={item.layoutSpecs} // Use the layoutSpecs from the favoriteItems state
                   areShapesVisible={areShapesVisible}
-                  size="large"
+                  size="small"
                 />
-                <button
-                  className={`${buttonStyles.button}`}
-                  onClick={() => handleOpenFullScreen(index)}
-                  style={{ marginLeft: '10px' }}
-                >
+                </Grid>
+                <button className={buttonStyles.button} onClick={() => handleOpenFullScreen(index)}>
                   Full Screen
                 </button>
-              </Box>
-              <Box marginTop="10px">
-                <Typography variant="subtitle2" style={{ marginLeft: '5px' }}>Notes:</Typography>
-                <div style={{ width: '400px' }}>
-                  <textarea
-                    className="notes-textbox"
-                    value={favoriteNotes[`${item.photoId}-${item.diptychIdCode}`] || ''}
-                    onChange={(e) => {
-                      setFavoriteNotes({
-                        ...favoriteNotes,
-                        [`${item.photoId}-${item.diptychIdCode}`]: e.target.value,
-                      });
-                      setModifiedNotes({
-                        ...modifiedNotes,
-                        [`${item.photoId}-${item.diptychIdCode}`]: true,
-                      });
-                    }}
-                    rows={2}
-                    style={{ width: '100%', resize: 'vertical', fontFamily: 'EB Garamond, serif', marginLeft: '5px' }}
-                  />
-                </div>
-                {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
-                  <button
-                    onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
-                    className={`${buttonStyles.button} ${buttonStyles.small}`}
-                  >
-                    Save Notes
-                  </button>
-                )}
               </Box>
             </Box>
           </Box>

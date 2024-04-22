@@ -238,3 +238,7 @@ text-decoration: underline; /* Add underline */
   border-color: white; /* Inner border color changes on hover */
   box-shadow: 0 0 0 3px black; /* Outer border color changes on hover */
 }
+
+.notes-textbox {
+  font-family: 'EB Garamond', serif;
+}
