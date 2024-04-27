@@ -13,11 +13,15 @@ import buttonStyles from './ButtonStyles.module.css';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import FullScreenView from '../components/layout/FullScreenView';
 import LikeButtonFavs from '../components/layout/LikeButtonFavs';
-import FullScreenButton from '../components/layout/FullScreenButton';
+import FullScreenButtonFavs from '../components/layout/FullScreenButtonFavs';
 import DownloadButton from '../components/layout/DownloadButton';
 import DownloadFavsButton from '../components/layout/DownloadFavsButton';
-import { useInView } from 'react-intersection-observer';
 import urlConfig from '../utils/urlConfig';  
+import LazyLoad from 'react-lazyload';
+import { FixedSizeList as List } from 'react-window';
+import { debounce } from 'lodash';
+import { fetchFavorites, updateLikeStatus, saveNotes } from '../utils/favoritesService';
+
 
 interface FavoriteItem {
   photoId: string;
@@ -30,6 +34,8 @@ interface FavoriteItem {
   layoutSpecs?: LayoutSpecs;
   notes?: string;
 }
+// Ensure FavoriteItem is exported if used in another module
+export type { FavoriteItem };
 
 const Favorites: React.FC = () => {
   const [favoriteItems, setFavoriteItems] = useState<FavoriteItem[]>([]);
@@ -49,6 +55,7 @@ const Favorites: React.FC = () => {
   const renderDelay = 100; // Adjust this value to control the delay between renderings (in milliseconds)
   const [favoriteNotes, setFavoriteNotes] = useState<{ [key: string]: string }>({});
   const [modifiedNotes, setModifiedNotes] = useState<{ [key: string]: boolean }>({});
+  const userId = useStore.getState().userId?.toString(); // Convert userId to string if it's not null
 
   function getPhotoUrl(imagePath: string) {
     const pathIndex = imagePath.indexOf('/originals');
@@ -81,15 +88,9 @@ const Favorites: React.FC = () => {
   };
 
   const handleConfirmUnlike = async () => {
-    if (itemToRemove) {
+    if (itemToRemove && userId) {  // Check that userId is defined
       try {
-        await fetch(`/api/likes/${itemToRemove.photoId}/${itemToRemove.diptychIdCode}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId: useStore.getState().userId, isLiked: false }),
-        });
+        await updateLikeStatus(userId, itemToRemove.photoId, itemToRemove.diptychIdCode, false);
         setFavoriteItems(prevItems => prevItems.filter(item => item !== itemToRemove));
       } catch (error) {
         console.error('Error unliking:', error);
@@ -159,44 +160,39 @@ const Favorites: React.FC = () => {
   }, []);
 
   const handleSaveNotes = async (photoId: string, diptychIdCode: string) => {
-    try {
-      await axios.put(`/api/likes/${photoId}/${diptychIdCode}`, {
-        userId: useStore.getState().userId,
-        notes: favoriteNotes[`${photoId}-${diptychIdCode}`],
-      });
-      setModifiedNotes({
-        ...modifiedNotes,
-        [`${photoId}-${diptychIdCode}`]: false,
-      });
-    } catch (error) {
-      console.error('Error saving notes:', error);
+    if (userId) {  // Check that userId is defined
+      try {
+        await saveNotes(userId, photoId, diptychIdCode, favoriteNotes[`${photoId}-${diptychIdCode}`]);
+        setModifiedNotes({
+          ...modifiedNotes,
+          [`${photoId}-${diptychIdCode}`]: false,
+        });
+      } catch (error) {
+        console.error('Error saving notes:', error);
+      }
     }
   };
   
   useEffect(() => {
-    const fetchFavoriteItems = async () => {
-      try {
-        const userId = useStore.getState().userId;
-        console.log('userId:', userId);
-        if (userId) {
-          const response = await axios.get(`/api/favorites/${userId}`);
-          setFavoriteItems(response.data);
+    if (userId) {
+      const loadFavorites = async () => {
+        try {
+          const items = await fetchFavorites(userId);
+          setFavoriteItems(items);
           const initialNotes: { [key: string]: string } = {};
-          response.data.forEach((item: FavoriteItem) => {
+          items.forEach(item => {
             initialNotes[`${item.photoId}-${item.diptychIdCode}`] = item.notes || '';
           });
           setFavoriteNotes(initialNotes);
-        } else {
+        } catch (error) {
+          console.error('Failed to load favorites:', error);
           setFavoriteItems([]);
           setFavoriteNotes({});
         }
-      } catch (error) {
-        console.error('Error fetching favorite items:', error);
-      }
-    };
-
-    fetchFavoriteItems();
-  }, [useStore.getState().userId]);
+      };
+      loadFavorites();
+    }
+  }, [userId]);
 
   useEffect(() => {
     const renderItem = (index: number) => {
@@ -210,9 +206,21 @@ const Favorites: React.FC = () => {
     });
   }, [favoriteItems, renderDelay]);
 
+  useEffect(() => {
+    const handleResize = debounce(() => {
+      // Your resize handling logic
+    }, 200); // Adjust the debounce delay as needed
+  
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const renderCurrentView = () => (
     <Grid container spacing={0} style={{ marginTop: '40px' }}>
       {favoriteItems.map((item, index) => (
+        <LazyLoad key={`${item.photoId}-${item.diptychIdCode}`} height={200} once>
         <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '20px 0' }}>
           <Box display="flex" alignItems="center" style={{ width: '100%' }}>
             <Box flex="0 0 40%" marginRight="20px" display="flex" flexDirection="column" justifyContent="center">
@@ -226,17 +234,17 @@ const Favorites: React.FC = () => {
               <Box marginTop="10px">
                 <Grid container spacing={1}>
                   <Grid item>
-                  <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}>
+                  <button className={`${buttonStyles.button}`} onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}>
                     Inquire
                   </button>
                   </Grid>
                   <Grid item>
-                    <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
+                    <button className={`${buttonStyles.button}`} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
                       Exhibition View
                     </button>
                   </Grid>
                   <Grid item>
-                    <FullScreenButton onClick={() => handleOpenFullScreen(index)} />
+                    <FullScreenButtonFavs onClick={() => handleOpenFullScreen(index)} />
                   </Grid>
                   <Grid item>
                   <DownloadFavsButton
@@ -245,11 +253,11 @@ const Favorites: React.FC = () => {
                     fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
                     layoutSpecs={item.layoutSpecs} // Use the layoutSpecs from the favoriteItems state
                     areShapesVisible={areShapesVisible}
-                    size="small"
+                    size="large"
                   />
                   </Grid>
                   <Grid item>
-                    <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={() => setAreShapesVisible(prev => !prev)}>
+                    <button className={`${buttonStyles.button}`} onClick={() => setAreShapesVisible(prev => !prev)}>
                       {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
                     </button>
                   </Grid>
@@ -284,7 +292,7 @@ const Favorites: React.FC = () => {
                     {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
                       <button
                         onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
-                        className={`${buttonStyles.button} ${buttonStyles.small}`}
+                        className={`${buttonStyles.button}`}
                       >
                         Save Notes
                       </button>
@@ -313,6 +321,7 @@ const Favorites: React.FC = () => {
             </Box>
           </Box>
         </Grid>
+        </LazyLoad>
       ))}
     </Grid>
   );
@@ -321,6 +330,7 @@ const Favorites: React.FC = () => {
   const renderListView = () => (
     <Grid container spacing={2} style={{ marginTop: '45px' }}>
       {favoriteItems.map((item, index) => (
+        <LazyLoad key={`${item.photoId}-${item.diptychIdCode}`} height={200} once>
         <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '10px 0', marginLeft: '100px', marginRight: '100px', }} >
           <Box display="flex" alignItems="center" width="100%">
             <Box
@@ -415,7 +425,7 @@ const Favorites: React.FC = () => {
                 {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
                   <button
                     onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
-                    className={`${buttonStyles.button} ${buttonStyles.small}`}
+                    className={`${buttonStyles.button}`}
                   >
                     Save Notes
                   </button>
@@ -424,6 +434,7 @@ const Favorites: React.FC = () => {
             </Box>
           </Box>
         </Grid>
+        </LazyLoad>
       ))}
     </Grid>
   );
@@ -440,40 +451,43 @@ const Favorites: React.FC = () => {
             label={isListView ? "Larger View" : "List View"}
           />
         </Box>
-      </Box>
-      {!useStore.getState().userId ? (
-        <Typography variant="body1" align="center" style={{ marginTop: '20px' }}>
-          Please sign in to view your favorites.
-        </Typography>
-      ) : favoriteItems.length === 0 ? (
-        <Typography variant="body1" align="center" style={{ marginTop: '20px' }}>
-          You have no favorite items yet.
-        </Typography>
-      ) : isListView ? renderListView() : renderCurrentView()}
-      <ConfirmationModal
-        open={confirmationOpen}
-        onClose={() => setConfirmationOpen(false)}
-        onConfirm={handleConfirmUnlike}
-      />
-      <FullScreenView
-        open={fullScreenOpen}
-        onClose={handleCloseFullScreen}
-        onPrev={handlePrevFullScreen}
-        onNext={handleNextFullScreen}
-      >
-        {fullScreenOpen && (
-          <DynamicDiptychComponent
-            photoId={favoriteItems[selectedIndex].photoId}
-            imagePath={favoriteItems[selectedIndex].imagePath}
-            DiptychIdCode={favoriteItems[selectedIndex].diptychIdCode}
-            containerRef={fullScreenContainerRef}
-            onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
-            areShapesVisible={areShapesVisible}
-            onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, favoriteItems[selectedIndex].diptychIdCode)}
-            updateHeight={(height) => updateDiptychHeight(favoriteItems[selectedIndex].diptychIdCode, height, 0)}
-          />
-        )}
-      </FullScreenView>
+        </Box>
+        {!useStore.getState().userId ? (
+          <Typography variant="body1" align="center" style={{ marginTop: '20px' }}>
+            Please sign in to view your favorites.
+          </Typography>
+        ) : favoriteItems.length === 0 ? (
+          <Typography variant="body1" align="center" style={{ marginTop: '20px' }}>
+            You have no favorite items yet.
+          </Typography>
+        ) : isListView ? renderListView() : renderCurrentView()}
+        <ConfirmationModal
+          open={confirmationOpen}
+          onClose={() => setConfirmationOpen(false)}
+          onConfirm={handleConfirmUnlike}
+        />
+        {
+        fullScreenOpen && favoriteItems.length > 0 && selectedIndex < favoriteItems.length && (
+          <FullScreenView
+            open={fullScreenOpen}
+            onClose={handleCloseFullScreen}
+            onPrev={handlePrevFullScreen}
+            onNext={handleNextFullScreen}
+            diptychIdCode={favoriteItems[selectedIndex].diptychIdCode}
+          >
+            <DynamicDiptychComponent
+              photoId={favoriteItems[selectedIndex].photoId}
+              imagePath={favoriteItems[selectedIndex].imagePath}
+              DiptychIdCode={favoriteItems[selectedIndex].diptychIdCode}
+              containerRef={fullScreenContainerRef}
+              onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
+              areShapesVisible={areShapesVisible}
+              onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, favoriteItems[selectedIndex].diptychIdCode)}
+              updateHeight={(height) => updateDiptychHeight(favoriteItems[selectedIndex].diptychIdCode, height, 0)}
+            />
+          </FullScreenView>
+        )
+      }
       <button onClick={scrollToTop} className={buttonStyles.scrollToTopButton}>
         ↑
       </button>

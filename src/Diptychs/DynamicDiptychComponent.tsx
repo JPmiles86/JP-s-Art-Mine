@@ -1,6 +1,6 @@
 // my-gallery/src/Diptychs/DynamicDiptychComponent.tsx
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { fabric } from 'fabric';
 import urlConfig from '../utils/urlConfig';
 import { scaleCanvas } from './scaleCanvas';
@@ -39,7 +39,7 @@ type CanvasStyles = React.CSSProperties & {
   visibility: 'visible' | 'hidden';
 };
 
-const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = ({
+const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = React.memo(({
   photoId,
   imagePath,
   containerRef,
@@ -247,6 +247,6 @@ const DynamicDiptychComponent: React.FC<DynamicDiptychComponentProps> = ({
       <canvas ref={canvasRef} style={canvasStyles} />
     </div>
   );
-};
+});
 
 export default React.memo(DynamicDiptychComponent);

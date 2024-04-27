@@ -9,7 +9,7 @@ import LikeButton from '../components/layout/LikeButton';
 import useKeyboardNavigation from '../utils/useKeyboardNavigation';
 import FullScreenButton from '../components/layout/FullScreenButton';
 
-const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, children, setIsAuthModalOpen, isAuthModalOpen, handleOpenFullScreen }) => {
+const DiptychControls = ({ navigateToInquiry, selectedPhoto, fabricCanvasRef, layoutSpecs, areShapesVisible, toggleShapesVisibility, setIsAuthModalOpen, isAuthModalOpen, handleOpenFullScreen }) => {
     const { FrameId, isMerged, shapeCode, selectedDiptychIdCode, setFrameId, setIsMerged, setShapeCode, setSelectedDiptychIdCode } = useStore(state => ({
         FrameId: state.FrameId,
         isMerged: state.isMerged,
@@ -102,9 +102,9 @@ const handleLikeButtonClick = () => {
   };
 
     return (
-        <div className={buttonStyles.buttonContainerFS}>
+        <div className={buttonStyles.buttonContainer}>
             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={handleFrameIdChange}>
-                {FrameId === 1 ? 'Black' : 'White'} Frame
+                Frame in {FrameId === 1 ? 'Black' : 'White'}
             </button>
             <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={handleToggleMergeStatus}>
                 {isMerged === 'Entangled' ? 'Merge' : 'Unmerge'}
@@ -136,9 +136,6 @@ const handleLikeButtonClick = () => {
                 onLikeButtonClick={handleLikeButtonClick}
             />
             <FullScreenButton onClick={handleOpenFullScreen} />          
-            <div className={buttonStyles.dropdownSelector}>
-                {children}
-            </div>
         </div>
     );
 };

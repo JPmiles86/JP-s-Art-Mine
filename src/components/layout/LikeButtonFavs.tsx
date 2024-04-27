@@ -82,7 +82,7 @@ const LikeButtonFavs: React.FC<LikeButtonFavsProps> = ({ photoId, diptychIdCode,
   };
 
   return (
-    <button className={`${buttonStyles.button} ${buttonStyles.small}`} onClick={handleLike}>
+    <button className={`${buttonStyles.button}`} onClick={handleLike}>
       {isLiked ? 'Unlike' : 'Like'}
     </button>
   );

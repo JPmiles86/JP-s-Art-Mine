@@ -94,6 +94,7 @@ const Profile: React.FC = () => {
   const [usernameError, setUsernameError] = useState('');
   const [isFormModified, setIsFormModified] = useState(false);
   const isAnonymous = useStore((state) => state.isAnonymous);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const handleCancelUsername = () => {
     setNewUsername(userData?.username || '');
@@ -135,8 +136,10 @@ const Profile: React.FC = () => {
   
         if (user.entityType === 'Person') {
           setPersonalContactInfo(personContactInfo);
+          setIsEditMode(!personContactInfo); // Set edit mode if contact info doesn't exist
         } else if (user.entityType === 'Organization') {
           setOrganizationContactInfo(organizationContactInfo);
+          setIsEditMode(!organizationContactInfo); // Set edit mode if contact info doesn't exist
         }
   
         setLocations(locations || []);
@@ -264,8 +267,7 @@ const Profile: React.FC = () => {
           personContactInfo={personalContactInfo!}
           onSubmit={handlePersonContactInfoSubmit}
           isRequired={false}
-          isFormModified={isFormModified}
-          setIsFormModified={setIsFormModified}
+          isEditMode={isEditMode}
         />
       );
     } else if (selectedEntityType === 'Organization') {
@@ -275,8 +277,7 @@ const Profile: React.FC = () => {
           organizationContactInfo={organizationContactInfo!}
           onSubmit={handleOrganizationContactInfoSubmit}
           isRequired={false}
-          isFormModified={isFormModified}
-          setIsFormModified={setIsFormModified}
+          isEditMode={isEditMode}
         />
       );
     } else {
@@ -408,25 +409,29 @@ return (
           </Box>
         ) : (
           <>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={4} style={{ marginTop: '60px', display: 'flex', alignItems: 'flex-end' }}>
-                <Avatar
-                  alt={`${userData?.username}`}
-                  src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
-                  sx={{ width: 150, height: 150 }}
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  id="profile-photo-upload"
-                  onChange={handleProfilePhotoUpload}
-                />
-                <label htmlFor="profile-photo-upload" className={buttonStyles.navButton} style={{ marginLeft: '0px', cursor: 'pointer', alignSelf: 'flex-end' }}>
-                  Update Profile Photo
-                </label>
+            <Grid container spacing={2} alignItems="center" style={{ marginTop: '55px' }}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Box display="flex" alignItems="center">
+                  <Avatar
+                    alt={`${userData?.username}`}
+                    src={userData?.profilePhotoUrl ? `${urlConfig.baseURL}${userData.profilePhotoUrl}` : ''}
+                    sx={{ width: 150, height: 150 }}
+                  />
+                  <Box ml={2}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id="profile-photo-upload"
+                      onChange={handleProfilePhotoUpload}
+                    />
+                    <label htmlFor="profile-photo-upload" className={buttonStyles.navButton}> 
+                      Update Profile Photo
+                    </label>
+                  </Box>
+                </Box>
               </Grid>
-              <Grid item xs={12} md={3} style={{ marginTop: '20px' }}>
+              <Grid item xs={12} sm={6} md={8}>
                 {editingUsername ? (
                   <>
                     <TextField
@@ -449,8 +454,8 @@ return (
                   </>
                 ) : (
                   <>
-                    <Typography style={{ marginTop: '140px' }} variant="h6">
-                    <strong>Username:</strong> {userData?.username}
+                    <Typography variant="h6">
+                      <strong>Username:</strong> {userData?.username}
                     </Typography>
                     <button className={buttonStyles.navButton} onClick={() => {
                       setNewUsername(userData?.username || '');
@@ -468,10 +473,10 @@ return (
                 <Typography variant="h6" component="span"><strong>Account Type:</strong> {entityType}</Typography>
                 <button
                   className={buttonStyles.navButton}
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: '15px', marginTop: '3px' }}
                   onClick={() => setSelectedEntityType('')}
                 >
-                  Edit
+                  Edit Account Type
                 </button>
               </Box>
             ) : (

@@ -115,7 +115,7 @@ const TopNavBar: React.FC = () => {
             onClick={() => navigate(-1)}
             style={{ cursor: 'pointer' }}
           >
-            ← Back
+            ← Last Page
           </Typography>
         </Box>
       );

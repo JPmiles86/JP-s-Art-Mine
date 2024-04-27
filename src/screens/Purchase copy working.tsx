@@ -143,7 +143,7 @@ const Purchase = () => {
         toggleTimerDisplay={toggleTimerDisplay}
         renewTimer={renewTimer}
       />
-      {showModal && <TimerOverModal renewTimer={renewTimer} backToInquire={handleBackToInquire} onClose={handleCloseModal} />}
+      {showModal && <TimerOverModal renewTimer={renewTimer} backToInquire={handleBackToInquire} onClose={handleCloseModal} artworkID={artworkID ?? ''} userId={userId} />}
       <AuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}

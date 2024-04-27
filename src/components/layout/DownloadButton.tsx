@@ -44,7 +44,7 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ photoId, DiptychIdCode,
   };
 
   return (
-    <button className={buttonClass} onClick={handleDownload}>Download Art</button>
+    <button className={buttonClass} onClick={handleDownload}>Download</button>
   );
 };
 

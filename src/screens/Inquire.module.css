@@ -7,7 +7,6 @@
   height: auto;
 }
 
-
 .button {
   background-color: transparent;
   border: 1px solid #000;
@@ -21,9 +20,46 @@
   text-align: center;
   transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
 }
-  
+
 .button:hover {
   background-color: black; /* Background color on hover */
   color: white; /* Text color on hover */
 }
-  
+
+.diptychVariationContainer {
+  margin-top: 20px;
+}
+
+.availabilityAndCarouselContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.availabilityModule {
+  width: 50%;
+  padding-right: 20px;
+}
+
+.carousel {
+  width: 50%;
+}
+
+@media (max-width: 900px) {
+  .availabilityAndCarouselContainer {
+    flex-direction: column;
+  }
+
+  .availabilityModule {
+    width: 100%;
+    padding-right: 0;
+    order: 2;
+    margin-top: 20px;
+  }
+
+  .carousel {
+    width: 100%;
+    order: 1;
+  }
+}

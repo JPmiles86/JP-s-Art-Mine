@@ -62,6 +62,7 @@ const Inquiry: React.FC = () => {
   const [likeButtonDiptychIdCode, setLikeButtonDiptychIdCode] = useState('');
   const userRole = useStore((state) => state.userRole);
   const isAnonymous = useStore((state) => state.isAnonymous);
+  const userId = useStore((state) => state.userId);
 
   const handleCarousel1DiptychIdCodeChange = (code: string) => { setCarousel1SelectedDiptychIdCode(code); };
   const handleCarousel2DiptychIdCodeChange = (code: string) => { setCarousel2SelectedDiptychIdCode(code); };
@@ -228,7 +229,6 @@ const Inquiry: React.FC = () => {
       <Box position="sticky" top={55} bgcolor="white" zIndex={1000} display="flex" justifyContent="space-between" alignItems="center" padding="10px">
         <Box width="100%" display="flex" justifyContent="center">
           <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginRight: '10px' }} onClick={() => handlePrevPhoto(selectedPhotograph ? sortedPhotos.findIndex(photo => photo.photoID === selectedPhotograph.photoID) : 0)}>Previous Photo</button>
-          <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginLeft: '10px', marginRight: '10px' }} onClick={handleReturnToGallery}>Return to Gallery</button>
           <button className={buttonStyles.button} style={{ marginTop: '0px', marginBottom: '10px', marginLeft: '10px', marginRight: '10px' }} onClick={() => setAreShapesVisible(prev => !prev)}>
             {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
           </button>
@@ -249,16 +249,10 @@ const Inquiry: React.FC = () => {
               the last artwork you were viewing was...
             </Typography>
             <Typography variant="h6">
-            <Divider style={{ margin: '10px 0' }} />
-            </Typography>
-            <Typography variant="h6">
               <strong>Photograph ID:</strong> {diptychDetails?.photoId}
             </Typography>
             <Typography variant="h6">
               <strong>Diptych Variation:</strong> {diptychDetails?.diptychName}
-            </Typography>
-            <Typography variant="h6">
-            <Divider style={{ margin: '10px 0' }} />
             </Typography>
               <div style={{ marginTop: '10px' }}>
   {/* {renderDownloadButton(selectedPhotograph.photoID, selectedDiptychIdCode || '')} */}
@@ -269,8 +263,8 @@ const Inquiry: React.FC = () => {
               </div>
               <Typography variant="body1" style={{ marginTop: '20px', textAlign: 'center' }}>
                 See below to find the {diptychDetails?.diptychName}'s availability. <br/>
-                It is located at Diptych Variation #{diptychDetails?.diptychId} <br/>
-                <Divider style={{ margin: '10px 0' }} />
+                It is located at <strong>Diptych Variation #{diptychDetails?.diptychId}</strong> <br/>
+                <br/>
                 If it says Buy Now, it's available for purchase. <br/>
                 If it says Pending Sale, someone else it trying to purchase it. <br/>
                 If it says Sold, then someone has already bought it, sorry.
@@ -284,15 +278,19 @@ const Inquiry: React.FC = () => {
           <Divider style={{ margin: '40px 0' }} />
 
           {[1, 2, 3, 4, 5].map((diptychId) => (
-            <Box key={diptychId}>
+            <Box key={diptychId} className={styles.diptychVariationContainer}>
               <Typography variant="h5" style={{ textAlign: 'center', marginBottom: '20px' }}>
                 Diptych Variation #{diptychId}
               </Typography>
-              <Box style={{ display: 'flex', marginTop: '20px', alignItems: 'center' }}>
-                <Box style={{ width: '50%', paddingRight: '20px' }}>
-                  <DiptychAvailabilityModule photoId={selectedPhotograph.photoID} diptychId={diptychId} />
+              <Box className={styles.availabilityAndCarouselContainer}>
+                <Box className={styles.availabilityModule}>
+                  <DiptychAvailabilityModule
+                    photoId={selectedPhotograph.photoID}
+                    diptychId={diptychId}
+                    userId={userId} // Add this line
+                  />
                 </Box>
-                <Box style={{ width: '50%' }}>
+                <Box className={styles.carousel}>
                   {diptychId === 1 ? (
                     <DiptychCarouselDynamic
                       photoId={selectedPhotograph.photoID}

@@ -40,6 +40,13 @@ const querystring = require('querystring');
 const cors = require('cors');
 const fs = require('fs');
 const cron = require('node-cron');
+const http = require('http').createServer(app); 
+const io = require('socket.io')(http, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+  },
+});
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -58,7 +65,9 @@ const upload = multer({
 });
 
 app.use(cors({
-  origin: 'http://localhost:3000', // replace with your client's domain
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json()); // Make sure you have this line to parse JSON body
@@ -66,6 +75,14 @@ app.use(express.json()); // Make sure you have this line to parse JSON body
 app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals'));
 
 app.use('/api/auth', authRoutes);
+
+io.on('connection', (socket) => { 
+  console.log('Client connected'); 
+
+  socket.on('disconnect', () => { 
+    console.log('Client disconnected'); 
+  }); 
+});
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
@@ -559,6 +576,7 @@ app.get('/api/artworks/details/:photoId/:diptychId', async (req, res) => {
       seriesName: artwork.Photo?.seriesName, 
       diptychName: artwork.Diptych?.diptychName, 
       edition: artwork.edition,
+      diptychId: artwork.diptychId
     }));
 
     res.json(details); 
@@ -1147,6 +1165,8 @@ app.put('/api/artworks/:artworkID', async (req, res) => {
 
     if (artwork) {
       await artwork.update({ status });
+      console.log('Emitting artworkStatusUpdated event:', { artworkID, status }); // Add this line
+      io.emit('artworkStatusUpdated', { artworkID, status });
       res.status(200).json({ success: true, message: 'Artwork status updated successfully' });
     } else {
       res.status(404).send('Artwork not found');
@@ -1284,20 +1304,29 @@ cron.schedule('* * * * *', async () => {
     const expiredEntries = await ArtworkPending.findAll({
       where: {
         pendingUntil: { [Op.lt]: now }
-      }
+      },
+      include: [{ model: Artwork, attributes: ['artworkID'] }]
     });
 
     for (const entry of expiredEntries) {
-      await Artwork.update({ status: 'Available' }, { where: { id: entry.artworkId } });
-      await ArtworkPending.destroy({ where: { artworkPendingId: entry.artworkPendingId } });
+      await Artwork.update(
+        { status: 'Available' },
+        { where: { artworkID: entry.artworkId } }
+      );
+      console.log('Emitting artworkStatusUpdated event:', { artworkID: entry.Artwork.artworkID, status: 'Available' });
+      io.emit('artworkStatusUpdated', { artworkID: entry.Artwork.artworkID, status: 'Available' });
+      await entry.destroy();
     }
   } catch (error) {
     console.error('Error during scheduled check of artwork pendings:', error);
   }
 });
 
+// app.listen(port, () => {
+//   console.log(`Server is running at http://localhost:${port}`);
+// });
 
-app.listen(port, () => {
+http.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
 

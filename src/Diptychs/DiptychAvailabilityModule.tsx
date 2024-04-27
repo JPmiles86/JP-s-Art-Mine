@@ -6,6 +6,7 @@ import axios from 'axios';
 import buttonStyles from '../screens/ButtonStyles.module.css';
 import styles from './DiptychAvailabilityStyles.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
 
 interface ArtworkDetail {
   artworkId: string;
@@ -21,19 +22,23 @@ interface ArtworkDetail {
   shutterSpeed: string;
   seriesName: string;
   diptychName: string;
+  diptychId: number; 
 }
 
 interface DiptychAvailabilityModuleProps {
   photoId: string;
-  diptychId: number; // Ensure this matches your backend API requirements
+  diptychId: number; 
+  userId: number | null;
 }
 
-const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ photoId, diptychId }) => {
+const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ photoId, diptychId, userId }) => {
   const [artworkDetails, setArtworkDetails] = useState<ArtworkDetail[]>([]);
   const [showInInches, setShowInInches] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const currentFilter = location.pathname.split('/')[1];
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [pendingEntryExists, setPendingEntryExists] = useState(false);
 
   const handleBuyNowClick = (artworkId: string) => {
     navigate(`/${currentFilter}/${photoId}/purchase/${artworkId}`);
@@ -58,8 +63,7 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
         console.error('Error fetching artwork details:', error);
       }
     };
-
-    console.log('Fetching artwork details for photoId:', photoId, 'and diptychId:', diptychId);
+  
     fetchArtworkDetails();
   }, [photoId, diptychId]);
 
@@ -81,6 +85,45 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
     return apArtwork?.status || 'Unavailable';
   };
 
+  useEffect(() => {
+    const newSocket = io('http://localhost:4000', {
+      transports: ['polling', 'websocket'],
+    });
+    setSocket(newSocket);
+  
+    newSocket.on('artworkStatusUpdated', ({ artworkID, status }) => {
+      setArtworkDetails((prevDetails) =>
+        prevDetails.map((artwork) =>
+          artwork.artworkId === artworkID ? { ...artwork, status } : artwork
+        )
+      );
+    });
+  
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const checkPendingEntry = async () => {
+      const currentCpArtwork = sortedCpArtworks.find(
+        (artwork) => artwork.photoId === photoId && artwork.diptychId === diptychId
+      );
+  
+      if (currentCpArtwork && currentCpArtwork.status === 'Pending Sale' && userId && currentCpArtwork.artworkId) {
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 500)); // Add a short delay
+          const pendingEntryResponse = await axios.get(`/api/artworkPending/${currentCpArtwork.artworkId}/${userId}`);
+          setPendingEntryExists(!!pendingEntryResponse.data);
+        } catch (error) {
+          console.error('Error fetching pending entry:', error);
+        }
+      }
+    };
+  
+    checkPendingEntry();
+  }, [sortedCpArtworks, photoId, diptychId, userId]);
+  
   return (
     <Box>
       <Typography variant="h6" style={{ marginTop: '10px', textAlign: 'center' }}>
@@ -100,8 +143,8 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
             </Box>
             </th>
             <th className={styles.tableCell}>CP Price (USD)</th>
-            <th className={styles.tableCell}>Artwork Availability <br></br>(CP)</th>
-            <th className={styles.tableCell}>Artwork Availability <br></br>(AP)</th>
+            <th className={styles.tableCell}>Artwork Availability <br></br>(Collector's Print)</th>
+            <th className={styles.tableCell}>Artwork Availability <br></br>(Artist's Print)</th>
           </tr>
         </thead>
         <tbody>
@@ -118,8 +161,18 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
                     Buy Now
                   </button>
                 )}
-                {cpArtwork.status === 'Pending Sale' && (
-                  <Typography style={{ fontWeight: 'bold', color: '#ff8c00' }}>Pending Sale</Typography>
+                {cpArtwork.status === 'Pending Sale' && userId && (
+                  <button
+                    className={`${buttonStyles.lightgreenButton}`}
+                    onClick={() => handleBuyNowClick(cpArtwork.artworkId)}
+                  >
+                    Cont. Purchase
+                  </button>
+                )}
+                {cpArtwork.status === 'Pending Sale' && !userId && (
+                  <Typography style={{ fontWeight: 'bold', color: '#ff8c00' }}>
+                    Pending Sale
+                  </Typography>
                 )}
                 {cpArtwork.status === 'Sold' && (
                   <Typography style={{ fontWeight: 'bold', color: '#d60000' }}>Sold</Typography>

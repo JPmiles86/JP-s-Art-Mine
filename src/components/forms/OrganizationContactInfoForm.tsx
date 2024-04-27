@@ -21,8 +21,7 @@ interface OrganizationContactInfoFormProps {
   organizationContactInfo: OrganizationContactInfo;
   onSubmit: (organizationContactInfo: OrganizationContactInfo) => void;
   isRequired?: boolean;
-  isFormModified: boolean;
-  setIsFormModified: (isModified: boolean) => void;
+  isEditMode: boolean;
 }
 
  export interface OrganizationContactInfo {
@@ -56,18 +55,16 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
   organizationContactInfo,
   onSubmit,
   isRequired = false,
-  isFormModified,
-  setIsFormModified,
+  isEditMode,
 }) => {
   console.log('OrganizationContactInfoForm props:', { userData, organizationContactInfo });
-
-  // const [isFormModified, setIsFormModified] = useState(false);
-
 
   const [formData, setFormData] = useState<OrganizationContactInfoFormData>({
     ...organizationContactInfo,
     primaryEmail: userData?.email || organizationContactInfo?.primaryEmail || '',
   });
+
+  const [isEditing, setIsEditing] = useState(isEditMode);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = e.target;
@@ -76,7 +73,6 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
       ...prevData,
       [name]: value,
     }));
-    setIsFormModified(true);
   };
 
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,8 +86,6 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
     }
   };
 
-
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -101,15 +95,28 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
     };
 
     onSubmit(organizationContactInfo);
-    setIsFormModified(false); // Reset the form modified state after saving
+    setIsEditing(false);
   };
 
-  const isFormUnchanged = JSON.stringify(formData) === JSON.stringify(organizationContactInfo);
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const renderFormField = (label: string, name: keyof OrganizationContactInfoFormData) => {
+    return (
+      <Typography>
+        <strong>{label}: </strong> {formData[name] || '—'}
+      </Typography>
+    );
+  };
+
+  // const isFormUnchanged = JSON.stringify(formData) === JSON.stringify(organizationContactInfo);
 
 
   return (
     <form onSubmit={handleSubmit}>
-      <Grid container spacing={2}>
+      {isEditing ? (
+        <Grid container spacing={2}>
         {/* Organization Name */}
         <Grid item xs={12}>
           <TextField
@@ -252,7 +259,7 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
         {/* Contact Person Name */}
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Name"
+            label="Full Name"
             name="contactPersonName"
             value={formData.contactPersonName || ''}
             onChange={handleChange}
@@ -296,15 +303,43 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
             margin="normal"
           />
         </Grid>
-
-        {isFormModified && !isFormUnchanged && (
-          <Grid item xs={12} container justifyContent="center">
+        <Grid item xs={12} container justifyContent="center">
             <button className={buttonStyles.button} type="submit">
               Save Profile
             </button>
           </Grid>
-        )}
-      </Grid>
+        </Grid>
+      ) : (
+        <>
+          <Typography variant="h6">
+            <strong>Organization Information:</strong>
+          </Typography>
+          <br />
+          {renderFormField('Organization Name', 'organizationName')}
+          {renderFormField('Organization Type', 'organizationType')}
+          {renderFormField('Tax ID Number', 'taxIdNumber')}
+          {renderFormField('Primary Email', 'primaryEmail')}
+          {renderFormField('Secondary Email', 'secondaryEmail')}
+          {renderFormField('Primary Phone', 'primaryPhone')}
+          {renderFormField('Secondary Phone', 'secondaryPhone')}
+          {renderFormField('Instagram', 'instagram')}
+          {renderFormField('Twitter', 'twitter')}
+          {renderFormField('LinkedIn', 'linkedIn')}
+          {renderFormField('Website', 'website')}
+          <br />
+          <Typography variant="h6">
+            <strong>Contact Person:</strong>
+          </Typography>
+          <br />
+          {renderFormField('Full Name', 'contactPersonName')}
+          {renderFormField('Role', 'contactPersonRole')}
+          {renderFormField('Email', 'contactPersonEmail')}
+          {renderFormField('Phone', 'contactPersonPhone')}
+          <button type="button" style={{ marginTop: '20px' }} onClick={handleEditClick} className={buttonStyles.button}>
+            Edit
+          </button>
+        </>
+      )}
     </form>
   );
 };

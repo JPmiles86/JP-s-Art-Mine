@@ -23,6 +23,7 @@ interface BuyerInfoFormProps {
   const [collectorEmail, setCollectorEmail] = useState('');
   const [creationReason, setCreationReason] = useState('');
   const [otherReason, setOtherReason] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
   //const userId = useStore((state) => state.userId);
 
   useEffect(() => {
@@ -156,8 +157,7 @@ interface BuyerInfoFormProps {
               personContactInfo={collectorPersonContactInfo || { personContactId: 0 }}
               onSubmit={(collectorInfo) => handleSubmit(null, collectorInfo)}
               isRequired={true}
-              isFormModified={isFormModified}
-              setIsFormModified={setIsFormModified}
+              isEditMode={isEditMode}
             />
           )}
           {collectorEntityType === 'Organization' && (
@@ -166,8 +166,7 @@ interface BuyerInfoFormProps {
               organizationContactInfo={collectorOrganizationContactInfo || { organizationContactId: 0 }}
               onSubmit={(collectorInfo) => handleSubmit(null, collectorInfo)}
               isRequired={true}
-              isFormModified={isFormModified}
-              setIsFormModified={setIsFormModified}
+              isEditMode={isEditMode}
             />
           )}
         </>
@@ -191,8 +190,7 @@ interface BuyerInfoFormProps {
           personContactInfo={buyerPersonContactInfo || { personContactId: 0 }}
           onSubmit={(buyerInfo) => handleSubmit(buyerInfo, null)}
           isRequired={true}
-          isFormModified={isFormModified}
-          setIsFormModified={setIsFormModified}
+          isEditMode={isEditMode}
         />
       )}
       {buyerEntityType === 'Organization' && (
@@ -201,8 +199,7 @@ interface BuyerInfoFormProps {
           organizationContactInfo={buyerOrganizationContactInfo || { organizationContactId: 0 }}
           onSubmit={(buyerInfo) => handleSubmit(buyerInfo, null)}
           isRequired={true}
-          isFormModified={isFormModified}
-          setIsFormModified={setIsFormModified}
+          isEditMode={isEditMode}
         />
       )}
     </Box>
