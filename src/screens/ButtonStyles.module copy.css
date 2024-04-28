@@ -189,10 +189,8 @@ text-decoration: underline; /* Add underline */
 
 .formfieldmedium {
   font-family: 'EB Garamond', serif;
-  width: 100% !important;
-  max-width: 300px !important;
+  width: 300px !important;
   padding: 0px 10px !important;
-  margin: 0 auto !important;
 }
 
 .formfieldlarge {

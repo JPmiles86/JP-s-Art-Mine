@@ -903,17 +903,33 @@ app.put('/api/users/:userId/profile', async (req, res) => {
     await Users.update({ entityType }, { where: { userId } });
 
     if (entityType === 'Person') {
-      // Update or create the person contact info
-      await PersonContactInfo.upsert({
-        ...personContactInfo,
-        userId,
-      });
+      // Check if a person contact info record already exists for the user
+      const existingPersonContactInfo = await PersonContactInfo.findOne({ where: { userId } });
+
+      if (existingPersonContactInfo) {
+        // Update the existing person contact info record
+        await existingPersonContactInfo.update(personContactInfo);
+      } else {
+        // Create a new person contact info record
+        await PersonContactInfo.create({
+          ...personContactInfo,
+          userId,
+        });
+      }
     } else if (entityType === 'Organization') {
-      // Update or create the organization contact info
-      await OrganizationContactInfo.upsert({
-        ...organizationContactInfo,
-        userId,
-      });
+      // Check if an organization contact info record already exists for the user
+      const existingOrganizationContactInfo = await OrganizationContactInfo.findOne({ where: { userId } });
+
+      if (existingOrganizationContactInfo) {
+        // Update the existing organization contact info record
+        await existingOrganizationContactInfo.update(organizationContactInfo);
+      } else {
+        // Create a new organization contact info record
+        await OrganizationContactInfo.create({
+          ...organizationContactInfo,
+          userId,
+        });
+      }
     }
 
     console.log('User profile updated successfully');

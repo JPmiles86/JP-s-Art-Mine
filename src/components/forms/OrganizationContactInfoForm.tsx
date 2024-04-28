@@ -104,9 +104,18 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
 
   const renderFormField = (label: string, name: keyof OrganizationContactInfoFormData) => {
     return (
-      <Typography>
-        <strong>{label}: </strong> {formData[name] || '—'}
-      </Typography>
+      <Grid container>
+        <Grid item xs={6}>
+          <Typography align="right" style={{ fontWeight: 'bold' }}>
+            {label}:
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography align="left" style={{ marginLeft: '10px' }}>
+          {formData[name] || '—'}
+          </Typography>
+        </Grid>
+      </Grid>
     );
   };
 
@@ -311,9 +320,14 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
         </Grid>
       ) : (
         <>
-          <Typography variant="h6">
-            <strong>Organization Information:</strong>
-          </Typography>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginBottom: '0px' }}>
+            <>
+              <Typography variant="h6" style={{ textAlign: 'center' }}>
+                <strong>Organization Information:</strong>
+              </Typography>
+              <br />
+            </>
+          </div>
           <br />
           {renderFormField('Organization Name', 'organizationName')}
           {renderFormField('Organization Type', 'organizationType')}
@@ -327,17 +341,24 @@ const OrganizationContactInfoForm: React.FC<OrganizationContactInfoFormProps> = 
           {renderFormField('LinkedIn', 'linkedIn')}
           {renderFormField('Website', 'website')}
           <br />
-          <Typography variant="h6">
-            <strong>Contact Person:</strong>
-          </Typography>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginBottom: '0px' }}>
+            <>
+              <Typography variant="h6" style={{ textAlign: 'center' }}>
+                <strong>Contact Person:</strong>
+              </Typography>
+              <br />
+            </>
+          </div>
           <br />
           {renderFormField('Full Name', 'contactPersonName')}
           {renderFormField('Role', 'contactPersonRole')}
           {renderFormField('Email', 'contactPersonEmail')}
           {renderFormField('Phone', 'contactPersonPhone')}
-          <button type="button" style={{ marginTop: '20px' }} onClick={handleEditClick} className={buttonStyles.button}>
-            Edit
-          </button>
+          <Grid item xs={12} container justifyContent="center">
+            <button type="button" style={{ marginTop: '20px' }} onClick={handleEditClick} className={buttonStyles.button}>
+              Edit
+            </button>
+          </Grid>
         </>
       )}
     </form>

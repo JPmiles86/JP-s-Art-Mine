@@ -153,11 +153,9 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
         </Typography>
         {isEditing ? (
           <Grid container spacing={2} justifyContent="center">
-            <Grid item xs={12}>
-              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '10px' }}>
-                <FormControl fullWidth margin="normal" style={{ width: '300px' }}>
-                  {/* ... */}
-                <InputLabel>What kind of location is it?</InputLabel>
+          <Grid item xs={12}>
+            <FormControl fullWidth margin="normal" style={{ marginLeft: '10px', marginBottom: '20px' }}>
+              <InputLabel>What kind of location is it?</InputLabel>
               <Select
                 className={buttonStyles.formfieldmedium}
                 name="locationType"
@@ -174,12 +172,11 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
                 <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
-            </div>
             {formData.locationType === 'Other' && (
-              <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '10px', marginBottom: '20px', }}>
+              <Grid item xs={12}>
                 <TextField
                   className={buttonStyles.formfieldmedium}
-                  label="Please specify the type of location..."
+                  label="What kind of location is it?"
                   name="customLocationType"
                   value={formData.customLocationType || ''}
                   onChange={handleChange}
@@ -188,14 +185,14 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
                 />
               </Grid>
             )}
-            <Autocomplete 
+            <Autocomplete
               onLoad={(autocomplete) => {
                 console.log('Autocomplete loaded');
                 autocompleteRef.current = autocomplete;
               }}
               onPlaceChanged={handleAddressSelect}
             >
-              <TextField style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+              <TextField
                 className={buttonStyles.formfieldmedium}
                 label="Address"
                 name="addressLine1"
@@ -207,7 +204,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
               />
             </Autocomplete>
           </Grid>
-          <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid item xs={12}>
             <TextField
               className={buttonStyles.formfieldmedium}
               label="Apartment, Suite, Unit, Building (Optional)"
@@ -218,7 +215,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
               InputLabelProps={{ shrink: formData.addressLine2 !== '' }}
             />
           </Grid>
-          <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid item xs={12}>
             {formData.locationType !== 'Home' && (
               <TextField
                 className={buttonStyles.formfieldmedium}
@@ -231,7 +228,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
               />
             )}
           </Grid>
-          <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid item xs={12}>
             <TextField
               className={buttonStyles.formfieldmedium}
               label="City"
@@ -243,7 +240,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
               InputLabelProps={{ shrink: formData.city !== '' }}
             />
           </Grid>
-          <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid item xs={12}>
             <TextField
               className={buttonStyles.formfieldmedium}
               label="State/Province"
@@ -255,7 +252,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
               InputLabelProps={{ shrink: formData.stateProvince !== '' }}
             />
           </Grid>
-          <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid item xs={12}>
             <TextField
               className={buttonStyles.formfieldmedium}
               label="Postal Code/Zip Code"
@@ -267,7 +264,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemov
               InputLabelProps={{ shrink: formData.postalCode !== '' }}
             />
           </Grid>
-          <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid item xs={12}>
             <TextField
               className={buttonStyles.formfieldmedium}
               label="Country"

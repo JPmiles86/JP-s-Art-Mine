@@ -468,12 +468,13 @@ return (
               </Grid>
             </Grid>
             {entityType ? (
-              <Box mt={4} display="flex" justifyContent="center" alignItems="center" style={{ marginTop: '40px' }}>
-                
-                <Typography variant="h6" component="span"><strong>Account Type:</strong> {entityType}</Typography>
+              <Box mt={4} display="flex" flexDirection="column" alignItems="center" style={{ marginTop: '40px' }}>
+                <Typography variant="h6" component="span">
+                  <strong>Account Type:</strong> {entityType}
+                </Typography>
                 <button
                   className={buttonStyles.navButton}
-                  style={{ marginLeft: '15px', marginTop: '3px' }}
+                  style={{ marginTop: '0px' }}
                   onClick={() => setSelectedEntityType('')}
                 >
                   Edit Account Type

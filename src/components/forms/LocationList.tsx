@@ -14,6 +14,7 @@ interface LocationListProps {
   onRemove: (locationId: number) => void;
   isRequired?: boolean;
   selectedEntityType: string;
+  isNewLocation?: boolean;
 }
 
 const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate, onRemove, isRequired = false, selectedEntityType }) => {
@@ -46,13 +47,17 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
         },
       });
       const newLocation = response.data;
-      setLocationList((prevList) => [...prevList, newLocation]);
-      // onUpdate([...locationList, newLocation]);
-     
+      console.log('New location added:', newLocation);
+      setLocationList((prevList) => {
+        const updatedList = [...prevList, { ...newLocation, isNewLocation: true }];
+        console.log('Updated location list:', updatedList);
+        return updatedList;
+      });
     } catch (error) {
       console.error('Error adding location:', error);
     }
   };
+
 
   const handleUpdateLocation = async (updatedLocation: Location) => {
     try {
@@ -81,20 +86,27 @@ const LocationList: React.FC<LocationListProps> = ({ userId, locations, onUpdate
     }
   };
 
+  console.log('Rendering LocationList with locationList:', locationList);
+
   return (
-    <div>
-      {locationList.map((location, index) => (
-        <LocationForm
-          key={location.locationId}
-          location={location}
-          onSubmit={handleUpdateLocation}
-          onRemove={() => handleRemoveLocation(location.locationId)}
-          isRequired={isRequired}
-          locationIndex={index + 1}
-        />
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {locationList.map((location, index) => {
+        console.log('Rendering LocationForm for location:', location);
+        return (
+          <div key={location.locationId} style={{ width: '100%', maxWidth: '600px' }}>
+            <LocationForm
+              location={location}
+              onSubmit={handleUpdateLocation}
+              onRemove={() => handleRemoveLocation(location.locationId)}
+              isRequired={isRequired}
+              locationIndex={index + 1}
+              isNewLocation={location.isNewLocation}
+            />
+          </div>
+        );
+      })}
       {selectedEntityType && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ marginTop: '20px' }}>
           <button type="button" className={buttonStyles.button} onClick={handleAddLocation}>
             Add Location
           </button>
