@@ -66,19 +66,18 @@ const ExhibitionHeader: React.FC<ExhibitionHeaderProps> = ({
       </div>
       <div className={styles.centerColumn}>
         <p>
-          <strong>Artwork ID:&nbsp;</strong>
+          <strong>Photo ID:&nbsp;</strong>
           <span
             className={`${styles.idButton} ${styles.linkButton}`}
             onClick={() => handleFilterChange(selectedPhoto.date)}
           >
-            {selectedPhoto.date}
+            {selectedPhoto.date} 
           </span>
-          <strong> - </strong>
+          <strong> &nbsp;-</strong>
           <span
             className={`${styles.idButton} ${styles.linkButton}`}
             onClick={() => handleFilterChange(selectedPhoto.number)}
-          >
-            {selectedPhoto.number}
+          >{selectedPhoto.number}
           </span>
           <br />
           <strong>From the Series:&nbsp;</strong>

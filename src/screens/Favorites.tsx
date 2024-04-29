@@ -4,12 +4,13 @@ import React, { useEffect, useState, useRef, useCallback, useContext } from 'rea
 import { Typography, Grid, Box, Switch, FormControlLabel } from '@mui/material';
 import axios from 'axios';
 import DynamicDiptychComponent from '../Diptychs/DynamicDiptychComponent';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useStore from '../utils/store';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
 import ScrollContext from '../ScrollContext'; 
 import { fabric } from 'fabric';
 import buttonStyles from './ButtonStyles.module.css';
+import styles from './ExhibitionSpace.module.css';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import FullScreenView from '../components/layout/FullScreenView';
 import LikeButtonFavs from '../components/layout/LikeButtonFavs';
@@ -23,8 +24,18 @@ import { debounce } from 'lodash';
 import { fetchFavorites, updateLikeStatus, saveNotes } from '../utils/favoritesService';
 
 
+interface Photograph {
+  photoID: string;
+  number: string;
+  date: string;
+  seriesName: string;
+  seriesCode: string;
+}
+
 interface FavoriteItem {
   photoId: string;
+  date: string;
+  number: string;
   diptychIdCode: string;
   imagePath: string;
   seriesCode: string;
@@ -34,6 +45,7 @@ interface FavoriteItem {
   layoutSpecs?: LayoutSpecs;
   notes?: string;
 }
+
 // Ensure FavoriteItem is exported if used in another module
 export type { FavoriteItem };
 
@@ -56,6 +68,7 @@ const Favorites: React.FC = () => {
   const [favoriteNotes, setFavoriteNotes] = useState<{ [key: string]: string }>({});
   const [modifiedNotes, setModifiedNotes] = useState<{ [key: string]: boolean }>({});
   const userId = useStore.getState().userId?.toString(); // Convert userId to string if it's not null
+  const { setCurrentFilter } = useStore();
 
   function getPhotoUrl(imagePath: string) {
     const pathIndex = imagePath.indexOf('/originals');
@@ -85,6 +98,24 @@ const Favorites: React.FC = () => {
   const handleUnlike = (item: FavoriteItem) => {
     setItemToRemove(item);
     setConfirmationOpen(true);
+  };
+
+  const handleFilterChange = (filter: string) => {
+    console.log('handleFilterChange called with filter:', filter);
+    setCurrentFilter(filter);
+    navigate(`/${filter}`);
+  };
+
+  const handleDateFilterChange = (date: string) => {
+    console.log('handleDateFilterChange called with date:', date);
+    setCurrentFilter(date);
+    navigate(`/${date}`);
+  };
+  
+  const handleNumberFilterChange = (number: string) => {
+    console.log('handleNumberFilterChange called with number:', number);
+    setCurrentFilter(number);
+    navigate(`/${number}`);
   };
 
   const handleConfirmUnlike = async () => {
@@ -221,74 +252,236 @@ const Favorites: React.FC = () => {
     <Grid container spacing={0} style={{ marginTop: '40px' }}>
       {favoriteItems.map((item, index) => (
         <LazyLoad key={`${item.photoId}-${item.diptychIdCode}`} height={200} once>
-        <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '20px 0' }}>
-          <Box display="flex" alignItems="center" style={{ width: '100%' }}>
-            <Box flex="0 0 40%" marginRight="20px" display="flex" flexDirection="column" justifyContent="center">
-              <Typography variant="subtitle1">
-                <strong>Photo ID:</strong> {item.photoId}
-                <br />
-                <strong>From the Series:</strong> {item.seriesName}
-                <br />
-                <strong>Diptych Variation:</strong> {item.fused} - {item.shapeInCenterEdge}
-              </Typography>
-              <Box marginTop="10px">
-                <Grid container spacing={1}>
-                  <Grid item>
-                  <button className={`${buttonStyles.button}`} onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}>
-                    Inquire
-                  </button>
-                  </Grid>
-                  <Grid item>
-                    <button className={`${buttonStyles.button}`} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
+          <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '20px 0' }}>
+            <Box display="flex" alignItems="center" style={{ width: '100%' }}>
+              <Box flex="0 0 40%" marginRight="20px" display="flex" flexDirection="column" justifyContent="center">
+                <Typography variant="subtitle1">
+                  <strong>Photo ID:</strong>{' '}
+                  <span className={`${styles.idButton} ${styles.linkButton}`} onClick={() => handleFilterChange(item.date)}>
+                    {item.date}
+                  </span>
+                  <strong> - </strong>
+                  <span className={`${styles.idButton} ${styles.linkButton}`} onClick={() => handleFilterChange(item.number)}>
+                    {item.number}
+                  </span>
+                  <br />
+                  <strong>From the Series:</strong>{' '}
+                  <span
+                    className={`${styles.idButton} ${styles.linkButton}`}
+                    onClick={() => handleFilterChange(item.seriesCode)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {item.seriesName}
+                  </span>
+                  <br />
+                  <strong>Diptych Variation:</strong> {item.fused} - {item.shapeInCenterEdge}
+                </Typography>
+                  <Box marginTop="10px">
+                    <Grid container spacing={1}>
+                      <Grid item>
+                      <button className={`${buttonStyles.button}`} onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}>
+                        Inquire
+                      </button>
+                      </Grid>
+                      <Grid item>
+                        <button className={`${buttonStyles.button}`} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}>
+                          Exhibition View
+                        </button>
+                      </Grid>
+                      <Grid item>
+                        <FullScreenButtonFavs onClick={() => handleOpenFullScreen(index)} />
+                      </Grid>
+                      <Grid item>
+                      <DownloadFavsButton
+                        photoId={item.photoId}
+                        diptychIdCode={item.diptychIdCode}
+                        fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
+                        layoutSpecs={item.layoutSpecs} // Use the layoutSpecs from the favoriteItems state
+                        areShapesVisible={areShapesVisible}
+                        size="large"
+                      />
+                      </Grid>
+                      <Grid item>
+                        <button className={`${buttonStyles.button}`} onClick={() => setAreShapesVisible(prev => !prev)}>
+                          {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
+                        </button>
+                      </Grid>
+                      <Grid item>
+                        <LikeButtonFavs
+                          photoId={item.photoId}
+                          diptychIdCode={item.diptychIdCode}
+                          setIsAuthModalOpen={() => {}}
+                          onLikeButtonClick={() => handleUnlike(item)}
+                          onUnlikeConfirmed={handleConfirmUnlike}
+                        />
+                      </Grid>
+                      <Box marginTop="10px" marginLeft="15px">
+                        <Typography variant="subtitle2">Notes:</Typography>
+                        <div style={{ width: '400px' }}></div>
+                        <textarea
+                          className="notes-textbox"
+                          value={favoriteNotes[`${item.photoId}-${item.diptychIdCode}`] || ''}
+                          onChange={(e) => {
+                            setFavoriteNotes({
+                              ...favoriteNotes,
+                              [`${item.photoId}-${item.diptychIdCode}`]: e.target.value,
+                            });
+                            setModifiedNotes({
+                              ...modifiedNotes,
+                              [`${item.photoId}-${item.diptychIdCode}`]: true,
+                            });
+                          }}
+                          rows={2}
+                          style={{ width: '100%', resize: 'vertical', fontFamily: 'EB Garamond, serif' }}
+                        />
+                        {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
+                          <button
+                            onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
+                            className={`${buttonStyles.button}`}
+                          >
+                            Save Notes
+                          </button>
+                        )}
+                      </Box>
+                    </Grid>
+                  </Box>
+                </Box>
+                <Box flex="1" className={buttonStyles.clickable} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: `${diptychHeights[item.diptychIdCode]?.height || 0}px` }}>
+                  <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {renderedItems.includes(index) && (
+                        <DynamicDiptychComponent
+                          photoId={item.photoId}
+                          imagePath={item.imagePath}
+                          DiptychIdCode={item.diptychIdCode}
+                          containerRef={containerRef}
+                          onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
+                          areShapesVisible={areShapesVisible}
+                          onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, item.diptychIdCode)}
+                          updateHeight={(height) => updateDiptychHeight(item.diptychIdCode, height, 0)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </Box>
+              </Box>
+            </Grid>
+            </LazyLoad>
+          ))}
+        </Grid>
+      );
+
+
+      const renderListView = () => (
+        <Grid container spacing={2} style={{ marginTop: '45px' }}>
+          {favoriteItems.map((item, index) => (
+            <LazyLoad key={`${item.photoId}-${item.diptychIdCode}`} height={200} once>
+              <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '10px 0', marginLeft: '100px', marginRight: '100px' }}>
+                <Box display="flex" alignItems="center" width="100%">
+      
+                <Box
+                  flex="0 0 200px"
+                  marginRight="20px"
+                  className={buttonStyles.clickable}
+                  onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}
+                >
+                  <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ transform: `translateY(${(diptychHeights[item.diptychIdCode]?.marginTop || 0) / 20}px)` }}>
+                        {renderedItems.includes(index) && (
+                          <DynamicDiptychComponent
+                            photoId={item.photoId}
+                            imagePath={item.imagePath}
+                            DiptychIdCode={item.diptychIdCode}
+                            containerRef={containerRef}
+                            onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
+                            areShapesVisible={areShapesVisible}
+                            onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, item.diptychIdCode)}
+                            updateHeight={(height) => {
+                              const containerHeight = 150;
+                              const marginTop = (containerHeight - height) / 2;
+                              updateDiptychHeight(item.diptychIdCode, height, marginTop);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Box>
+                <Box flex="1">
+                  <Typography variant="subtitle1">
+                    <strong>Photo ID:</strong>{' '}
+                    <span className={`${styles.idButton} ${styles.linkButton}`} onClick={() => handleFilterChange(item.date)}>
+                      {item.date}
+                    </span>
+                    <strong> - </strong>
+                    <span className={`${styles.idButton} ${styles.linkButton}`} onClick={() => handleFilterChange(item.number)}>
+                      {item.number}
+                    </span>
+                    <br />
+                    <strong>From the Series:</strong>{' '}
+                    <span
+                      className={`${styles.idButton} ${styles.linkButton}`}
+                      onClick={() => handleFilterChange(item.seriesCode)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {item.seriesName}
+                    </span>
+                    <br />
+                    <strong>Diptych Variation:</strong> {item.fused} - {item.shapeInCenterEdge}
+                  </Typography>
+                  <Box marginTop="10px" display="flex" alignItems="center">
+                    <button
+                      className={`${buttonStyles.button}`}
+                      onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}
+                      style={{ marginRight: '10px' }}
+                    >
+                      Inquire
+                    </button>
+                    <button
+                      className={`${buttonStyles.button}`}
+                      onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}
+                      style={{ marginRight: '10px' }}
+                    >
                       Exhibition View
                     </button>
-                  </Grid>
-                  <Grid item>
-                    <FullScreenButtonFavs onClick={() => handleOpenFullScreen(index)} />
-                  </Grid>
-                  <Grid item>
-                  <DownloadFavsButton
-                    photoId={item.photoId}
-                    diptychIdCode={item.diptychIdCode}
-                    fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
-                    layoutSpecs={item.layoutSpecs} // Use the layoutSpecs from the favoriteItems state
-                    areShapesVisible={areShapesVisible}
-                    size="large"
-                  />
-                  </Grid>
-                  <Grid item>
-                    <button className={`${buttonStyles.button}`} onClick={() => setAreShapesVisible(prev => !prev)}>
-                      {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
-                    </button>
-                  </Grid>
-                  <Grid item>
-                    <LikeButtonFavs
+                    <DownloadFavsButton
                       photoId={item.photoId}
                       diptychIdCode={item.diptychIdCode}
-                      setIsAuthModalOpen={() => {}}
-                      onLikeButtonClick={() => handleUnlike(item)}
-                      onUnlikeConfirmed={handleConfirmUnlike}
+                      fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
+                      layoutSpecs={item.layoutSpecs}
+                      areShapesVisible={areShapesVisible}
+                      size="large"
                     />
-                  </Grid>
-                  <Box marginTop="10px" marginLeft="15px">
-                    <Typography variant="subtitle2">Notes:</Typography>
-                    <div style={{ width: '400px' }}></div>
-                    <textarea
-                      className="notes-textbox"
-                      value={favoriteNotes[`${item.photoId}-${item.diptychIdCode}`] || ''}
-                      onChange={(e) => {
-                        setFavoriteNotes({
-                          ...favoriteNotes,
-                          [`${item.photoId}-${item.diptychIdCode}`]: e.target.value,
-                        });
-                        setModifiedNotes({
-                          ...modifiedNotes,
-                          [`${item.photoId}-${item.diptychIdCode}`]: true,
-                        });
-                      }}
-                      rows={2}
-                      style={{ width: '100%', resize: 'vertical', fontFamily: 'EB Garamond, serif' }}
-                    />
+                    <button
+                      className={`${buttonStyles.button}`}
+                      onClick={() => handleOpenFullScreen(index)}
+                      style={{ marginLeft: '10px' }}
+                    >
+                      Full Screen
+                    </button>
+                  </Box>
+                  <Box marginTop="10px">
+                    <Typography variant="subtitle2" style={{ marginLeft: '5px' }}>Notes:</Typography>
+                    <div style={{ width: '400px' }}>
+                      <textarea
+                        className="notes-textbox"
+                        value={favoriteNotes[`${item.photoId}-${item.diptychIdCode}`] || ''}
+                        onChange={(e) => {
+                          setFavoriteNotes({
+                            ...favoriteNotes,
+                            [`${item.photoId}-${item.diptychIdCode}`]: e.target.value,
+                          });
+                          setModifiedNotes({
+                            ...modifiedNotes,
+                            [`${item.photoId}-${item.diptychIdCode}`]: true,
+                          });
+                        }}
+                        rows={2}
+                        style={{ width: '100%', resize: 'vertical', fontFamily: 'EB Garamond, serif', marginLeft: '5px' }}
+                      />
+                    </div>
                     {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
                       <button
                         onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
@@ -298,146 +491,13 @@ const Favorites: React.FC = () => {
                       </button>
                     )}
                   </Box>
-                </Grid>
+                </Box>
               </Box>
-            </Box>
-            <Box flex="1" className={buttonStyles.clickable} onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: `${diptychHeights[item.diptychIdCode]?.height || 0}px` }}>
-              <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {renderedItems.includes(index) && (
-                    <DynamicDiptychComponent
-                      photoId={item.photoId}
-                      imagePath={item.imagePath}
-                      DiptychIdCode={item.diptychIdCode}
-                      containerRef={containerRef}
-                      onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
-                      areShapesVisible={areShapesVisible}
-                      onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, item.diptychIdCode)}
-                      updateHeight={(height) => updateDiptychHeight(item.diptychIdCode, height, 0)}
-                    />
-                  )}
-                </div>
-              </div>
-            </Box>
-          </Box>
+            </Grid>
+            </LazyLoad>
+          ))}
         </Grid>
-        </LazyLoad>
-      ))}
-    </Grid>
-  );
-
-
-  const renderListView = () => (
-    <Grid container spacing={2} style={{ marginTop: '45px' }}>
-      {favoriteItems.map((item, index) => (
-        <LazyLoad key={`${item.photoId}-${item.diptychIdCode}`} height={200} once>
-        <Grid item xs={12} key={`${item.photoId}-${item.diptychIdCode}`} style={{ borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', padding: '10px 0', marginLeft: '100px', marginRight: '100px', }} >
-          <Box display="flex" alignItems="center" width="100%">
-            <Box
-              flex="0 0 200px"
-              marginRight="20px"
-              className={buttonStyles.clickable}
-              onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}
-            >
-              <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ transform: `translateY(${(diptychHeights[item.diptychIdCode]?.marginTop || 0) / 20}px)` }}>
-                    {renderedItems.includes(index) && (
-                      <DynamicDiptychComponent
-                        photoId={item.photoId}
-                        imagePath={item.imagePath}
-                        DiptychIdCode={item.diptychIdCode}
-                        containerRef={containerRef}
-                        onCanvasReady={(canvasRef, diptychIdCode) => updateFabricCanvas(diptychIdCode, canvasRef)}
-                        areShapesVisible={areShapesVisible}
-                        onLayoutSpecsReady={(layoutSpecs) => handleLayoutSpecsReady(layoutSpecs, item.diptychIdCode)}
-                        updateHeight={(height) => {
-                          const containerHeight = 150;
-                          const marginTop = (containerHeight - height) / 2;
-                          updateDiptychHeight(item.diptychIdCode, height, marginTop);
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Box>
-            <Box flex="1">
-              <Typography variant="subtitle1">
-                <strong>Photo ID:</strong> {item.photoId}
-                <br />
-                <strong>From the Series:</strong> {item.seriesName}
-                <br />
-                <strong>Diptych Variation:</strong> {item.fused} - {item.shapeInCenterEdge}
-              </Typography>
-              <Box marginTop="10px" display="flex" alignItems="center">
-                <button
-                  className={`${buttonStyles.button}`}
-                  onClick={() => navigateToInquireAndSetDiptychCode(item.photoId, item.diptychIdCode, item.seriesCode)}
-                  style={{ marginRight: '10px' }}
-                >
-                  Inquire
-                </button>
-                <button
-                  className={`${buttonStyles.button}`}
-                  onClick={() => handleFavoriteClick(item.photoId, item.diptychIdCode, item.seriesCode)}
-                  style={{ marginRight: '10px' }}
-                >
-                  Exhibition View
-                </button>
-                <DownloadFavsButton
-                  photoId={item.photoId}
-                  diptychIdCode={item.diptychIdCode}
-                  fabricCanvasRef={fabricCanvasMap.get(item.diptychIdCode)}
-                  layoutSpecs={item.layoutSpecs}
-                  areShapesVisible={areShapesVisible}
-                  size="large"
-                />
-                <button
-                  className={`${buttonStyles.button}`}
-                  onClick={() => handleOpenFullScreen(index)}
-                  style={{ marginLeft: '10px' }}
-                >
-                  Full Screen
-                </button>
-              </Box>
-              <Box marginTop="10px">
-                <Typography variant="subtitle2" style={{ marginLeft: '5px' }}>Notes:</Typography>
-                <div style={{ width: '400px' }}>
-                  <textarea
-                    className="notes-textbox"
-                    value={favoriteNotes[`${item.photoId}-${item.diptychIdCode}`] || ''}
-                    onChange={(e) => {
-                      setFavoriteNotes({
-                        ...favoriteNotes,
-                        [`${item.photoId}-${item.diptychIdCode}`]: e.target.value,
-                      });
-                      setModifiedNotes({
-                        ...modifiedNotes,
-                        [`${item.photoId}-${item.diptychIdCode}`]: true,
-                      });
-                    }}
-                    rows={2}
-                    style={{ width: '100%', resize: 'vertical', fontFamily: 'EB Garamond, serif', marginLeft: '5px' }}
-                  />
-                </div>
-                {modifiedNotes[`${item.photoId}-${item.diptychIdCode}`] && (
-                  <button
-                    onClick={() => handleSaveNotes(item.photoId, item.diptychIdCode)}
-                    className={`${buttonStyles.button}`}
-                  >
-                    Save Notes
-                  </button>
-                )}
-              </Box>
-            </Box>
-          </Box>
-        </Grid>
-        </LazyLoad>
-      ))}
-    </Grid>
-  );
+      );
 
   return (
     <div>

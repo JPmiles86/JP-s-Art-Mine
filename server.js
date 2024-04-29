@@ -1105,7 +1105,7 @@ app.get('/api/favorites/:userId', async (req, res) => {
       include: [
         {
           model: Photo,
-          attributes: ['photoID', 'seriesCode', 'imagePath'],
+          attributes: ['photoID', 'date', 'number', 'seriesCode', 'imagePath'],
           include: [
             {
               model: Series,
@@ -1126,13 +1126,15 @@ app.get('/api/favorites/:userId', async (req, res) => {
 
     const formattedFavorites = favoriteItems.map((item) => ({
       photoId: item.Photo.photoID,
+      date: item.Photo.date,
+      number: item.Photo.number,
       seriesCode: item.Photo.seriesCode,
       seriesName: item.Photo.Series.seriesName,
       imagePath: item.Photo.imagePath,
       diptychIdCode: item.DiptychSVG.DiptychIdCode,
       fused: item.DiptychSVG.fused,
       shapeInCenterEdge: item.DiptychSVG.shapeInCenterEdge,
-      notes: item.notes, // Include the notes field
+      notes: item.notes,
     }));
 
     res.json(formattedFavorites);

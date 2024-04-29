@@ -90,7 +90,7 @@ const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspect
           </div>
         ))}
       </Slider>
-      <div style={{ textAlign: 'center', paddingTop: '30px' }}>
+      <div style={{ textAlign: 'center', paddingTop: '30px' }} className="carousel-fraction">
         {currentSlide + 1} / {totalSlides}
       </div>
     </div>

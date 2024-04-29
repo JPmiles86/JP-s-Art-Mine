@@ -71,7 +71,7 @@ const DiptychCarousel = ({ photoId, imagePath, frameId, diptychId, aspectRatio, 
           </div>
         ))}
       </Slider>
-      <div style={{ textAlign: 'center', paddingTop: '30px' }}>
+      <div style={{ textAlign: 'center', paddingTop: '30px' }} className="carousel-fraction">
         {currentSlide + 1} / {totalSlides}
       </div>
     </div>

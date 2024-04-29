@@ -14,9 +14,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { updateArtworkStatus, updateArtworkPendingEntry } from '../utils/artworkApi';
 import AuthModal from '../components/modals/AuthModal';
 import DownloadButton from '../components/layout/DownloadButton'; 
-import FullScreenButton from '../components/layout/FullScreenButton';
-import FullScreenViewCarousel from '../components/layout/FullScreenViewCarousel';
-
 
 interface Artwork {
   id: number;
@@ -32,7 +29,6 @@ const Purchase: React.FC = () => {
   const [diptychId, setDiptychId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const fullScreenContainerRef = useRef<HTMLDivElement>(null);
   const [areShapesVisible, setAreShapesVisible] = useState(false);
   const [fabricCanvas, setFabricCanvas] = useState<Map<string, fabric.Canvas>>(new Map());
   const [layoutSpecsMap, setLayoutSpecsMap] = useState<Map<string, LayoutSpecs>>(new Map());
@@ -49,7 +45,6 @@ const Purchase: React.FC = () => {
   const [carouselSelectedDiptychIdCode, setCarouselSelectedDiptychIdCode] = useState('');
   const { remainingTime, startCountdownTimer, renewTimer } = useTimer(artwork?.id || 0, userId);
   const [showModal, setShowModal] = useState(false);
-  const [fullScreenOpen, setFullScreenOpen] = useState(false);
 
   useEffect(() => {
     const checkAndInitialize = async () => {
@@ -104,14 +99,6 @@ const Purchase: React.FC = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-  };
-
-  const handleOpenFullScreen = () => {
-    setFullScreenOpen(true);
-  };
-
-  const handleCloseFullScreen = () => {
-    setFullScreenOpen(false);
   };
 
   useEffect(() => {
@@ -273,7 +260,6 @@ const Purchase: React.FC = () => {
         <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}>
           {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
         </button>
-        <FullScreenButton onClick={handleOpenFullScreen} />
       </div>
       <TimerDisplay
         remainingTime={remainingTime}
@@ -288,19 +274,6 @@ const Purchase: React.FC = () => {
         showAnonymousOption={false}
         isLikeTriggered={false}
         isAnonymousUser={isAnonymous}
-      />
-      <FullScreenViewCarousel
-        open={fullScreenOpen}
-        onClose={handleCloseFullScreen}
-        photoId={photoID ?? ''}
-        imagePath={photo.imagePath}
-        diptychId={diptychId!}
-        aspectRatio={photo.aspectRatio}
-        areShapesVisible={areShapesVisible}
-        containerRef={fullScreenContainerRef}
-        handleCanvasReady={handleCanvasReady}
-        handleLayoutSpecsReady={handleLayoutSpecsReady}
-        onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
       />
     </div>
   );

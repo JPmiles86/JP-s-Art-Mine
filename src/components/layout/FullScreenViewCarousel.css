@@ -1,0 +1,13 @@
+/* my-gallery/src/components/layout/FullScreenViewCarousel.css */
+
+.full-screen-carousel .slick-dots li button:before {
+    color: white;
+  }
+  
+  .full-screen-carousel .slick-dots li.slick-active button:before {
+    color: white;
+  }
+  
+  .full-screen-carousel .carousel-fraction {
+    color: white;
+  }
