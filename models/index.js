@@ -50,5 +50,6 @@ module.exports = {
     ArtworkLocations: require('./ArtworkLocations'),
     ProvenanceLocations: require('./ProvenanceLocations'),
     PurchaseProvenanceRecords: require('./PurchaseProvenanceRecords'),
+    PurchaseLocations: require('./PurchaseLocations'),
   };
   

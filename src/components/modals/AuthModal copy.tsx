@@ -7,7 +7,6 @@ import { makeStyles } from '@mui/styles';
 import SignIn from '../../pages/auth/SignIn';
 import SignUp from '../../pages/auth/SignUp';
 import AnonymousSignUp from '../../pages/auth/AnonymousSignUp';
-import PurchaseAnonymousSignUp from '../../pages/auth/PurchaseAnonymousSignUp';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
@@ -23,8 +22,6 @@ interface AuthModalProps {
   diptychIdCode?: string;
   onSuccessfulAuth?: () => void;
   isAnonymousUser: boolean;
-  isPurchasePage?: boolean;
-  handleBackToInquire?: () => void;
 }
 
 const useStyles = makeStyles(() => ({
@@ -47,7 +44,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption, isLikeTriggered, photoId, diptychIdCode, onSuccessfulAuth, isAnonymousUser, isPurchasePage = false, handleBackToInquire }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOption, isLikeTriggered, photoId, diptychIdCode, onSuccessfulAuth, isAnonymousUser }) => {
   const classes = useStyles();
   const [isSignUp, setIsSignUp] = useState(false);
   const { setIsAuthenticated } = useAuth();
@@ -115,15 +112,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
           <CloseIcon />
         </IconButton>
         {useStore.getState().isAnonymous ? (
-          isPurchasePage ? (
-            <PurchaseAnonymousSignUp
-              onClose={handleClose}
-              onSuccessfulAuth={handleSuccessfulAuth}
-              handleBackToInquire={handleBackToInquire} // Pass the optional prop
-            />
-          ) : (
-            <AnonymousSignUp onClose={handleClose} onSuccessfulAuth={handleSuccessfulAuth} />
-          )
+          <AnonymousSignUp onClose={handleClose} onSuccessfulAuth={handleSuccessfulAuth} />
         ) : (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -150,7 +139,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onClose, showAnonymousOptio
                   <Typography variant="body2" align="center" style={{ marginTop: '-10px', marginBottom: '20px' }}>
                     or...
                   </Typography>
-                  <button onClick={handleAnonymous} className={ButtonStyles.buttonLarge}>
+                  <button onClick={handleAnonymous} className={ButtonStyles.button}>
                     Like Anonymously
                   </button>
                   <Typography variant="body2" align="center" style={{ marginTop: '20px', marginBottom: '20px' }}>

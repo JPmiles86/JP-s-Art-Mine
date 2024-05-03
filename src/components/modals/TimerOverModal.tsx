@@ -50,8 +50,8 @@ const TimerOverModal: React.FC<TimerOverModalProps> = ({
         </Typography>
       </DialogContent>
       <DialogActions style={{ justifyContent: 'center' }}>
-        <button onClick={handleContinuePurchase} className={buttonStyles.button}>Continue Purchase</button>
-        <button onClick={backToInquire} className={buttonStyles.button}>Back to Inquire</button>
+        <button onClick={handleContinuePurchase} className={buttonStyles.buttonLarge}>Continue Purchase</button>
+        <button onClick={backToInquire} className={buttonStyles.buttonLarge}>Back to Inquire</button>
       </DialogActions>
     </Dialog>
   );

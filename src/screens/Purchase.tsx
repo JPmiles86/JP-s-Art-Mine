@@ -1,21 +1,20 @@
+// my-gallery/src/screens/Purchase.tsx
+
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Typography, Link } from '@mui/material';
-import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
-import DiptychCarousel from '../Diptychs/DiptychCarousel';
-import { LayoutSpecs } from '../Diptychs/LayoutSpecs'; 
+import { Typography, Link, Grid, Box, Button } from '@mui/material';
 import useStore from '../utils/store';
 import buttonStyles from './ButtonStyles.module.css';
 import TimerOverModal from '../components/modals/TimerOverModal';
 import useTimer from '../utils/useTimer';
 import TimerDisplay from '../utils/TimerDisplay';
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
 import { updateArtworkStatus, updateArtworkPendingEntry } from '../utils/artworkApi';
 import AuthModal from '../components/modals/AuthModal';
-import DownloadButton from '../components/layout/DownloadButton'; 
-import FullScreenButton from '../components/layout/FullScreenButton';
-import FullScreenViewCarousel from '../components/layout/FullScreenViewCarousel';
+import PurchaseArtworkDetails from './PurchaseArtworkDetails';
+import BuyerForm from '../components/forms/BuyerForm';
+import CollectorForm from '../components/forms/CollectorForm';
 
 
 interface Artwork {
@@ -27,29 +26,22 @@ interface Artwork {
 const Purchase: React.FC = () => {
   const { artworkID, filter, photoID } = useParams<{ artworkID: string; filter: string; photoID: string }>();
   const navigate = useNavigate();
-  const [photo, setPhoto] = useState<any>(null);
   const [artwork, setArtwork] = useState<Artwork | null>(null);
-  const [diptychId, setDiptychId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const fullScreenContainerRef = useRef<HTMLDivElement>(null);
-  const [areShapesVisible, setAreShapesVisible] = useState(false);
-  const [fabricCanvas, setFabricCanvas] = useState<Map<string, fabric.Canvas>>(new Map());
-  const [layoutSpecsMap, setLayoutSpecsMap] = useState<Map<string, LayoutSpecs>>(new Map());
-  const [diptych, setDiptych] = useState<any>(null);
-  const FrameId = useStore((state) => state.FrameId);
-  const [buyerInfo, setBuyerInfo] = useState(null);
   const [minimized, setMinimized] = useState(false);
   const userId = useStore((state) => state.userId);
-  const { isAuthenticated } = useAuth();
-  const [openAuthModal, setOpenAuthModal] = useState(false);
+ // const { isAuthenticated } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const isAnonymous = useStore((state) => state.isAnonymous);
   const [pendingEntryExists, setPendingEntryExists] = useState(false);
-  const [carouselSelectedDiptychIdCode, setCarouselSelectedDiptychIdCode] = useState('');
   const { remainingTime, startCountdownTimer, renewTimer } = useTimer(artwork?.id || 0, userId);
   const [showModal, setShowModal] = useState(false);
-  const [fullScreenOpen, setFullScreenOpen] = useState(false);
+  const [showSignUpNote, setShowSignUpNote] = useState(false);
+  const [showCollectorForm, setShowCollectorForm] = useState(false);
+  const [collectorInfo, setCollectorInfo] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(true);
+  const [buyerEmail, setBuyerEmail] = useState('');
+
 
   useEffect(() => {
     const checkAndInitialize = async () => {
@@ -59,15 +51,23 @@ const Purchase: React.FC = () => {
 
         if (response.data.status === 'Available') {
           if (userId) {
-            await updateArtworkStatus(response.data.artworkID, userId);
-            await updateArtworkPendingEntry(response.data.id, userId);
-            startCountdownTimer();
+            if (isAnonymous) {
+              // If the user is signed in as anonymous, open the AuthModal with the Anonymous User sign up form
+              setShowAuthModal(true);
+              setShowSignUpNote(true);
+            } else {
+              await updateArtworkStatus(response.data.artworkID, userId);
+              await updateArtworkPendingEntry(response.data.id, userId);
+              startCountdownTimer();
+            }
           } else {
             await updateArtworkStatus(response.data.artworkID, null);
             await updateArtworkPendingEntry(response.data.id, null);
             startCountdownTimer();
             setTimeout(() => {
+              // If there is no userId, open the AuthModal asking the user to sign up or sign in
               setShowAuthModal(true);
+              setShowSignUpNote(true);
             }, 500);
           }
         } else if (response.data.status === 'Pending Sale') {
@@ -86,7 +86,8 @@ const Purchase: React.FC = () => {
     };
 
     checkAndInitialize();
-  }, [artworkID, userId, startCountdownTimer]);
+  }, [artworkID, userId, startCountdownTimer, isAnonymous]);
+
 
   useEffect(() => {
     if (userId) {
@@ -106,12 +107,18 @@ const Purchase: React.FC = () => {
     setShowModal(false);
   };
 
-  const handleOpenFullScreen = () => {
-    setFullScreenOpen(true);
+  const handleSignUp = () => {
+    setShowAuthModal(true);
   };
 
-  const handleCloseFullScreen = () => {
-    setFullScreenOpen(false);
+  const handleBuyerInfoSubmit = (buyerInfo: any) => {
+    console.log('Buyer Info:', buyerInfo);
+    setShowCollectorForm(buyerInfo.isArtworkOwnerSameAsPurchaser === false);
+  };
+
+  const handleCollectorInfoSubmit = (collectorInfo: any) => {
+    console.log('Collector Info:', collectorInfo);
+    setCollectorInfo(collectorInfo);
   };
 
   useEffect(() => {
@@ -119,6 +126,23 @@ const Purchase: React.FC = () => {
       setShowModal(true);
     }
   }, [remainingTime]);
+
+  useEffect(() => {
+    const fetchBuyerEmail = async () => {
+      try {
+        const response = await axios.get(`/api/users/${userId}/profile`);
+        const { user } = response.data;
+        setBuyerEmail(user.email);
+      } catch (error) {
+        console.error('Error fetching buyer email:', error);
+      }
+    };
+
+    if (userId) {
+      fetchBuyerEmail();
+    }
+  }, [userId]);
+
 
   useEffect(() => {
     const checkPendingEntry = async () => {
@@ -134,78 +158,6 @@ const Purchase: React.FC = () => {
   
     checkPendingEntry();
   }, [artwork, userId]);  
-
-  const renderDownloadButton = (photoId: string | undefined, diptychIdCode: string) => {
-    if (!photoId) return null;
-  
-    const fabricCanvasRef = fabricCanvas.get(diptychIdCode);
-    const layoutSpecs = layoutSpecsMap.get(diptychIdCode);
-  
-    if (fabricCanvasRef && layoutSpecs) {
-      return (
-        <DownloadButton
-          photoId={photoId}
-          DiptychIdCode={diptychIdCode}
-          fabricCanvasRef={fabricCanvasRef}
-          layoutSpecs={layoutSpecs}
-          areShapesVisible={areShapesVisible} 
-        />
-      );
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    if (diptych && photo) {
-      const defaultFrameType = useStore.getState().frames[useStore.getState().FrameId - 1]?.frameType;
-      const defaultDiptychIdCode = `E_${photo.aspectRatio.replace(':', 'x')}_CD_P_${defaultFrameType.charAt(0).toUpperCase()}`;
-      setCarouselSelectedDiptychIdCode(defaultDiptychIdCode);
-    }
-  }, [diptych, photo]);
-
-   // Function to handle canvas ready from Diptych component
-   const handleCanvasReady = useCallback((canvasRef: fabric.Canvas, diptychIdCode: string) => {
-    console.log("handleCanvasReady called", { canvasRef, diptychIdCode });
-    updateFabricCanvas(diptychIdCode, canvasRef);
-  }, []);
-
-  const updateFabricCanvas = (diptychIdCode: string, canvas: fabric.Canvas) => {
-    setFabricCanvas(prevMap => {
-      const newMap = new Map(prevMap);
-      newMap.set(diptychIdCode, canvas);
-      return newMap;
-    });
-  };
-
-  const handleLayoutSpecsReady = useCallback((layoutSpecs: LayoutSpecs) => {
-    setLayoutSpecsMap(prevMap => new Map(prevMap).set(layoutSpecs.DiptychIdCode, layoutSpecs));
-  }, []);
-
-  const handleCarouselDiptychIdCodeChange = (code: string) => {
-    setCarouselSelectedDiptychIdCode(code);
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const photoResponse = await axios.get(`/api/photos/${photoID}`);
-        setPhoto(photoResponse.data);
-  
-        const artworkResponse = await axios.get(`/api/artworks/${artworkID}`);
-        setArtwork(artworkResponse.data);
-        setDiptychId(artworkResponse.data.diptychId);
-  
-        const diptychResponse = await axios.get(`/api/diptychs/${artworkResponse.data.diptychId}`);
-        setDiptych(diptychResponse.data);
-  
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-  
-    fetchData();
-  }, [photoID, artworkID]);
 
   if (isLoading) {
     return <Typography>Loading...</Typography>;
@@ -230,80 +182,78 @@ const Purchase: React.FC = () => {
   }
 
   return (
-    <div>
-      <Typography variant="h4" style={{ justifyContent: 'center', textAlign: 'center', marginTop: '55px' }}>Purchase Page</Typography>
-      <Typography style={{ justifyContent: 'center', textAlign: 'center', marginTop: '20px' }}>
-        {artwork?.artworkID} - {artwork?.status}
-      </Typography>
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-        <button className={buttonStyles.button} onClick={handleBackToInquire}>
-          Back to Inquire
-        </button>
-      </div>
-      {/* Display photo and artwork details */}
-      {diptychId === 1 ? (
-        <DiptychCarouselDynamic
-          photoId={photoID ?? ''}
-          imagePath={photo.imagePath}
-          frameId={3}
-          diptychId={diptychId}
-          aspectRatio={photo.aspectRatio}
-          areShapesVisible={areShapesVisible}
-          containerRef={containerRef}
-          handleCanvasReady={handleCanvasReady}
-          onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
-          handleLayoutSpecsReady={handleLayoutSpecsReady}
+      <div>
+        <Typography variant="h4" style={{ justifyContent: 'center', textAlign: 'center', marginTop: '60px' }}>
+          Checkout
+        </Typography>
+        <Typography style={{ justifyContent: 'center', textAlign: 'center', marginTop: '20px' }}>
+          Thanks for your interest in purchasing: <br></br>
+          <strong>{artwork?.artworkID}</strong>
+        </Typography>
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+          <button className={buttonStyles.navButton} style={{ margin: '10px 20px' }}onClick={handleBackToInquire}>
+            Choose Another Size Or Variation
+          </button>
+        </div>
+
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={7}>
+            {!userId || (userId && isAnonymous) ? (
+              <div style={{ marginTop: '40px' }}>
+                <Typography variant="h6" align="center" gutterBottom>
+                  {isAnonymous ? 'Hello Mr. or Mrs. Anonymous' : 'Welcome!'}
+                </Typography>
+                <Typography variant="body1" align="center" gutterBottom>
+                  To purchase an artwork, you need to{' '}
+                  {isAnonymous ? 'sign up with an email and password' : 'sign in or sign up'}.
+                </Typography>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                  <button className={buttonStyles.buttonLarge} onClick={handleSignUp}>
+                    {isAnonymous ? 'Sign Up' : 'Sign In or Sign Up'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Placeholder for forms */}
+                <BuyerForm onSubmit={handleBuyerInfoSubmit} userId={userId}/>
+                {showCollectorForm && (
+                  <CollectorForm onSubmit={handleCollectorInfoSubmit} userId={userId} buyerEmail={buyerEmail} />
+                )}
+              </>
+            )}
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <PurchaseArtworkDetails />
+          </Grid>
+        </Grid>
+
+        <TimerDisplay
+          remainingTime={remainingTime}
+          minimized={minimized}
+          toggleTimerDisplay={toggleTimerDisplay}
+          renewTimer={renewTimer}
         />
-      ) : (
-        <DiptychCarousel
-          photoId={photoID ?? ''}
-          imagePath={photo.imagePath}
-          frameId={3}
-          diptychId={diptychId}
-          aspectRatio={photo.aspectRatio}
-          areShapesVisible={areShapesVisible}
-          containerRef={containerRef}
-          handleCanvasReady={handleCanvasReady}
-          onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
-          handleLayoutSpecsReady={handleLayoutSpecsReady}
+        {showModal && (
+          <TimerOverModal
+            renewTimer={renewTimer}
+            backToInquire={handleBackToInquire}
+            onClose={handleCloseModal}
+            artworkID={artworkID ?? ''}
+            userId={userId}
+          />
+        )}
+        <AuthModal
+          open={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          showAnonymousOption={false}
+          isLikeTriggered={false}
+          isAnonymousUser={isAnonymous}
+          isPurchasePage={true}
+          handleBackToInquire={handleBackToInquire}
         />
-      )}
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-        {renderDownloadButton(photoID, carouselSelectedDiptychIdCode)}
-        <button className={buttonStyles.button} onClick={() => setAreShapesVisible(prev => !prev)}>
-          {areShapesVisible ? 'Hide Shapes' : 'Show Shapes'}
-        </button>
-        <FullScreenButton onClick={handleOpenFullScreen} />
       </div>
-      <TimerDisplay
-        remainingTime={remainingTime}
-        minimized={minimized}
-        toggleTimerDisplay={toggleTimerDisplay}
-        renewTimer={renewTimer}
-      />
-      {showModal && <TimerOverModal renewTimer={renewTimer} backToInquire={handleBackToInquire} onClose={handleCloseModal} artworkID={artworkID ?? ''} userId={userId} />}
-      <AuthModal
-        open={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        showAnonymousOption={false}
-        isLikeTriggered={false}
-        isAnonymousUser={isAnonymous}
-      />
-      <FullScreenViewCarousel
-        open={fullScreenOpen}
-        onClose={handleCloseFullScreen}
-        photoId={photoID ?? ''}
-        imagePath={photo.imagePath}
-        diptychId={diptychId!}
-        aspectRatio={photo.aspectRatio}
-        areShapesVisible={areShapesVisible}
-        containerRef={fullScreenContainerRef}
-        handleCanvasReady={handleCanvasReady}
-        handleLayoutSpecsReady={handleLayoutSpecsReady}
-        onDiptychIdCodeChange={handleCarouselDiptychIdCodeChange}
-      />
-    </div>
-  );
+    );
 };
 
 export default Purchase;

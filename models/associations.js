@@ -11,7 +11,7 @@ const { Photo, CameraModel, Series, Dates, ImageNumbers,
     Production, Shipping, ArtworkTransaction, Exhibition, ConditionReport,
     Document, Insurance, ArtworkTransfer, Loan, ArtworkImage, ExhibitionImage, 
     ArtworkTag, PrintShop, PrinterMachine, ShippingCompany, APSaleEligibility, 
-    UserNotification, ArtworkPending, ArtworkLocations, PurchaseProvenanceRecords } = models;
+    UserNotification, ArtworkPending, ArtworkLocations, PurchaseProvenanceRecords, PurchaseLocations } = models;
 
 // Artwork associations
 Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
@@ -296,3 +296,10 @@ PurchaseProvenanceRecords.belongsTo(Sale, { foreignKey: 'purchaseId' });
 Sale.hasMany(PurchaseProvenanceRecords, { foreignKey: 'purchaseId' });
 
 // Users.belongsTo(Users, { as: 'CreatedByUser', foreignKey: 'createdBy', constraints: false });
+
+// PurchaseLocations associations
+PurchaseLocations.belongsTo(Sale, { foreignKey: 'saleId' });
+Sale.hasMany(PurchaseLocations, { foreignKey: 'saleId' });
+
+PurchaseLocations.belongsTo(Locations, { foreignKey: 'locationId' });
+Locations.hasMany(PurchaseLocations, { foreignKey: 'locationId' });

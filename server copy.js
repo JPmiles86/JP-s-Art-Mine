@@ -7,7 +7,6 @@ const { Sequelize, Op } = require('sequelize');
 const sequelize = require('./config/database');
 const app = express();
 const port = 4000;
-const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
 require('./models/associations');
@@ -949,11 +948,8 @@ app.put('/api/users/:userId/profile', async (req, res) => {
       const existingPersonContactInfo = await PersonContactInfo.findOne({ where: { userId } });
 
       if (existingPersonContactInfo) {
-        // Update only the provided fields in the existing person contact info record
-        await existingPersonContactInfo.update({
-          ...existingPersonContactInfo.dataValues,
-          ...personContactInfo
-        });
+        // Update the existing person contact info record
+        await existingPersonContactInfo.update(personContactInfo);
       } else {
         // Create a new person contact info record
         await PersonContactInfo.create({
@@ -966,11 +962,8 @@ app.put('/api/users/:userId/profile', async (req, res) => {
       const existingOrganizationContactInfo = await OrganizationContactInfo.findOne({ where: { userId } });
 
       if (existingOrganizationContactInfo) {
-        // Update only the provided fields in the existing organization contact info record
-        await existingOrganizationContactInfo.update({
-          ...existingOrganizationContactInfo.dataValues,
-          ...organizationContactInfo
-        });
+        // Update the existing organization contact info record
+        await existingOrganizationContactInfo.update(organizationContactInfo);
       } else {
         // Create a new organization contact info record
         await OrganizationContactInfo.create({
@@ -985,193 +978,6 @@ app.put('/api/users/:userId/profile', async (req, res) => {
   } catch (error) {
     console.error('Error updating user profile:', error);
     res.status(500).send('Server Error');
-  }
-});
-
-app.put('/api/users/:userId/buyer-person-contact-info', async (req, res) => {
-  const { userId } = req.params;
-  const { firstName, middleName, lastName, primaryEmail, primaryPhone } = req.body;
-
-  try {
-    // Check if a person contact info record already exists for the user
-    const existingPersonContactInfo = await PersonContactInfo.findOne({ where: { userId } });
-
-    if (existingPersonContactInfo) {
-      // Update only the provided fields in the existing person contact info record
-      await existingPersonContactInfo.update({
-        firstName: firstName || existingPersonContactInfo.firstName,
-        middleName: middleName || existingPersonContactInfo.middleName,
-        lastName: lastName || existingPersonContactInfo.lastName,
-        primaryEmail: primaryEmail || existingPersonContactInfo.primaryEmail,
-        primaryPhone: primaryPhone || existingPersonContactInfo.primaryPhone,
-      });
-    } else {
-      // Create a new person contact info record
-      await PersonContactInfo.create({
-        userId,
-        firstName,
-        middleName,
-        lastName,
-        primaryEmail,
-        primaryPhone,
-      });
-    }
-
-    res.json({ message: 'Buyer person contact info updated successfully' });
-  } catch (error) {
-    console.error('Error updating buyer person contact info:', error);
-    res.status(500).send('Server Error');
-  }
-});
-
-app.put('/api/users/:userId/buyer-organization-contact-info', async (req, res) => {
-  const { userId } = req.params;
-  const { organizationName, primaryEmail, primaryPhone, contactPersonName } = req.body;
-
-  try {
-    // Check if an organization contact info record already exists for the user
-    const existingOrganizationContactInfo = await OrganizationContactInfo.findOne({ where: { userId } });
-
-    if (existingOrganizationContactInfo) {
-      // Update only the provided fields in the existing organization contact info record
-      await existingOrganizationContactInfo.update({
-        organizationName: organizationName || existingOrganizationContactInfo.organizationName,
-        primaryEmail: primaryEmail || existingOrganizationContactInfo.primaryEmail,
-        primaryPhone: primaryPhone || existingOrganizationContactInfo.primaryPhone,
-        contactPersonName: contactPersonName || existingOrganizationContactInfo.contactPersonName,
-      });
-    } else {
-      // Create a new organization contact info record
-      await OrganizationContactInfo.create({
-        userId,
-        organizationName,
-        primaryEmail,
-        primaryPhone,
-        contactPersonName,
-      });
-    }
-
-    res.json({ message: 'Buyer organization contact info updated successfully' });
-  } catch (error) {
-    console.error('Error updating buyer organization contact info:', error);
-    res.status(500).send('Server Error');
-  }
-});
-
-// Check if an email exists and retrieve the associated user's information
-app.get('/api/users/check-email/:email', async (req, res) => {
-  const { email } = req.params;
-  try {
-    const user = await Users.findOne({ where: { email } });
-    if (user) {
-      console.log('Collector userId:', user.userId);
-      res.status(200).json({ userId: user.userId, entityType: user.entityType });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Error checking email:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Create a new collector user and associate the buyer's user ID
-app.post('/api/users/create-collector', async (req, res) => {
-  const { personInfo, organizationInfo, buyerUserId } = req.body;
-
-  try {
-    let newUser;
-    let contactInfo;
-    let existingUser;
-
-    if (personInfo) {
-      existingUser = await Users.findOne({ where: { email: personInfo.primaryEmail } });
-      if (existingUser) {
-        newUser = existingUser;
-      } else {
-        const hashedPassword = await bcrypt.hash(personInfo.buyerEmail || 'default_password', 10);
-        
-        // Generate a random number between 1 and 20
-        const randomNumber = Math.floor(Math.random() * 20) + 1;
-        const paddedNumber = randomNumber.toString().padStart(2, '0');
-
-        newUser = await Users.create({
-          isAnonymous: false,
-          role: 'RegularUser',
-          entityType: 'Person',
-          email: personInfo.primaryEmail,
-          password: hashedPassword,
-          authMethod: 'email',
-          profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
-          createdBy: buyerUserId,
-          creationReason: 'New Collector Sign-up',
-        });
-        const username = `${personInfo.primaryEmail.split('@')[0]}#${newUser.userId}`;
-        await newUser.update({ username });
-        contactInfo = await PersonContactInfo.create({ ...personInfo, userId: newUser.userId });
-      }
-    } else if (organizationInfo) {
-      existingUser = await Users.findOne({ where: { email: organizationInfo.primaryEmail } });
-      if (existingUser) {
-        newUser = existingUser;
-      } else {
-        const hashedPassword = await bcrypt.hash(organizationInfo.buyerEmail || 'default_password', 10);
-
-        // Generate a random number between 1 and 20
-        const randomNumber = Math.floor(Math.random() * 20) + 1;
-        const paddedNumber = randomNumber.toString().padStart(2, '0');
-
-        newUser = await Users.create({
-          isAnonymous: false,
-          role: 'RegularUser',
-          entityType: 'Organization',
-          email: organizationInfo.primaryEmail,
-          password: hashedPassword,
-          authMethod: 'email',
-          profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
-          createdBy: buyerUserId,
-          creationReason: 'New Collector Sign-up',
-        });
-        const username = `${organizationInfo.primaryEmail.split('@')[0]}#${newUser.userId}`;
-        await newUser.update({ username });
-        contactInfo = await OrganizationContactInfo.create({ ...organizationInfo, userId: newUser.userId });
-      }
-    }
-
-    const newCollectorCreated = !existingUser;
-    console.log('Collector userId:', newUser.userId);
-    res.status(201).json({ userId: newUser.userId, newCollectorCreated, buyerEmail: personInfo?.buyerEmail || organizationInfo?.buyerEmail });
-  } catch (error) {
-    console.error('Error creating collector user:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Update the existing collector's person contact information
-app.put('/api/users/:userId/collector-person-contact-info', async (req, res) => {
-  const { userId } = req.params;
-  const { personInfo } = req.body;
-
-  try {
-    await PersonContactInfo.update(personInfo, { where: { userId } });
-    res.status(200).json({ message: 'Collector person contact info updated successfully' });
-  } catch (error) {
-    console.error('Error updating collector person contact info:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Update the existing collector's organization contact information
-app.put('/api/users/:userId/collector-organization-contact-info', async (req, res) => {
-  const { userId } = req.params;
-  const { organizationInfo } = req.body;
-
-  try {
-    await OrganizationContactInfo.update(organizationInfo, { where: { userId } });
-    res.status(200).json({ message: 'Collector organization contact info updated successfully' });
-  } catch (error) {
-    console.error('Error updating collector organization contact info:', error);
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
