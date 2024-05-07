@@ -31,8 +31,8 @@ export interface Location {
 const LocationForm: React.FC<LocationFormProps> = ({ location, onSubmit, onRemove, isRequired = false, locationIndex, isNewLocation = false }) => {
   const [isEditing, setIsEditing] = useState(isNewLocation);
 
-  console.log('Rendering LocationForm with isNewLocation:', isNewLocation);
-  console.log('Rendering LocationForm with isEditing:', isEditing);
+  //console.log('Rendering LocationForm with isNewLocation:', isNewLocation);
+ // console.log('Rendering LocationForm with isEditing:', isEditing);
 
   const [formData, setFormData] = useState({
     ...location,

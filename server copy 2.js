@@ -1253,31 +1253,11 @@ app.post('/api/users/:userId/locations', async (req, res) => {
   const { userId } = req.params;
   const { locationData } = req.body;
 
-  console.log('Received locationData:', locationData);
-
   try {
-    // Validate the locationData object
-    if (
-      !locationData ||
-      !locationData.addressLine1 ||
-      !locationData.city ||
-      !locationData.stateProvince ||
-      !locationData.postalCode ||
-      !locationData.country
-    ) {
-      console.log('Invalid location data:', locationData);
-      return res.status(400).json({ error: 'Invalid location data' });
-    }
-
     const location = await Locations.create({
-      businessName: locationData.businessName,
-      addressLine1: locationData.addressLine1,
-      addressLine2: locationData.addressLine2,
-      city: locationData.city,
-      stateProvince: locationData.stateProvince,
-      postalCode: locationData.postalCode,
-      country: locationData.country,
+      ...locationData,
       locationType: locationData.locationType === 'Other' ? locationData.customLocationType : locationData.locationType,
+      businessName: locationData.businessName, // Add businessName field
     });
 
     const userLocation = {
@@ -1286,12 +1266,11 @@ app.post('/api/users/:userId/locations', async (req, res) => {
     };
 
     const createdUserLocation = await UserLocations.create(userLocation);
-    const createdLocation = await Locations.findByPk(location.locationId);
 
-    res.json(createdLocation);
+    res.json(createdUserLocation);
   } catch (error) {
     console.error('Error creating user location:', error);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).send('Server Error');
   }
 });
 
@@ -1299,22 +1278,7 @@ app.put('/api/users/:userId/locations/:locationId', async (req, res) => {
   const { userId, locationId } = req.params;
   const { locationData } = req.body;
 
-  console.log('Received locationData:', locationData); // Log the received locationData
-
   try {
-    // Validate the locationData object
-    if (
-      !locationData ||
-      !locationData.addressLine1 ||
-      !locationData.city ||
-      !locationData.stateProvince ||
-      !locationData.postalCode ||
-      !locationData.country
-    ) {
-      console.log('Invalid location data:', locationData); // Log the invalid locationData
-      return res.status(400).json({ error: 'Invalid location data' });
-    }
-
     const userLocation = await UserLocations.findOne({
       where: {
         userId: userId,
@@ -1330,17 +1294,15 @@ app.put('/api/users/:userId/locations/:locationId', async (req, res) => {
       {
         ...locationData,
         locationType: locationData.locationType === 'Other' ? locationData.customLocationType : locationData.locationType,
-        businessName: locationData.businessName,
+        businessName: locationData.businessName, // Add businessName field
       },
       { where: { locationId: locationId } }
     );
 
-    const updatedLocation = await Locations.findByPk(locationId);
-
-    res.json(updatedLocation);
+    res.json({ message: 'User location updated successfully' });
   } catch (error) {
     console.error('Error updating user location:', error);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).send('Server Error');
   }
 });
 
