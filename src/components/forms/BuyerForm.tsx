@@ -34,6 +34,10 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
     setIsEditing(false);
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -70,7 +74,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
         </Grid>
       ) : (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '0px', backgroundColor: isEditing ? '#f5f5f5' : '#ffffff' }}>
-          {entityType && isEditing && (
+          {isEditing && (
             <Grid item xs={12}>
               <Typography variant="body1">
                 <strong>Buyer is a:</strong> {entityType}
@@ -79,7 +83,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
                 Edit Buyer Type
               </button>
             </Grid>
-          )} 
+          )}
           {entityType === 'Person' && (
             <Grid item xs={12}>
               <BuyerPersonContactInfoForm
@@ -87,6 +91,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
                 initialValues={personContactInfo}
                 isEditing={isEditing}
                 userId={userId}
+                onEditClick={handleEditClick}
               />
             </Grid>
           )}
@@ -97,6 +102,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
                 initialValues={organizationContactInfo}
                 isEditing={isEditing}
                 userId={userId}
+                onEditClick={handleEditClick}
               />
             </Grid>
           )}

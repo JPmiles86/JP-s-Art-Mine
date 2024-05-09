@@ -46,6 +46,7 @@ const Purchase: React.FC = () => {
   const [deliveryLocation, setDeliveryLocation] = useState<DeliveryLocation | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [artworkPrice, setArtworkPrice] = useState(0);
+  const [buyerInfo, setBuyerInfo] = useState<any>(null);
 
   useEffect(() => {
     const checkAndInitialize = async () => {
@@ -106,7 +107,7 @@ const Purchase: React.FC = () => {
       fetchArtworkDetails();
     }
   }, [artworkID]);
-  
+
   useEffect(() => {
     if (userId) {
       updateArtworkPendingEntry(artwork?.id || 0, userId);
@@ -136,6 +137,7 @@ const Purchase: React.FC = () => {
 
   const handleBuyerInfoSubmit = (buyerInfo: any) => {
     console.log('Buyer Info:', buyerInfo);
+    setBuyerInfo(buyerInfo);
     setShowCollectorForm(buyerInfo.isArtworkOwnerSameAsPurchaser === false);
     if (!showCollectorForm) {
       setShowDeliveryForm(true);
@@ -256,6 +258,8 @@ const Purchase: React.FC = () => {
                 userId={userId}
                 onSubmit={handleDeliveryLocationSubmit}
                 isActive={showDeliveryForm}
+                buyerInfo={buyerInfo}
+                collectorInfo={collectorInfo}
               />
               <PaymentForm
                 isActive={showPaymentForm}

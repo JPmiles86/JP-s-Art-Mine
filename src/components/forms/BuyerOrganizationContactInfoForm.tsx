@@ -10,9 +10,10 @@ interface BuyerOrganizationContactInfoFormProps {
   initialValues?: any;
   isEditing?: boolean;
   userId: number;
+  onEditClick: () => void;
 }
 
-const BuyerOrganizationContactInfoForm: React.FC<BuyerOrganizationContactInfoFormProps> = ({ onSubmit, initialValues, isEditing: isEditingProp = true, userId }) => {
+const BuyerOrganizationContactInfoForm: React.FC<BuyerOrganizationContactInfoFormProps> = ({ onSubmit, initialValues, isEditing: isEditingProp = true, userId, onEditClick }) => {
   const [formData, setFormData] = useState(initialValues || {});
   const [isEditing, setIsEditing] = useState(isEditingProp);
   const [isArtworkOwnerSameAsPurchaser, setIsArtworkOwnerSameAsPurchaser] = useState(true);
@@ -28,6 +29,11 @@ const BuyerOrganizationContactInfoForm: React.FC<BuyerOrganizationContactInfoFor
       ...formData,
       [event.target.name]: event.target.value,
     });
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    onEditClick();
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -168,7 +174,7 @@ const BuyerOrganizationContactInfoForm: React.FC<BuyerOrganizationContactInfoFor
           </Grid>
           <button
             className={buttonStyles.buttonLarge}
-            onClick={() => setIsEditing(true)}
+            onClick={handleEditClick}
           >
             Edit Buyer Info
           </button>
