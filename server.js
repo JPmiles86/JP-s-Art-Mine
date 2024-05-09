@@ -44,6 +44,8 @@ const cors = require('cors');
 const fs = require('fs');
 const cron = require('node-cron');
 const http = require('http').createServer(app); 
+const stripe = require('stripe')('sk_test_51PDsBALgrr7kNbZdltUvNjrZgbhd2ro4kb3GwYPupZHhKiDC75OG46U0Bywwp7FXwA3qY2IuxQAetTlkpTI3qeD200t9VmR67P');
+
 const io = require('socket.io')(http, {
   cors: {
     origin: 'http://localhost:3000',
@@ -1610,6 +1612,28 @@ cron.schedule('* * * * *', async () => {
     }
   } catch (error) {
     console.error('Error during scheduled check of artwork pendings:', error);
+  }
+});
+
+app.post('/api/createPaymentIntent', async (req, res) => {
+  const { userId, artworkId, paymentMethodId, artworkPrice } = req.body;
+
+  try {
+    // Create a PaymentIntent with the artwork price and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: artworkPrice * 100, // Stripe expects the amount in cents
+      currency: 'usd', // Replace with the appropriate currency
+      payment_method: paymentMethodId,
+      confirmation_method: 'manual',
+      confirm: true,
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error('Error creating PaymentIntent:', error);
+    res.status(500).json({ error: 'An error occurred while creating the PaymentIntent' });
   }
 });
 

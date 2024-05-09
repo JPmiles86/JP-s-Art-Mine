@@ -57,7 +57,7 @@ const BuyerPersonContactInfoForm: React.FC<BuyerPersonContactInfoFormProps> = ({
   };
 
   return (
-    <div style={{ padding: '20px', backgroundColor: isEditing ? '#f5f5f5' : '#ffffff' }}>
+    <div style={{ padding: '40px', backgroundColor: isEditing ? '#f5f5f5' : '#ffffff' }}>
       {isEditing ? (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>

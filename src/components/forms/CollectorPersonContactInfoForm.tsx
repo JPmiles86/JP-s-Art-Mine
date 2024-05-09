@@ -10,9 +10,10 @@ interface CollectorPersonContactInfoFormProps {
   isEditing?: boolean;
   buyerUserId: number;
   buyerEmail: string;
+  onEditClick: () => void;
 }
 
-const CollectorPersonContactInfoForm: React.FC<CollectorPersonContactInfoFormProps> = ({ onSubmit, isEditing: isEditingProp = true, buyerUserId, buyerEmail }) => {
+const CollectorPersonContactInfoForm: React.FC<CollectorPersonContactInfoFormProps> = ({ onSubmit, isEditing: isEditingProp = true, buyerUserId, buyerEmail, onEditClick }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -27,6 +28,11 @@ const CollectorPersonContactInfoForm: React.FC<CollectorPersonContactInfoFormPro
       ...formData,
       [event.target.name]: event.target.value,
     });
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    onEditClick();
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -73,7 +79,7 @@ const CollectorPersonContactInfoForm: React.FC<CollectorPersonContactInfoFormPro
           </Grid>
         </form>
       ) : (
-        <div>
+        <>
           <Grid container spacing={2}>
             <Grid item xs={12} style={{ marginTop: '0px', marginBottom: '20px' }}>
               <Typography>{formData.firstName} {formData.middleName} {formData.lastName}</Typography>
@@ -81,10 +87,10 @@ const CollectorPersonContactInfoForm: React.FC<CollectorPersonContactInfoFormPro
               <Typography>{formData.primaryPhone}</Typography>
             </Grid>
           </Grid>
-          <button className={buttonStyles.buttonLarge} onClick={() => setIsEditing(true)}>
+          <button className={buttonStyles.buttonLarge} onClick={handleEditClick}>
             Edit Collector Info
           </button>
-        </div>
+        </>
       )}
     </div>
   );

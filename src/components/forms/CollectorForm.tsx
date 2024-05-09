@@ -27,8 +27,12 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
     setCollectorInfo(collectorInfo);
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
   return (
-    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '0px' }}>
+    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
         <strong>Collector Information</strong>
       </Typography>
@@ -51,7 +55,7 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
         </Grid>
       ) : (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '0px', backgroundColor: isEditing ? '#f5f5f5' : '#ffffff' }}>
-          {entityType && isEditing && (
+          {isEditing && (
             <Grid item xs={12}>
               <Typography variant="body1">
                 <strong>Collector is a:</strong> {entityType}
@@ -68,6 +72,7 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
                 isEditing={isEditing}
                 buyerUserId={userId}
                 buyerEmail={buyerEmail}
+                onEditClick={handleEditClick}
               />
             </Grid>
           )}
@@ -78,11 +83,12 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
                 isEditing={isEditing}
                 buyerUserId={userId}
                 buyerEmail={buyerEmail}
+                onEditClick={handleEditClick}
               />
             </Grid>
           )}
           {!isEditing && collectorInfo && collectorInfo.newCollectorCreated && (
-            <Grid item xs={12} >
+            <Grid item xs={12}>
               <Typography variant="body2" style={{ marginTop: '10px', marginBottom: '30px' }}>
                 Please Note: An account has been created for the collector.
                 <br />

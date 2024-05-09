@@ -10,6 +10,7 @@ interface LocationFormDeliveryProps {
   onSubmit: (location: Location) => void;
   isRequired?: boolean;
   isNewLocation?: boolean;
+  isEditing: boolean;
 }
 
 export interface Location {
@@ -26,7 +27,7 @@ export interface Location {
   isNewLocation?: boolean;
 }
 
-const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, onSubmit, isRequired = false, isNewLocation = false }) => {
+const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, onSubmit, isRequired = false, isNewLocation = false, isEditing }) => {
     const [formData, setFormData] = useState({
       locationId: location.locationId || 0,
       businessName: location.businessName || '',
@@ -106,7 +107,7 @@ const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, o
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff' }}>
       <Grid container spacing={2} justifyContent="center">
       <Grid item xs={12}>
           <Typography variant="h6" style={{ textAlign: 'center', marginBottom: '10px' }}>

@@ -52,7 +52,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
   }, [userId]);
 
   return (
-    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '0px' }}>
+    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
         <strong>Buyer Information</strong>
       </Typography>

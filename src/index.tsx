@@ -9,6 +9,8 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import GlobalStyles from './GlobalStyles';
 import '@fontsource/eb-garamond';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 
 const rootElement = document.getElementById('root');
 
@@ -22,12 +24,16 @@ const theme = createTheme({
   },
 });
 
+const stripePromise = loadStripe('pk_test_51PDsBALgrr7kNbZdoy9fFIPgPTWjxiUq97ZCuC1nQ0fXavoQBB1TUEdUDQAdm2iQKOiLJULnXFQOB7OBg22JqiLh002F8quubh');
+
 createRoot(rootElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <GlobalStyles />
-      <App />
+      <Elements stripe={stripePromise}>
+        <App />
+      </Elements>
     </ThemeProvider>
   </React.StrictMode>
 );

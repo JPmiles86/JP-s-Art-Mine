@@ -23,9 +23,10 @@ export interface DeliveryLocation {
 interface DeliveryInformationFormProps {
   userId: number;
   onSubmit: (deliveryLocation: Location) => void;
+  isActive: boolean;
 }
 
-const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userId, onSubmit }) => {
+const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userId, onSubmit, isActive }) => {
     const [savedLocations, setSavedLocations] = useState<Location[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -99,10 +100,20 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
   };
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5', padding: '0px' }}>
-      <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
+    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
+      <Typography
+        variant="h6"
+        style={{
+          backgroundColor: isActive ? '#000000' : '#424242',
+          color: '#ffffff',
+          padding: '20px',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}
+      >
         <strong>Delivery Information</strong>
       </Typography>
+      {isActive && (
       <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px' }}>
         {selectedLocation && !isEditing ? (
           <>
@@ -158,12 +169,14 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                   onSubmit={handleLocationSubmit}
                   isRequired={true}
                   isNewLocation={!selectedLocation}
+                  isEditing={isEditing}
                 />
               </Grid>
             )}
           </>
         )}
       </Grid>
+       )}
     </div>
   );
 }

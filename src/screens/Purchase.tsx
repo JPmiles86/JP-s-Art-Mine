@@ -16,7 +16,7 @@ import PurchaseArtworkDetails from './PurchaseArtworkDetails';
 import BuyerForm from '../components/forms/BuyerForm';
 import CollectorForm from '../components/forms/CollectorForm';
 import DeliveryInformationForm, { DeliveryLocation } from '../components/forms/DeliveryInformationForm';
-
+import PaymentForm from '../components/forms/PaymentForm';
 
 interface Artwork {
   id: number;
@@ -44,7 +44,8 @@ const Purchase: React.FC = () => {
   const [buyerEmail, setBuyerEmail] = useState('');
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
   const [deliveryLocation, setDeliveryLocation] = useState<DeliveryLocation | null>(null);
-
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [artworkPrice, setArtworkPrice] = useState(0);
 
   useEffect(() => {
     const checkAndInitialize = async () => {
@@ -91,7 +92,21 @@ const Purchase: React.FC = () => {
     checkAndInitialize();
   }, [artworkID, userId, startCountdownTimer, isAnonymous]);
 
-
+  useEffect(() => {
+    const fetchArtworkDetails = async () => {
+      try {
+        const response = await axios.get(`/api/artworks/${artworkID}/details`);
+        setArtworkPrice(response.data.price);
+      } catch (error) {
+        console.error('Error fetching artwork details:', error);
+      }
+    };
+  
+    if (artworkID) {
+      fetchArtworkDetails();
+    }
+  }, [artworkID]);
+  
   useEffect(() => {
     if (userId) {
       updateArtworkPendingEntry(artwork?.id || 0, userId);
@@ -114,6 +129,11 @@ const Purchase: React.FC = () => {
     setShowAuthModal(true);
   };
 
+  const handlePaymentSuccess = () => {
+    // Handle successful payment
+    console.log('Payment successful');
+  };
+
   const handleBuyerInfoSubmit = (buyerInfo: any) => {
     console.log('Buyer Info:', buyerInfo);
     setShowCollectorForm(buyerInfo.isArtworkOwnerSameAsPurchaser === false);
@@ -131,6 +151,7 @@ const Purchase: React.FC = () => {
   const handleDeliveryLocationSubmit = (location: DeliveryLocation) => {
     console.log('Delivery Location:', location);
     setDeliveryLocation(location);
+    setShowPaymentForm(true);
   };
 
   useEffect(() => {
@@ -231,9 +252,18 @@ const Purchase: React.FC = () => {
               {showCollectorForm && (
                 <CollectorForm onSubmit={handleCollectorInfoSubmit} userId={userId} buyerEmail={buyerEmail} />
               )}
-              {showDeliveryForm && (
-                <DeliveryInformationForm userId={userId} onSubmit={handleDeliveryLocationSubmit} />
-              )}
+              <DeliveryInformationForm
+                userId={userId}
+                onSubmit={handleDeliveryLocationSubmit}
+                isActive={showDeliveryForm}
+              />
+              <PaymentForm
+                isActive={showPaymentForm}
+                userId={userId}
+                artworkId={artwork?.id || 0}
+                artworkPrice={artworkPrice}
+                onPaymentSuccess={handlePaymentSuccess}
+              />
             </>
           )}
         </Grid>
