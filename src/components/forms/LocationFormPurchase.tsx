@@ -1,11 +1,11 @@
-// my-gallery/src/components/forms/LocationFormDelivery.tsx
+// my-gallery/src/components/forms/LocationFormPurchase.tsx
 
 import React, { useState } from 'react';
 import { TextField, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Grid, Typography } from '@mui/material';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
 import { Autocomplete } from '@react-google-maps/api';
 
-interface LocationFormDeliveryProps {
+interface LocationFormPurchaseProps {
   location: Location;
   onSubmit: (location: Location) => void;
   onCancel: () => void;
@@ -28,7 +28,7 @@ export interface Location {
   isNewLocation?: boolean;
 }
 
-const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, onSubmit, onCancel, isRequired = false, isNewLocation = false, isEditing }) => {
+const LocationFormPurchase: React.FC<LocationFormPurchaseProps> = ({ location, onSubmit, onCancel, isRequired = false, isNewLocation = false, isEditing }) => {
     const [formData, setFormData] = useState({
       locationId: location.locationId || 0,
       businessName: location.businessName || '',
@@ -269,4 +269,4 @@ const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, o
   );
 };
 
-export default LocationFormDelivery;
+export default LocationFormPurchase;

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, SelectChangeEvent, TextField, Select, MenuItem } from '@mui/material';
 import axios from 'axios';
-import LocationFormDelivery, { Location } from './LocationFormDelivery';
+import LocationFormPurchase, { Location } from './LocationFormPurchase';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
 
 export interface DeliveryLocation {
@@ -326,7 +326,7 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                     </>
                   ) : (
                     <Grid item xs={12}>
-                      <LocationFormDelivery
+                      <LocationFormPurchase
                         location={selectedLocation || ({} as Location)}
                         onSubmit={handleLocationSubmit}
                         onCancel={handleCancelNewLocation}

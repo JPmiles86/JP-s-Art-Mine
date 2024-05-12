@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, SelectChangeEvent } from '@mui/material';
 import axios from 'axios';
-import LocationFormDelivery, { Location } from './LocationFormDelivery';
+import LocationFormPurchase, { Location } from './LocationFormPurchase';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
 
 interface BillingInformationFormProps {
@@ -222,7 +222,7 @@ const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId,
             </>
           ) : isEditing && (
             <Grid item xs={12}>
-              <LocationFormDelivery
+              <LocationFormPurchase
                 location={selectedLocation || ({} as Location)}
                 onSubmit={handleLocationSubmit}
                 onCancel={handleCancelNewLocation}
