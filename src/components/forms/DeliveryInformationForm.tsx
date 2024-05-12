@@ -60,6 +60,11 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
     setIsEditing(true);
   };
 
+  const handleCancelNewLocation = () => {
+    setSelectedLocation(null);
+    setIsEditing(false);
+  };
+
   const handleLocationSubmit = async (location: Location) => {
     try {
       let updatedLocation;
@@ -288,8 +293,8 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                 <>
                   {!isEditing && savedLocations.length > 0 ? (
                     <>
-                      <Grid item xs={12}>
-                        <Typography variant="body1">Would you like to deliver to one of your existing saved locations?</Typography>
+                      <Grid item xs={12} style={{ marginTop: '20px'}}>
+                        <Typography variant="body1"><strong>Would you like to deliver to one of your existing saved locations?</strong></Typography>
                       </Grid>
                       <Grid container item xs={12} spacing={3} justifyContent="center">
                         {savedLocations.map((savedLocation, index) => (
@@ -324,6 +329,7 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                       <LocationFormDelivery
                         location={selectedLocation || ({} as Location)}
                         onSubmit={handleLocationSubmit}
+                        onCancel={handleCancelNewLocation}
                         isRequired={true}
                         isNewLocation={!selectedLocation}
                         isEditing={isEditing}

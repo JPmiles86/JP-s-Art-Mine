@@ -8,6 +8,7 @@ import { Autocomplete } from '@react-google-maps/api';
 interface LocationFormDeliveryProps {
   location: Location;
   onSubmit: (location: Location) => void;
+  onCancel: () => void;
   isRequired?: boolean;
   isNewLocation?: boolean;
   isEditing: boolean;
@@ -27,7 +28,7 @@ export interface Location {
   isNewLocation?: boolean;
 }
 
-const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, onSubmit, isRequired = false, isNewLocation = false, isEditing }) => {
+const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, onSubmit, onCancel, isRequired = false, isNewLocation = false, isEditing }) => {
     const [formData, setFormData] = useState({
       locationId: location.locationId || 0,
       businessName: location.businessName || '',
@@ -258,6 +259,11 @@ const LocationFormDelivery: React.FC<LocationFormDeliveryProps> = ({ location, o
         <button type="submit" className={buttonStyles.button}>
           Save Location
         </button>
+        {isNewLocation && (
+          <button type="button" className={buttonStyles.button} onClick={onCancel}>
+            Cancel
+          </button>
+        )}
       </div>
     </form>
   );
