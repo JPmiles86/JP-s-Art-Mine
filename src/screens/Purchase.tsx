@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Typography, Link, Grid } from '@mui/material';
+import { Typography, Link, Grid, Box } from '@mui/material';
 import useStore from '../utils/store';
 import buttonStyles from './ButtonStyles.module.css';
 import TimerOverModal from '../components/modals/TimerOverModal';
@@ -252,8 +252,8 @@ const Purchase: React.FC = () => {
   }
   
   return (
-    <div>
-      <Typography variant="h4" style={{ justifyContent: 'center', textAlign: 'center', marginTop: '60px' }}>
+    <Box>
+      <Typography variant="h4" align="center" mt={8}>
         Checkout
       </Typography>
       <Typography style={{ justifyContent: 'center', textAlign: 'center', marginTop: '20px' }}>
@@ -266,9 +266,11 @@ const Purchase: React.FC = () => {
         </button>
       </div>
   
+      
       <Grid container spacing={4}>
         <Grid item xs={12} md={7}>
-          {!userId || (userId && isAnonymous) ? (
+          <Box position="relative">
+            {!userId || (userId && isAnonymous) ? (
             <div style={{ marginTop: '40px' }}>
               <Typography variant="h6" align="center" gutterBottom>
                 {isAnonymous ? 'Hello Mr. or Mrs. Anonymous' : 'Welcome!'}
@@ -323,10 +325,13 @@ const Purchase: React.FC = () => {
                 onConfirmPurchase={handleConfirmPurchase}
               />
             </>
-          )}
+            )}
+          </Box>
         </Grid>
         <Grid item xs={12} md={5}>
-          <PurchaseArtworkDetails />
+          <Box position="sticky" top={0}>
+            <PurchaseArtworkDetails />
+          </Box>
         </Grid>
       </Grid>
   
@@ -354,7 +359,7 @@ const Purchase: React.FC = () => {
         isPurchasePage={true}
         handleBackToInquire={handleBackToInquire}
       />
-    </div>
+    </Box>
   );
 }
 
