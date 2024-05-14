@@ -65,6 +65,11 @@ const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId,
     setIsSelecting(true);
   };
 
+  const handleUseDeliveryAddress = () => {
+    setSelectedLocation(deliveryLocation);
+    onSubmit(deliveryLocation!);
+  };
+
   const handleLocationSubmit = async (location: Location) => {
     console.log('Submitting location:', location);
     try {
@@ -127,15 +132,32 @@ const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId,
           textAlign: 'center',
         }}
       >
-        <strong>Billing Information</strong>
+        <strong>Step 3: Billing Information</strong>
       </Typography>
       {isActive && (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px' }}>
-          {selectedLocation && !isEditing && !isSelecting ? (
+          {!selectedLocation && !isEditing && !isSelecting && (
+            <>
+              <Grid item xs={12}>
+                <button className={buttonStyles.buttonXLarge} onClick={handleUseDeliveryAddress}>
+                  Use Delivery Address
+                </button>
+              </Grid>
+              <Grid item xs={12} style={{ marginBottom: '0px' }}>
+                <Typography variant="h6">OR</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <button className={buttonStyles.buttonXLarge} onClick={() => setIsSelecting(true)}>
+                  Use a Different Address
+                </button>
+              </Grid>
+            </>
+          )}
+          {selectedLocation && !isEditing && !isSelecting && (
             <>
               <Grid item xs={12}>
                 <Typography variant="body1">
-                  <strong>Selected Billing Location:</strong>
+                  <strong>Selected Billing Address:</strong>
                 </Typography>
                 <Typography variant="body2">{selectedLocation.addressLine1}</Typography>
                 {selectedLocation.addressLine2 && <Typography variant="body2">{selectedLocation.addressLine2}</Typography>}
@@ -154,30 +176,8 @@ const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId,
                 </button>
               </Grid>
             </>
-          ) : !isEditing && !isSelecting ? (
-            <>
-              <Grid item xs={12}>
-                <Typography variant="body1">
-                  <strong>Selected Billing Location:</strong>
-                </Typography>
-                <Typography variant="body2">{deliveryLocation?.addressLine1}</Typography>
-                {deliveryLocation?.addressLine2 && <Typography variant="body2">{deliveryLocation.addressLine2}</Typography>}
-                <Typography variant="body2">
-                  {deliveryLocation?.city}, {deliveryLocation?.stateProvince}
-                </Typography>
-                <Typography variant="body2">{deliveryLocation?.postalCode}</Typography>
-                <Typography variant="body2">{deliveryLocation?.country}</Typography>
-              </Grid>
-              <Grid item xs={12} style={{ marginBottom: '30px' }}>
-                <Typography variant="h6">OR</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <button className={buttonStyles.buttonXLarge} onClick={() => setIsSelecting(true)}>
-                  Change Billing Address
-                </button>
-              </Grid>
-            </>
-          ) : isSelecting && !isEditing ? (
+          )}
+          {isSelecting && !isEditing && (
             <>
               {savedLocations.length > 0 ? (
                 <>
@@ -213,14 +213,15 @@ const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId,
                 </>
               ) : (
                 <Grid item xs={12}>
-                  <Typography variant="body1">No saved billing locations found.</Typography>
+                  <Typography variant="body1">No saved locations found.</Typography>
                   <button className={buttonStyles.buttonLarge} onClick={handleAddNewLocation}>
                     Add New Address
                   </button>
                 </Grid>
               )}
             </>
-          ) : isEditing && (
+          )}
+          {isEditing && (
             <Grid item xs={12}>
               <LocationFormPurchase
                 location={selectedLocation || ({} as Location)}

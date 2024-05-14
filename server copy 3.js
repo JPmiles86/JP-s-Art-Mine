@@ -1616,16 +1616,16 @@ cron.schedule('* * * * *', async () => {
 });
 
 app.post('/api/createPaymentIntent', async (req, res) => {
-  const { userId, artworkId, paymentMethodId, artworkPrice, returnUrl } = req.body;
+  const { userId, artworkId, paymentMethodId, artworkPrice } = req.body;
 
   try {
+    // Create a PaymentIntent with the artwork price and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: artworkPrice * 100,
-      currency: 'usd',
+      amount: artworkPrice * 100, // Stripe expects the amount in cents
+      currency: 'usd', // Replace with the appropriate currency
       payment_method: paymentMethodId,
       confirmation_method: 'manual',
       confirm: true,
-      return_url: returnUrl, // Include the return_url in the PaymentIntent options
     });
 
     res.send({
@@ -1634,33 +1634,6 @@ app.post('/api/createPaymentIntent', async (req, res) => {
   } catch (error) {
     console.error('Error creating PaymentIntent:', error);
     res.status(500).json({ error: 'An error occurred while creating the PaymentIntent' });
-  }
-});
-
-app.post('/api/confirmPurchase', async (req, res) => {
-  const { userId, artworkId, buyerInfo, collectorInfo, deliveryLocation, billingLocation } = req.body;
-
-  try {
-    // Process the purchase confirmation
-    // You can perform any necessary validations, update the database, send notifications, etc.
-
-    // Example: Update the artwork status to 'Sold'
-    await updateArtworkStatus(artworkId, 'Sold');
-
-    // Example: Create a new order in the database
-    const order = await createOrder({
-      userId,
-      artworkId,
-      buyerInfo,
-      collectorInfo,
-      deliveryLocation,
-      billingLocation,
-    });
-
-    res.json({ success: true, order });
-  } catch (error) {
-    console.error('Error confirming purchase:', error);
-    res.status(500).json({ success: false, error: 'An error occurred while confirming the purchase' });
   }
 });
 

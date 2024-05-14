@@ -34,7 +34,7 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
   return (
     <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
-        <strong>Collector Information</strong>
+        <strong>Step 1.1: Collector Information</strong>
       </Typography>
       {!entityType ? (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px', padding: '20px', backgroundColor: isEditing ? '#f5f5f5' : '#ffffff' }}>

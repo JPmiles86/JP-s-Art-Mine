@@ -129,6 +129,26 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
     setIsEditingRecipient(false);
   };
 
+  const getRecipientInfo = (recipient: string) => {
+    const info = recipient === 'buyer' ? buyerInfo : collectorInfo;
+
+    if (info.entityType === 'Person') {
+      return {
+        name: `${info.firstName} ${info.middleName} ${info.lastName}`,
+        phone: info.primaryPhone,
+      };
+    } else if (info.entityType === 'Organization') {
+      return {
+        name: info.organizationName,
+        phone: info.primaryPhone,
+        contactPerson: info.contactPersonName,
+      };
+    }
+
+    return null;
+  };
+
+
   return (
     <div style={{ backgroundColor: isEditing || !selectedLocation ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography
@@ -141,7 +161,7 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
           textAlign: 'center',
         }}
       >
-        <strong>Delivery Information</strong>
+        <strong>Step 2: Delivery Information</strong>
       </Typography>
       {isActive && (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px' }}>
@@ -168,16 +188,17 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                   <Typography variant="body1">
                     <strong>Delivery Recipient:</strong>
                   </Typography>
-                  {deliveryRecipient === 'buyer' && (
+                  {['buyer', 'collector'].includes(deliveryRecipient) && (
                     <>
-                      <Typography variant="body2">{`${buyerInfo.firstName} ${buyerInfo.middleName} ${buyerInfo.lastName}`}</Typography>
-                      <Typography variant="body2">{buyerInfo.primaryPhone}</Typography>
-                    </>
-                  )}
-                  {deliveryRecipient === 'collector' && (
-                    <>
-                      <Typography variant="body2">{`${collectorInfo.firstName} ${collectorInfo.middleName} ${collectorInfo.lastName}`}</Typography>
-                      <Typography variant="body2">{collectorInfo.primaryPhone}</Typography>
+                      {getRecipientInfo(deliveryRecipient)?.name && (
+                        <Typography variant="body2">{getRecipientInfo(deliveryRecipient)?.name}</Typography>
+                      )}
+                      {getRecipientInfo(deliveryRecipient)?.phone && (
+                        <Typography variant="body2">{getRecipientInfo(deliveryRecipient)?.phone}</Typography>
+                      )}
+                      {getRecipientInfo(deliveryRecipient)?.contactPerson && (
+                        <Typography variant="body2">Contact Person: {getRecipientInfo(deliveryRecipient)?.contactPerson}</Typography>
+                      )}
                     </>
                   )}
                   {deliveryRecipient === 'other' && (
@@ -269,7 +290,7 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                 <>
                   <Grid item xs={12}>
                     <Typography variant="body1">
-                      <strong>Selected Delivery Location:</strong>
+                      <strong>Selected Delivery Address:</strong>
                     </Typography>
                     <Typography variant="body2">{selectedLocation?.businessName || ''}</Typography>
                     <Typography variant="body2">{selectedLocation.addressLine1}</Typography>

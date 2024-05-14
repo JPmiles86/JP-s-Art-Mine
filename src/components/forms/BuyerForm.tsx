@@ -58,7 +58,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
   return (
     <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
-        <strong>Buyer Information</strong>
+        <strong>Step 1: Buyer Information</strong>
       </Typography>
       {!entityType ? (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', padding: '20px' }}>

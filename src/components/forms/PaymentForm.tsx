@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Grid, Typography, TextField } from '@mui/material';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
 import { BillingLocation } from './BillingInformationForm';
 import { DeliveryLocation } from './DeliveryInformationForm';
+import { countryCodeMap } from './countriesStripe';
 
 interface PaymentFormProps {
   isActive: boolean;
@@ -14,9 +16,10 @@ interface PaymentFormProps {
   onPaymentSuccess: () => void;
   deliveryLocation: DeliveryLocation | null;
   billingLocation: BillingLocation | null;
+  returnUrl: string;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, artworkPrice, onPaymentSuccess, deliveryLocation, billingLocation }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, artworkPrice, onPaymentSuccess, deliveryLocation, billingLocation, returnUrl }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,7 +58,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
             city: billingLocation.city || '',
             state: billingLocation.stateProvince || '',
             postal_code: billingLocation.postalCode || '',
-            country: billingLocation.country || '',
+            country: countryCodeMap[billingLocation.country] || '',
           },
         });
 
@@ -70,7 +73,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
               city: billingLocation.city || '',
               state: billingLocation.stateProvince || '',
               postal_code: billingLocation.postalCode || '',
-              country: billingLocation.country || '',
+              country: countryCodeMap[billingLocation.country] || '',
             },
           },
         });
@@ -83,6 +86,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
             artworkId,
             paymentMethodId: paymentMethod.id,
             artworkPrice,
+            returnUrl,
           });
 
           if (response.data.clientSecret) {
@@ -115,7 +119,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
           textAlign: 'center',
         }}
       >
-        <strong>Payment Information</strong>
+        <strong>Step 4: Payment Information</strong>
       </Typography>
       {isActive && (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px' }}>
@@ -180,7 +184,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
                 )}
                 <Grid item xs={12}>
                   <button type="submit" className={buttonStyles.button} disabled={isProcessing || !stripe}>
-                    {isProcessing ? 'Processing...' : 'Confirm Purchase'}
+                    {isProcessing ? 'Processing...' : 'Review Purchase'}
                   </button>
                 </Grid>
               </Grid>

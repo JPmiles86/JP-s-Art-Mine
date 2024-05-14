@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Typography, Link, Grid } from '@mui/material';
@@ -15,6 +15,7 @@ import CollectorForm from '../components/forms/CollectorForm';
 import DeliveryInformationForm, { DeliveryLocation } from '../components/forms/DeliveryInformationForm';
 import BillingInformationForm, { BillingLocation } from '../components/forms/BillingInformationForm';
 import PaymentForm from '../components/forms/PaymentForm';
+import PurchaseReviewForm from '../components/forms/PurchaseReviewForm';
 
 interface Artwork {
   id: number;
@@ -45,6 +46,8 @@ const Purchase: React.FC = () => {
   const [buyerInfo, setBuyerInfo] = useState<any>(null);
   const [billingLocation, setBillingLocation] = useState<BillingLocation | null>(null);
   const [showBillingForm, setShowBillingForm] = useState(false);
+  const [artworkDetails, setArtworkDetails] = useState<any>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
     const checkAndInitialize = async () => {
@@ -94,6 +97,7 @@ const Purchase: React.FC = () => {
       try {
         const response = await axios.get(`/api/artworks/${artworkID}/details`);
         setArtworkPrice(response.data.price);
+        setArtworkDetails(response.data);
       } catch (error) {
         console.error('Error fetching artwork details:', error);
       }
@@ -109,6 +113,32 @@ const Purchase: React.FC = () => {
       updateArtworkPendingEntry(artwork?.id || 0, userId);
     }
   }, [userId, artwork]);
+
+  const handleConfirmPurchase = async () => {
+    try {
+      const response = await axios.post('/api/confirmPurchase', {
+        userId,
+        artworkId: artwork?.id,
+        buyerInfo,
+        collectorInfo,
+        deliveryLocation,
+        billingLocation,
+      });
+  
+      if (response.data.success) {
+        // Handle successful purchase
+        console.log('Purchase successful');
+        // Redirect to a success page or show a success message
+      } else {
+        // Handle purchase failure
+        console.error('Purchase failed');
+        // Show an error message to the user
+      }
+    } catch (error) {
+      console.error('Error confirming purchase:', error);
+      // Show an error message to the user
+    }
+  };
 
   const toggleTimerDisplay = () => {
     setMinimized(!minimized);
@@ -128,6 +158,7 @@ const Purchase: React.FC = () => {
 
   const handlePaymentSuccess = () => {
     console.log('Payment successful');
+    setShowReviewForm(true);
   };
 
   const handleBuyerInfoSubmit = (buyerInfo: any) => {
@@ -155,6 +186,10 @@ const Purchase: React.FC = () => {
     console.log('Billing Location:', location);
     setBillingLocation(location);
     setShowPaymentForm(true);
+  };
+
+  const generateReturnUrl = () => {
+    return `/sold/${filter}/${photoID}/${artworkID}`;
   };
 
   useEffect(() => {
@@ -275,6 +310,17 @@ const Purchase: React.FC = () => {
                 onPaymentSuccess={handlePaymentSuccess}
                 deliveryLocation={deliveryLocation}
                 billingLocation={billingLocation}
+                returnUrl={generateReturnUrl()}
+              />
+              <PurchaseReviewForm
+                isActive={true}
+//                isActive={showReviewForm}
+                buyerInfo={buyerInfo}
+                collectorInfo={collectorInfo}
+                deliveryLocation={deliveryLocation}
+                billingLocation={billingLocation}
+                artworkDetails={artworkDetails}
+                onConfirmPurchase={handleConfirmPurchase}
               />
             </>
           )}
