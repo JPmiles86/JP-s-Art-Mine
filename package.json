@@ -26,8 +26,10 @@
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.1",
+    "buffer": "^6.0.3",
     "canvg": "^4.0.1",
     "cors": "^2.8.5",
+    "crypto-browserify": "^3.12.0",
     "csv-parse": "^5.4.0",
     "csv-parser": "^3.0.0",
     "date-fns": "^2.30.0",
@@ -53,6 +55,7 @@
     "path": "^0.12.7",
     "pg": "^8.11.0",
     "pg-hstore": "^2.3.4",
+    "process": "^0.11.10",
     "prop-types": "^15.8.1",
     "ra-data-json-server": "^4.16.12",
     "react": "^18.2.0",
@@ -77,9 +80,11 @@
     "smoothscroll-polyfill": "^0.4.4",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
+    "stream-browserify": "^3.0.0",
     "stripe": "^15.5.0",
     "typescript": "^4.9.5",
     "uuid": "^9.0.0",
+    "vm-browserify": "^1.1.2",
     "web-vitals": "^2.1.4",
     "zustand": "^4.3.8"
   },
@@ -110,12 +115,19 @@
   "devDependencies": {
     "@types/dom-to-image": "^2.6.4",
     "@types/fabric": "^5.3.3",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/lodash": "^4.14.195",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-lazy-load-image-component": "^1.5.3",
     "@types/react-lazyload": "^3.2.3",
     "@types/react-slick": "^0.23.13",
     "@types/react-window": "^1.8.8",
-    "@types/uuid": "^9.0.1"
+    "@types/uuid": "^9.0.1",
+    "webpack-cli": "^5.1.4"
+  },
+  "resolutions": {
+    "crypto-browserify": "^3.12.0",
+    "stream-browserify": "^3.0.0",
+    "buffer": "^6.0.3"
   }
 }

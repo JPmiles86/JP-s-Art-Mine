@@ -1,5 +1,3 @@
-// my-gallery/src/index.tsx
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
@@ -11,6 +9,11 @@ import GlobalStyles from './GlobalStyles';
 import '@fontsource/eb-garamond';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
+import { Buffer } from 'buffer';
+import process from 'process/browser';
+
+window.Buffer = Buffer;
+window.process = process;
 
 const rootElement = document.getElementById('root');
 

@@ -31,9 +31,6 @@ const Artists = require('./models/Artists');
 const ArtistsAdditionalPhotos = require('./models/ArtistsAdditionalPhotos');
 const PrivacyPreferences = require('./models/PrivacyPreferences');
 const AuditTrail = require('./models/AuditTrail');
-const Sale = require('./models/Sale');
-const PurchaseProvenanceRecords = require('./models/PurchaseProvenanceRecords');
-const PurchaseLocations = require('./models/PurchaseLocations');
 const Like = require('./models/Like');
 const HiddenPhoto = require('./models/HiddenPhoto');
 const UserLocations = require('./models/UserLocations');
@@ -50,7 +47,6 @@ const http = require('http').createServer(app);
 const Stripe = require('stripe');
 const bodyParser = require('body-parser');
 const stripe = require('stripe')('sk_test_51PDsBALgrr7kNbZdltUvNjrZgbhd2ro4kb3GwYPupZHhKiDC75OG46U0Bywwp7FXwA3qY2IuxQAetTlkpTI3qeD200t9VmR67P', { apiVersion: '2022-11-15' });
-const jwt = require('jsonwebtoken');
 
 const io = require('socket.io')(http, {
   cors: {
@@ -74,18 +70,6 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 3 * 1024 * 1024 }, // 3MB
 });
-
-const updateArtworkStatus = async (artworkId, status) => {
-  await Artwork.update({ status }, { where: { id: artworkId } });
-  console.log(`Artwork ${artworkId} status updated to ${status}`);
-  io.emit('artworkStatusUpdated', { artworkID: artworkId, status });
-};
-
-const createOrder = async (orderDetails) => {
-  const order = await Sale.create(orderDetails);
-  console.log('Order created:', order);
-  return order;
-};
 
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -1667,43 +1651,24 @@ app.post('/api/createPaymentIntent', async (req, res) => {
 });
 
 app.post('/api/confirmPurchase', async (req, res) => {
-  const { userId, artworkId, buyerInfo, collectorInfo, deliveryLocation, billingLocation, artworkPrice } = req.body;
+  const { userId, artworkId, buyerInfo, collectorInfo, deliveryLocation, billingLocation } = req.body;
 
   try {
+    // Process the purchase confirmation
+    // You can perform any necessary validations, update the database, send notifications, etc.
+
+    // Example: Update the artwork status to 'Sold'
     await updateArtworkStatus(artworkId, 'Sold');
 
-    await ArtworkPending.destroy({ where: { artworkId } });
-
-    const orderDetails = {
+    // Example: Create a new order in the database
+    const order = await createOrder({
+      userId,
       artworkId,
-      sellerId: 1, // Replace with actual seller ID if available
-      sellerAgentId: null,
-      buyerId: userId,
-      buyerAgentId: null,
-      newOwnerId: userId,
-      saleDate: new Date(),
-      salePrice: artworkPrice,
-      discountCode: null,
-      discountPercentage: null,
-      purchasePrice: artworkPrice,
-      saleType: 'Primary',
-      charityId: null,
-      charityRevenue: null,
-      sellerRevenue: artworkPrice,
-      buyerAgentFee: null,
-      sellerAgentFee: null,
-      artistResaleRoyalty: null,
-      platformFee: null,
-      saleStatus: 'Completed',
-      productionId: null,
-      shippingId: null,
-      anonymousPurchase: false,
-      agentPurchaserRelationship: null,
-      termsConditions: null,
-      paymentMethod: 'Credit Card',
-    };
-
-    const order = await createOrder(orderDetails);
+      buyerInfo,
+      collectorInfo,
+      deliveryLocation,
+      billingLocation,
+    });
 
     res.json({ success: true, order });
   } catch (error) {
@@ -1711,7 +1676,6 @@ app.post('/api/confirmPurchase', async (req, res) => {
     res.status(500).json({ success: false, error: 'An error occurred while confirming the purchase' });
   }
 });
-
 
 // app.listen(port, () => {
 //   console.log(`Server is running at http://localhost:${port}`);

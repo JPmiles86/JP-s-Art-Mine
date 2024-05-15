@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Grid, Typography, TextField } from '@mui/material';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
@@ -24,7 +25,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nameOnCard, setNameOnCard] = useState('');
-  const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +33,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
       return;
     }
 
+    // Basic validation
     if (!nameOnCard.trim()) {
       setError('Please enter the name on the card.');
       return;
@@ -49,6 +50,18 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
       const cardElement = elements.getElement(CardElement);
 
       if (cardElement) {
+        console.log('Billing details being passed to Stripe:', {
+          name: nameOnCard,
+          address: {
+            line1: billingLocation.addressLine1 || '',
+            line2: billingLocation.addressLine2 || '',
+            city: billingLocation.city || '',
+            state: billingLocation.stateProvince || '',
+            postal_code: billingLocation.postalCode || '',
+            country: countryCodeMap[billingLocation.country] || '',
+          },
+        });
+
         const { error, paymentMethod } = await stripe.createPaymentMethod({
           type: 'card',
           card: cardElement,
@@ -67,48 +80,28 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
 
         if (error) {
           setError(error.message || 'An error occurred while processing the payment.');
-          console.error('Error creating PaymentMethod:', error);
-          setIsProcessing(false);
-          return;
-        }
-
-        const response = await axios.post('/api/createPaymentIntent', {
-          userId,
-          artworkId,
-          paymentMethodId: paymentMethod.id,
-          artworkPrice,
-          returnUrl: 'https://jpmilesart.com', // Use a valid placeholder URL
-        });
-
-        const clientSecret = response.data.clientSecret;
-
-        const paymentIntentResult = await stripe.retrievePaymentIntent(clientSecret);
-        const paymentIntent = paymentIntentResult.paymentIntent;
-
-        if (paymentIntent?.status === 'succeeded') {
-          setPaymentCompleted(true);
-          onPaymentSuccess();
         } else {
-          const { error: confirmError, paymentIntent: confirmedPaymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: paymentMethod.id,
-            return_url: 'https://jpmilesart.com', // Use the same placeholder URL
+          const response = await axios.post('/api/createPaymentIntent', {
+            userId,
+            artworkId,
+            paymentMethodId: paymentMethod.id,
+            artworkPrice,
+            returnUrl,
           });
 
-          if (confirmError) {
-            setError(confirmError.message || 'An error occurred while confirming the payment.');
-            console.error('Error confirming Card Payment:', confirmError);
-          } else if (confirmedPaymentIntent?.status === 'succeeded') {
-            setPaymentCompleted(true);
-            onPaymentSuccess();
-          } else {
-            setError('Payment was not successful.');
-            console.error('PaymentIntent status:', confirmedPaymentIntent?.status);
+          if (response.data.clientSecret) {
+            const { error: confirmError } = await stripe.confirmCardPayment(response.data.clientSecret);
+
+            if (confirmError) {
+              setError(confirmError.message || 'An error occurred while confirming the payment.');
+            } else {
+              onPaymentSuccess();
+            }
           }
         }
       }
     } catch (error) {
       setError('An error occurred while processing the payment.');
-      console.error('An error occurred while processing the payment:', error);
     }
 
     setIsProcessing(false);
@@ -128,7 +121,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
       >
         <strong>Step 4: Payment Information</strong>
       </Typography>
-      {isActive && !paymentCompleted && (
+      {isActive && (
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px' }}>
           <Grid item xs={12}>
             <Typography variant="body1"><strong>Please Enter Your Payment Details</strong></Typography>
@@ -198,12 +191,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
             </form>
           </Grid>
         </Grid>
-      )}
-      {paymentCompleted && (
-        <Typography variant="body1" style={{ textAlign: 'center', padding: '30px', marginTop: '20px' }}>
-          Stripe has confirmed your Payment information, but you have not yet been charged. 
-          <br></br>Please review the purchase details below and confirm your purchase.
-        </Typography>
       )}
     </div>
   );

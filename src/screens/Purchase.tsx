@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Typography, Link, Grid, Box } from '@mui/material';
@@ -123,12 +123,13 @@ const Purchase: React.FC = () => {
         collectorInfo,
         deliveryLocation,
         billingLocation,
+        artworkPrice, // Pass the artwork price
       });
   
       if (response.data.success) {
         // Handle successful purchase
         console.log('Purchase successful');
-        // Redirect to a success page or show a success message
+        navigate(`/${filter}/${photoID}/success/${artworkID}`);
       } else {
         // Handle purchase failure
         console.error('Purchase failed');
@@ -138,7 +139,7 @@ const Purchase: React.FC = () => {
       console.error('Error confirming purchase:', error);
       // Show an error message to the user
     }
-  };
+  };  
 
   const toggleTimerDisplay = () => {
     setMinimized(!minimized);
@@ -189,7 +190,7 @@ const Purchase: React.FC = () => {
   };
 
   const generateReturnUrl = () => {
-    return `/sold/${filter}/${photoID}/${artworkID}`;
+    return 'https://jpmilesart.com';
   };
 
   useEffect(() => {
@@ -241,7 +242,7 @@ const Purchase: React.FC = () => {
       </div>
     );
   }
-  
+
   if (artwork?.status === 'Sold') {
     return (
       <div>
@@ -250,7 +251,7 @@ const Purchase: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <Box>
       <Typography variant="h4" align="center" mt={8}>
@@ -265,66 +266,61 @@ const Purchase: React.FC = () => {
           Choose Another Size Or Variation
         </button>
       </div>
-  
-      
+
       <Grid container spacing={4}>
         <Grid item xs={12} md={7}>
           <Box position="relative">
             {!userId || (userId && isAnonymous) ? (
-            <div style={{ marginTop: '40px' }}>
-              <Typography variant="h6" align="center" gutterBottom>
-                {isAnonymous ? 'Hello Mr. or Mrs. Anonymous' : 'Welcome!'}
-              </Typography>
-              <Typography variant="body1" align="center" gutterBottom>
-                To purchase an artwork, you need to{' '}
-                {isAnonymous ? 'sign up with an email and password' : 'sign in or sign up'}.
-              </Typography>
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <button className={buttonStyles.buttonLarge} onClick={handleSignUp}>
-                  {isAnonymous ? 'Sign Up' : 'Sign In or Sign Up'}
-                </button>
+              <div style={{ marginTop: '40px' }}>
+                <Typography variant="h6" align="center" gutterBottom>
+                  {isAnonymous ? 'Hello Mr. or Mrs. Anonymous' : 'Welcome!'}
+                </Typography>
+                <Typography variant="body1" align="center" gutterBottom>
+                  To purchase an artwork, you need to {isAnonymous ? 'sign up with an email and password' : 'sign in or sign up'}.
+                </Typography>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                  <button className={buttonStyles.buttonLarge} onClick={handleSignUp}>
+                    {isAnonymous ? 'Sign Up' : 'Sign In or Sign Up'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <>
-              <BuyerForm onSubmit={handleBuyerInfoSubmit} userId={userId} />
-              {showCollectorForm && (
-                <CollectorForm onSubmit={handleCollectorInfoSubmit} userId={userId} buyerEmail={buyerEmail} />
-              )}
-              <DeliveryInformationForm
-                userId={userId}
-                onSubmit={handleDeliveryLocationSubmit}
-                isActive={showDeliveryForm}
-                buyerInfo={buyerInfo}
-                collectorInfo={collectorInfo}
-              />
-              <BillingInformationForm
-                userId={userId}
-                onSubmit={handleBillingLocationSubmit}
-                isActive={showBillingForm}
-                deliveryLocation={deliveryLocation}
-              />
-              <PaymentForm
-                isActive={showPaymentForm}
-                userId={userId}
-                artworkId={artwork?.id || 0}
-                artworkPrice={artworkPrice}
-                onPaymentSuccess={handlePaymentSuccess}
-                deliveryLocation={deliveryLocation}
-                billingLocation={billingLocation}
-                returnUrl={generateReturnUrl()}
-              />
-              <PurchaseReviewForm
-                isActive={true}
-//                isActive={showReviewForm}
-                buyerInfo={buyerInfo}
-                collectorInfo={collectorInfo}
-                deliveryLocation={deliveryLocation}
-                billingLocation={billingLocation}
-                artworkDetails={artworkDetails}
-                onConfirmPurchase={handleConfirmPurchase}
-              />
-            </>
+            ) : (
+              <>
+                <BuyerForm onSubmit={handleBuyerInfoSubmit} userId={userId} />
+                {showCollectorForm && <CollectorForm onSubmit={handleCollectorInfoSubmit} userId={userId} buyerEmail={buyerEmail} />}
+                <DeliveryInformationForm
+                  userId={userId}
+                  onSubmit={handleDeliveryLocationSubmit}
+                  isActive={showDeliveryForm}
+                  buyerInfo={buyerInfo}
+                  collectorInfo={collectorInfo}
+                />
+                <BillingInformationForm
+                  userId={userId}
+                  onSubmit={handleBillingLocationSubmit}
+                  isActive={showBillingForm}
+                  deliveryLocation={deliveryLocation}
+                />
+                <PaymentForm
+                  isActive={showPaymentForm}
+                  userId={userId}
+                  artworkId={artwork?.id || 0}
+                  artworkPrice={artworkPrice}
+                  onPaymentSuccess={handlePaymentSuccess}
+                  deliveryLocation={deliveryLocation}
+                  billingLocation={billingLocation}
+                  returnUrl={generateReturnUrl()}
+                />
+                <PurchaseReviewForm
+                  isActive={showReviewForm}
+                  buyerInfo={buyerInfo}
+                  collectorInfo={collectorInfo}
+                  deliveryLocation={deliveryLocation}
+                  billingLocation={billingLocation}
+                  artworkDetails={artworkDetails}
+                  onConfirmPurchase={handleConfirmPurchase}
+                />
+              </>
             )}
           </Box>
         </Grid>
@@ -334,13 +330,8 @@ const Purchase: React.FC = () => {
           </Box>
         </Grid>
       </Grid>
-  
-      <TimerDisplay
-        remainingTime={remainingTime}
-        minimized={minimized}
-        toggleTimerDisplay={toggleTimerDisplay}
-        renewTimer={renewTimer}
-      />
+
+      <TimerDisplay remainingTime={remainingTime} minimized={minimized} toggleTimerDisplay={toggleTimerDisplay} renewTimer={renewTimer} />
       {showModal && (
         <TimerOverModal
           renewTimer={renewTimer}
@@ -361,6 +352,6 @@ const Purchase: React.FC = () => {
       />
     </Box>
   );
-}
+};
 
-  export default Purchase;
+export default Purchase;
