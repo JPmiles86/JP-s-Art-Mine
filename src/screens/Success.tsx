@@ -1,14 +1,11 @@
-// my-gallery/src/screens/Success.tsx
-
+// Success.tsx
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Grid, Box, useTheme, useMediaQuery } from '@mui/material';
 import DiptychCarousel from '../Diptychs/DiptychCarousel';
 import DiptychCarouselDynamic from '../Diptychs/DiptychCarouselDynamic';
 import { LayoutSpecs } from '../Diptychs/LayoutSpecs';
-import useStore from '../utils/store';
 import DownloadButton from '../components/layout/DownloadButton';
-import FullScreenButtonFavs from '../components/layout/FullScreenButtonFavs';
 import FullScreenViewCarousel from '../components/layout/FullScreenViewCarousel';
 import buttonStyles from './ButtonStyles.module.css';
 import axios from 'axios';
@@ -81,19 +78,30 @@ const Success: React.FC = () => {
   useEffect(() => {
     const fetchArtworkDetails = async () => {
       try {
-        const response = await axios.get(`/api/artworks/${artworkID}/details`);
-        setArtworkDetails(response.data);
+        const token = localStorage.getItem('purchaseToken');
+  
+        if (!token) {
+          navigate('/');
+          return;
+        }
+  
+        const response = await axios.get('/api/purchase-success', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        setArtworkDetails(response.data.order);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching artwork details:', error);
         setIsLoading(false);
+        navigate('/');
       }
     };
-
-    if (artworkID) {
-      fetchArtworkDetails();
-    }
-  }, [artworkID]);
+  
+    fetchArtworkDetails();
+  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +113,6 @@ const Success: React.FC = () => {
         setDiptychId(artworkResponse.data.diptychId);
 
         const diptychResponse = await axios.get(`/api/diptychs/${artworkResponse.data.diptychId}`);
-        // Corrected this line to prevent the error
         setDiptychId(diptychResponse.data.diptychId);
 
         setIsLoading(false);

@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+
+// my-gallery/src/components/forms/PaymentForm.tsx
+
+import React, { useState, useEffect } from 'react';
 import { Grid, Typography, TextField } from '@mui/material';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
@@ -25,6 +28,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
   const [error, setError] = useState<string | null>(null);
   const [nameOnCard, setNameOnCard] = useState('');
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState('#f5f5f5'); // Initial background color
+
+  useEffect(() => {
+    if (paymentCompleted) {
+      setBackgroundColor('#ffffff'); // Change to white on payment completion
+    }
+  }, [paymentCompleted]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +125,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
   };
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5', padding: '20px' }}>
+    <div style={{ backgroundColor, padding: '20px' }}>
       <Typography
         variant="h6"
         style={{

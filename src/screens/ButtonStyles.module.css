@@ -397,3 +397,9 @@ text-decoration: underline; /* Add underline */
 .photoText {
   color: white;
 }
+
+.stickyBox {
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 10px;
+}

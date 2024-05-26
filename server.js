@@ -51,6 +51,8 @@ const Stripe = require('stripe');
 const bodyParser = require('body-parser');
 const stripe = require('stripe')('sk_test_51PDsBALgrr7kNbZdltUvNjrZgbhd2ro4kb3GwYPupZHhKiDC75OG46U0Bywwp7FXwA3qY2IuxQAetTlkpTI3qeD200t9VmR67P', { apiVersion: '2022-11-15' });
 const jwt = require('jsonwebtoken');
+const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
+
 
 const io = require('socket.io')(http, {
   cors: {
@@ -86,6 +88,28 @@ const createOrder = async (orderDetails) => {
   console.log('Order created:', order);
   return order;
 };
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied. No token provided.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET_KEY);
+    req.user = decoded;
+
+    // Log decoded token to verify
+    console.log('Decoded JWT Token:', decoded);
+
+    next();
+  } catch (error) {
+    res.status(400).json({ error: 'Invalid token.' });
+  }
+};
+
 
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -1671,7 +1695,6 @@ app.post('/api/confirmPurchase', async (req, res) => {
 
   try {
     await updateArtworkStatus(artworkId, 'Sold');
-
     await ArtworkPending.destroy({ where: { artworkId } });
 
     const orderDetails = {
@@ -1705,13 +1728,38 @@ app.post('/api/confirmPurchase', async (req, res) => {
 
     const order = await createOrder(orderDetails);
 
-    res.json({ success: true, order });
+    // Generate a JWT token for the purchase
+    const token = jwt.sign({ userId, artworkId, orderId: order.id }, JWT_SECRET_KEY, { expiresIn: '1h' });
+
+    // Log token to verify contents
+    console.log('Generated JWT Token:', token);
+    console.log('Token Contents:', { userId, artworkId, orderId: order.id });
+
+    res.json({ success: true, order, token });
   } catch (error) {
     console.error('Error confirming purchase:', error);
     res.status(500).json({ success: false, error: 'An error occurred while confirming the purchase' });
   }
 });
 
+
+
+app.get('/api/purchase-success', authenticateToken, async (req, res) => {
+  const { userId, artworkId, orderId } = req.user;
+
+  try {
+    const order = await Sale.findOne({ where: { id: orderId, buyerId: userId, artworkId } });
+
+    if (!order) {
+      return res.status(403).json({ error: 'Access denied. Invalid purchase information.' });
+    }
+
+    res.json({ message: 'Purchase successful', order });
+  } catch (error) {
+    console.error('Error fetching purchase details:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // app.listen(port, () => {
 //   console.log(`Server is running at http://localhost:${port}`);

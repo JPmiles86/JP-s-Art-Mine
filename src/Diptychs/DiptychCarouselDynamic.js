@@ -3,9 +3,8 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Slider from 'react-slick';
 import DynamicDiptychComponent from './DynamicDiptychComponent';
-import './DiptychCarousel.css'; 
+import './DiptychCarousel.css';
 import { useDiptychData } from './useDiptychData';
-import debounce from 'lodash/debounce';
 
 const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspectRatio, areShapesVisible, containerRef, handleCanvasReady, onDiptychIdCodeChange, handleLayoutSpecsReady }) => {
   const { diptychIdCodes, totalSlides } = useDiptychData(aspectRatio, frameId, diptychId);
@@ -15,17 +14,17 @@ const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspect
   const [diptychTopMargins, setDiptychTopMargins] = useState({});
   const [selectedDiptychIdCode, setSelectedDiptychIdCode] = useState('');
 
-  // Function to update height and re-calculate top margins
-  const updateHeight = useCallback((newHeight, diptychIdCode) => {
-    setCarouselHeight(currentHeight => Math.max(currentHeight, newHeight));
+  const handleHeightChange = useCallback((height, diptychIdCode) => {
     setDiptychHeights(prevHeights => ({
       ...prevHeights,
-      [diptychIdCode]: Math.max(prevHeights[diptychIdCode] || 0, newHeight)
+      [diptychIdCode]: height
     }));
   }, []);
 
-  // Debounced version of updateHeight
-  const debouncedUpdateHeight = useCallback(debounce(updateHeight, 100), [updateHeight]);
+  useEffect(() => {
+    const maxHeight = Math.max(...Object.values(diptychHeights), 0);
+    setCarouselHeight(maxHeight);
+  }, [diptychHeights]);
 
   useEffect(() => {
     const newTopMargins = {};
@@ -35,16 +34,6 @@ const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspect
     });
     setDiptychTopMargins(newTopMargins);
   }, [carouselHeight, diptychHeights]);
-
-  const handleResize = useCallback(() => {
-    setCarouselHeight(0);
-    setDiptychHeights({});
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [handleResize]);
 
   const settings = useMemo(() => ({
     dots: true,
@@ -84,7 +73,7 @@ const DiptychCarouselDynamic = ({ photoId, imagePath, frameId, diptychId, aspect
                 DiptychIdCode={code.DiptychIdCode}
                 areShapesVisible={areShapesVisible}
                 onLayoutSpecsReady={handleLayoutSpecsReady}
-                updateHeight={debouncedUpdateHeight}
+                onHeightChange={handleHeightChange}
               />
             </div>
           </div>

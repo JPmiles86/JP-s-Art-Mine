@@ -110,7 +110,7 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
             <Typography variant="body2">{billingLocation?.country}</Typography>
           </Grid>
           <Grid item xs={12}>
-            <button className={buttonStyles.button} onClick={() => onConfirmPurchase(artworkDetails?.price)}>
+            <button className={buttonStyles.button} style={{ marginBottom: '30px' }} onClick={() => onConfirmPurchase(artworkDetails?.price)}>
               Confirm Purchase
             </button>
           </Grid>
