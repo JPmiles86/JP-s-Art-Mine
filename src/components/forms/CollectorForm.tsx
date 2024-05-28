@@ -10,9 +10,10 @@ interface CollectorFormProps {
   onSubmit: (collectorInfo: any) => void;
   userId: number;
   buyerEmail: string;
+  className?: string;
 }
 
-const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEmail }) => {
+const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEmail, className }) => {
   const [entityType, setEntityType] = useState('');
   const [isEditing, setIsEditing] = useState(true);
   const [collectorInfo, setCollectorInfo] = useState<any>(null);
@@ -32,7 +33,7 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
   };
 
   return (
-    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
+    <div className={className} style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
         <strong>Step 1.1: Collector Information</strong>
       </Typography>

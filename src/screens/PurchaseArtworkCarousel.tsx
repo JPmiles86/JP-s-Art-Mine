@@ -1,4 +1,4 @@
-//my-gallery/src/screens/PurchaseArtworkCarousel.tsx
+// my-gallery/src/screens/PurchaseArtworkCarousel.tsx
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
@@ -25,7 +25,6 @@ const PurchaseArtworkCarousel: React.FC = React.memo(() => {
   const [artwork, setArtwork] = useState<any>(null);
   const [fullScreenOpen, setFullScreenOpen] = useState(false);
   const fullScreenContainerRef = useRef<HTMLDivElement>(null);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,10 +75,12 @@ const PurchaseArtworkCarousel: React.FC = React.memo(() => {
 
   const handleOpenFullScreen = () => {
     setFullScreenOpen(true);
+    document.body.classList.add('hide-nav');
   };
 
   const handleCloseFullScreen = () => {
     setFullScreenOpen(false);
+    document.body.classList.remove('hide-nav');
   };
 
   const renderDownloadButton = (photoId: string | undefined, diptychIdCode: string) => {
@@ -117,7 +118,7 @@ const PurchaseArtworkCarousel: React.FC = React.memo(() => {
         }
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     handleResize();
 

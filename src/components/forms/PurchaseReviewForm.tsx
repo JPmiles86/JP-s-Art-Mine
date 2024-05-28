@@ -12,6 +12,7 @@ interface PurchaseReviewFormProps {
   artworkDetails: any;
   onConfirmPurchase: (artworkPrice: number) => void; // Add artworkPrice parameter
   isActive: boolean;
+  className?: string;
 }
 
 const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
@@ -22,6 +23,7 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
   artworkDetails,
   onConfirmPurchase,
   isActive,
+  className,
 }) => {
   const getPersonName = (info: any) => {
     return `${info.firstName} ${info.middleName} ${info.lastName}`;
@@ -37,7 +39,7 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
   };
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5', padding: '20px' }}>
+    <div className={className} style={{ backgroundColor: '#f5f5f5', padding: '20px' }}>
       <Typography
         variant="h6"
         style={{
@@ -54,14 +56,16 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
         <Grid container spacing={2} style={{ justifyContent: 'center', textAlign: 'center', marginTop: '10px' }}>
           <Grid item xs={12}>
             <Typography variant="body1"><strong>Artwork Details:</strong></Typography>
-            <Typography variant="body2">Artwork ID: {artworkDetails?.artworkId}</Typography>
-            <Typography variant="body2">Photo ID: {artworkDetails?.photoId}</Typography>
-            <Typography variant="body2">Diptych Variation: {artworkDetails?.diptychName}</Typography>
-            <Typography variant="body2">Edition: {artworkDetails?.edition === 'CP' ? "Collector's Print - 1/1" : "Artist's Print - 1/1"}</Typography>
-            <Typography variant="body2">Artist: J.P. Miles</Typography>
-            <Typography variant="body2">Artwork Size: {artworkDetails?.sizeName}</Typography>
-            <Typography variant="body2">Print Size (inches): {artworkDetails?.printSizeInInches}</Typography>
-            <Typography variant="body2">Print Size (cm): {artworkDetails?.printSizeInCm}</Typography>
+            <Typography variant="body2"><strong>Artist:</strong> J.P. Miles</Typography>
+            <Typography variant="body2"><strong>Photo ID:</strong> {artworkDetails?.photoId}</Typography>
+            <Typography variant="body2"><strong>Artwork ID:</strong> {artworkDetails?.artworkId}</Typography>
+            <Typography variant="body2"><strong>Diptych Variation:</strong> {artworkDetails?.diptychName}</Typography>
+            <Typography variant="body2"><strong>Edition:</strong> {artworkDetails?.edition === 'CP' ? "Collector's Print - 1/1" : "Artist's Print - 1/1"}</Typography>
+            <br></br>
+            <Typography variant="body2"><strong>Artwork Size:</strong> {artworkDetails?.sizeName}</Typography>
+            <Typography variant="body2"><strong>Print Size (inches):</strong> {artworkDetails?.printSizeInInches}</Typography>
+            <Typography variant="body2"><strong>Print Size (cm):</strong> {artworkDetails?.printSizeInCm}</Typography>
+            <br></br>
             <Typography variant="body1"><strong>Price: ${artworkDetails?.price}</strong></Typography>
             <Typography variant="body2"><strong>Currency: {artworkDetails?.currency}</strong></Typography>
           </Grid>

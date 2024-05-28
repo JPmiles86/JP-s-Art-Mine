@@ -1697,7 +1697,7 @@ app.post('/api/confirmPurchase', async (req, res) => {
     await updateArtworkStatus(artworkId, 'Sold');
     await ArtworkPending.destroy({ where: { artworkId } });
 
-    const orderDetails = {
+    const saleDetails = {
       artworkId,
       sellerId: 1, // Replace with actual seller ID if available
       sellerAgentId: null,
@@ -1726,35 +1726,33 @@ app.post('/api/confirmPurchase', async (req, res) => {
       paymentMethod: 'Credit Card',
     };
 
-    const order = await createOrder(orderDetails);
+    const sale = await Sale.create(saleDetails);
 
     // Generate a JWT token for the purchase
-    const token = jwt.sign({ userId, artworkId, orderId: order.id }, JWT_SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign({ userId, artworkId, saleId: sale.saleId }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
     // Log token to verify contents
     console.log('Generated JWT Token:', token);
-    console.log('Token Contents:', { userId, artworkId, orderId: order.id });
+    console.log('Token Contents:', { userId, artworkId, saleId: sale.saleId });
 
-    res.json({ success: true, order, token });
+    res.json({ success: true, sale, token });
   } catch (error) {
     console.error('Error confirming purchase:', error);
     res.status(500).json({ success: false, error: 'An error occurred while confirming the purchase' });
   }
 });
 
-
-
 app.get('/api/purchase-success', authenticateToken, async (req, res) => {
-  const { userId, artworkId, orderId } = req.user;
+  const { userId, artworkId, saleId } = req.user;
 
   try {
-    const order = await Sale.findOne({ where: { id: orderId, buyerId: userId, artworkId } });
+    const sale = await Sale.findOne({ where: { saleId, buyerId: userId, artworkId } });
 
-    if (!order) {
+    if (!sale) {
       return res.status(403).json({ error: 'Access denied. Invalid purchase information.' });
     }
 
-    res.json({ message: 'Purchase successful', order });
+    res.json({ message: 'Purchase successful', sale });
   } catch (error) {
     console.error('Error fetching purchase details:', error);
     res.status(500).json({ error: 'Server error' });

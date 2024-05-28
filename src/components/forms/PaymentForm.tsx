@@ -19,9 +19,10 @@ interface PaymentFormProps {
   deliveryLocation: DeliveryLocation | null;
   billingLocation: BillingLocation | null;
   returnUrl: string;
+  className?: string;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, artworkPrice, onPaymentSuccess, deliveryLocation, billingLocation, returnUrl }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, artworkPrice, onPaymentSuccess, deliveryLocation, billingLocation, returnUrl, className }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -125,7 +126,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
   };
 
   return (
-    <div style={{ backgroundColor, padding: '20px' }}>
+    <div className={className} style={{ backgroundColor, padding: '20px' }}>
       <Typography
         variant="h6"
         style={{
@@ -211,8 +212,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ isActive, userId, artworkId, 
       )}
       {paymentCompleted && (
         <Typography variant="body1" style={{ textAlign: 'center', padding: '30px', marginTop: '20px' }}>
-          Stripe has confirmed your Payment information, but you have not yet been charged. 
-          <br></br>Please review the purchase details below and confirm your purchase.
+          Stripe has confirmed your Payment information, but you have not yet been charged.
+          <br></br><strong>Please review the purchase details below and confirm your purchase.</strong>
         </Typography>
       )}
     </div>

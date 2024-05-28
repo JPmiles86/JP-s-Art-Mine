@@ -1,6 +1,5 @@
 // my-gallery/src/components/layout/FullScreenViewCarousel.tsx
 
-// FullScreenViewCarousel.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { Box, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -36,7 +35,26 @@ const FullScreenViewCarousel: React.FC<FullScreenViewCarouselProps> = ({
   handleLayoutSpecsReady,
   onDiptychIdCodeChange,
 }) => {
-  // ... (implementation similar to FullScreenView)
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleEscKey);
+      document.body.classList.add('no-scroll', 'hide-nav');
+    } else {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.classList.remove('no-scroll', 'hide-nav');
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.classList.remove('no-scroll', 'hide-nav');
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -94,4 +112,3 @@ const FullScreenViewCarousel: React.FC<FullScreenViewCarouselProps> = ({
 };
 
 export default FullScreenViewCarousel;
-//export {};

@@ -11,6 +11,7 @@ interface BillingInformationFormProps {
   onSubmit: (billingLocation: Location) => void;
   isActive: boolean;
   deliveryLocation: Location | null;
+  className?: string;
 }
 
 export interface BillingLocation extends Location {
@@ -25,7 +26,7 @@ export interface BillingLocation extends Location {
   businessName?: string;
 }
 
-const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId, onSubmit, isActive, deliveryLocation }) => {
+const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId, onSubmit, isActive, deliveryLocation, className }) => {
   const [savedLocations, setSavedLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(deliveryLocation);
   const [isEditing, setIsEditing] = useState(false);
@@ -121,7 +122,7 @@ const BillingInformationForm: React.FC<BillingInformationFormProps> = ({ userId,
   };
 
   return (
-    <div style={{ backgroundColor: isEditing || isSelecting || !selectedLocation ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
+    <div className={className} style={{ backgroundColor: isEditing || isSelecting || !selectedLocation ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography
         variant="h6"
         style={{

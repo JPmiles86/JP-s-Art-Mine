@@ -291,9 +291,10 @@ const Purchase: React.FC = () => {
               </div>
             ) : (
               <>
-                <BuyerForm onSubmit={handleBuyerInfoSubmit} userId={userId} />
-                {showCollectorForm && <CollectorForm onSubmit={handleCollectorInfoSubmit} userId={userId} buyerEmail={buyerEmail} />}
+                <BuyerForm className="form-text" onSubmit={handleBuyerInfoSubmit} userId={userId} />
+                {showCollectorForm && <CollectorForm className="form-text" onSubmit={handleCollectorInfoSubmit} userId={userId} buyerEmail={buyerEmail} />}
                 <DeliveryInformationForm
+                  className="form-text"
                   userId={userId}
                   onSubmit={handleDeliveryLocationSubmit}
                   isActive={showDeliveryForm}
@@ -301,12 +302,14 @@ const Purchase: React.FC = () => {
                   collectorInfo={collectorInfo}
                 />
                 <BillingInformationForm
+                  className="form-text"
                   userId={userId}
                   onSubmit={handleBillingLocationSubmit}
                   isActive={showBillingForm}
                   deliveryLocation={deliveryLocation}
                 />
                 <PaymentForm
+                  className="form-text"
                   isActive={showPaymentForm}
                   userId={userId}
                   artworkId={artwork?.id || 0}
@@ -317,6 +320,7 @@ const Purchase: React.FC = () => {
                   returnUrl={generateReturnUrl()}
                 />
                 <PurchaseReviewForm
+                  className="form-text"
                   isActive={showReviewForm}
                   buyerInfo={buyerInfo}
                   collectorInfo={collectorInfo}

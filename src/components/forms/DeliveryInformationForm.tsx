@@ -24,9 +24,10 @@ interface DeliveryInformationFormProps {
   isActive: boolean;
   buyerInfo: any;
   collectorInfo: any;
+  className?: string;
 }
 
-const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userId, onSubmit, isActive, buyerInfo, collectorInfo }) => {
+const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userId, onSubmit, isActive, buyerInfo, collectorInfo, className }) => {
   const [savedLocations, setSavedLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -150,7 +151,7 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
 
 
   return (
-    <div style={{ backgroundColor: isEditing || !selectedLocation ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
+    <div className={className} style={{ backgroundColor: isEditing || !selectedLocation ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography
         variant="h6"
         style={{

@@ -11,3 +11,16 @@
   .full-screen-carousel .carousel-fraction {
     color: white;
   }
+
+  .no-scroll {
+    overflow: hidden;
+  }
+  
+  .hide-nav .nav-bar {
+    display: none;
+  }
+  
+  .hide-nav .form-text {
+    display: none;
+  }
+  

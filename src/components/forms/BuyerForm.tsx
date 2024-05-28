@@ -10,9 +10,10 @@ import axios from 'axios';
 interface BuyerFormProps {
   onSubmit: (buyerInfo: any) => void;
   userId: number;
+  className?: string; 
 }
 
-const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
+const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId, className }) => {
   const [entityType, setEntityType] = useState('');
   const [personContactInfo, setPersonContactInfo] = useState<any>(null);
   const [organizationContactInfo, setOrganizationContactInfo] = useState<any>(null);
@@ -56,7 +57,7 @@ const BuyerForm: React.FC<BuyerFormProps> = ({ onSubmit, userId }) => {
   }, [userId]);
 
   return (
-    <div style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
+    <div className={className} style={{ backgroundColor: isEditing ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
       <Typography variant="h6" style={{ backgroundColor: '#000000', color: '#ffffff', padding: '20px', justifyContent: 'center', textAlign: 'center' }}>
         <strong>Step 1: Buyer Information</strong>
       </Typography>

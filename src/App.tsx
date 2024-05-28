@@ -57,7 +57,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div ref={scrollableElement} style={{ height: '100vh', overflow: 'auto' }}>
-      {!isResetPasswordPage && <TopNavBar />}
+      {!isResetPasswordPage && <div className="nav-bar"><TopNavBar /></div>}
       <Container maxWidth="lg" style={{margin: '0 auto'}}>
         <ScrollContext.Provider value={{ handleScroll, scrollToTop }}>
           <Routes>

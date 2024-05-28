@@ -15,11 +15,11 @@ const PurchaseArtworkDetails: React.FC<PurchaseArtworkDetailsProps> = React.memo
         <strong>Artwork Details</strong>
       </Typography>
       <Box mt={2}>
-        <Typography><strong>Artwork ID:</strong> {artworkDetails.artworkId}</Typography>
+        <Typography><strong>Artist:</strong> J.P. Miles</Typography>
         <Typography><strong>Photo ID:</strong> {artworkDetails.photoId}</Typography>
+        <Typography><strong>Artwork ID:</strong> {artworkDetails.artworkId}</Typography>
         <Typography><strong>Diptych Variation:</strong> {artworkDetails.diptychName}</Typography>
         <Typography><strong>Edition:</strong> {edition}</Typography>
-        <Typography><strong>Artist:</strong> J.P. Miles</Typography>
       </Box>
       <Box mt={2}>
         <Typography><strong>Artwork Size:</strong> {artworkDetails.sizeName}</Typography>
