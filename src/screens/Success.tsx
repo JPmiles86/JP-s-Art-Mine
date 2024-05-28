@@ -125,18 +125,11 @@ const Success: React.FC = () => {
       <Typography style={{ justifyContent: 'center', textAlign: 'center', marginTop: '20px' }}>
         As the artist, I am deeply grateful for your support. This means a lot to me, and I hope you enjoy your new artwork.
       </Typography>
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-        <button className={buttonStyles.navButton} style={{ margin: '10px 20px' }} onClick={handleBackToExhibition}>
-          Back to Exhibition Space
-        </button>
-        <button className={buttonStyles.navButton} style={{ margin: '10px 20px' }} onClick={handleBackToImageGrid}>
-          Back to Image Grid
-        </button>
-      </div>
+      
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={7}>
-          <Box position="relative">
+          <Box style={{ marginTop: '30px' }} position="relative">
             <PurchaseArtworkCarousel />
           </Box>
         </Grid>

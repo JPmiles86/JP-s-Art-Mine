@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Menu, MenuItem, Avatar, Box, Typography } from '@mui/material';
-// import { AccountCircle } from '@mui/icons-material';
 import AuthModal from '../modals/AuthModal';
 import { useAuth } from '../../contexts/AuthContext';
 import ButtonStyles from '../../screens/ButtonStyles.module.css';
@@ -217,6 +216,24 @@ const TopNavBar: React.FC = () => {
           </Link>
           <Link to={`/${filter}/${photoID}/inquire`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
             Inquire
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+        </>
+      );
+    } else if (location.pathname.startsWith(`/${filter}/${photoID}/success`)) {
+      // Success page
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to={`/${filter}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Image Grid
+          </Link>
+          <Link to={`/${filter}/${photoID}`} className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Exhibition Gallery
           </Link>
           <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
             My Favorites
