@@ -1703,7 +1703,7 @@ app.post('/api/confirmPurchase', async (req, res) => {
       sellerAgentId: null,
       buyerId: userId,
       buyerAgentId: null,
-      newOwnerId: userId,
+      newOwnerId: collectorInfo.userId,
       saleDate: new Date(),
       salePrice: artworkPrice,
       discountCode: null,
@@ -1728,10 +1728,8 @@ app.post('/api/confirmPurchase', async (req, res) => {
 
     const sale = await Sale.create(saleDetails);
 
-    // Generate a JWT token for the purchase
     const token = jwt.sign({ userId, artworkId, saleId: sale.saleId }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
-    // Log token to verify contents
     console.log('Generated JWT Token:', token);
     console.log('Token Contents:', { userId, artworkId, saleId: sale.saleId });
 

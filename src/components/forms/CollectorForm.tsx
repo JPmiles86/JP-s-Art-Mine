@@ -91,11 +91,11 @@ const CollectorForm: React.FC<CollectorFormProps> = ({ onSubmit, userId, buyerEm
           {!isEditing && collectorInfo && collectorInfo.newCollectorCreated && (
             <Grid item xs={12}>
               <Typography variant="body2" style={{ marginTop: '10px', marginBottom: '30px' }}>
-                Please Note: An account has been created for the collector.
+                <strong>Please Note: An account has been created for the collector.</strong>
                 <br />
-                Log in: {collectorInfo.collectorEmail}
+                <strong>Log in:</strong> {collectorInfo.collectorEmail}
                 <br />
-                Password: {collectorInfo.buyerEmail}
+                <strong>Password:</strong> {collectorInfo.buyerEmail}
               </Typography>
             </Grid>
           )}

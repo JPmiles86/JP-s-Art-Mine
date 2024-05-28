@@ -117,34 +117,29 @@ const Purchase: React.FC = () => {
     }
   }, [userId, artwork]);
 
-  const handleConfirmPurchase = async () => {
-    try {
-      const response = await axios.post('/api/confirmPurchase', {
-        userId,
-        artworkId: artwork?.id,
-        buyerInfo,
-        collectorInfo,
-        deliveryLocation,
-        billingLocation,
-        artworkPrice,
-      });
+  // Update handleConfirmPurchase to pass collector userId
+const handleConfirmPurchase = async () => {
+  try {
+    const response = await axios.post('/api/confirmPurchase', {
+      userId,
+      artworkId: artwork?.id,
+      buyerInfo,
+      collectorInfo: collectorInfo || buyerInfo, // Use buyerInfo if collectorInfo is null
+      deliveryLocation,
+      billingLocation,
+      artworkPrice,
+    });
 
-      if (response.data.success) {
-        // Store the token in localStorage
-        localStorage.setItem('purchaseToken', response.data.token);
-
-        // Navigate to the success page
-        navigate(`/${filter}/${photoID}/success/${artworkID}`);
-      } else {
-        // Handle purchase failure
-        console.error('Purchase failed');
-        // Show an error message to the user
-      }
-    } catch (error) {
-      console.error('Error confirming purchase:', error);
-      // Show an error message to the user
+    if (response.data.success) {
+      localStorage.setItem('purchaseToken', response.data.token);
+      navigate(`/${filter}/${photoID}/success/${artworkID}`);
+    } else {
+      console.error('Purchase failed');
     }
-  };
+  } catch (error) {
+    console.error('Error confirming purchase:', error);
+  }
+};
 
   const toggleTimerDisplay = () => {
     setMinimized(!minimized);
@@ -176,10 +171,25 @@ const Purchase: React.FC = () => {
     }
   };
 
-  const handleCollectorInfoSubmit = (collectorInfo: any) => {
-    console.log('Collector Info:', collectorInfo);
-    setCollectorInfo(collectorInfo);
-    setShowDeliveryForm(true);
+  const handleCollectorInfoSubmit = async (collectorInfo: any) => {
+    try {
+      // Check if the collector's email already exists
+      const response = await axios.get(`/api/users/check-email/${collectorInfo.primaryEmail}`);
+      if (response.data.userId) {
+        // Collector already has an account
+        setCollectorInfo({ ...collectorInfo, userId: response.data.userId });
+      } else {
+        // Create a new collector account
+        const newCollectorResponse = await axios.post('/api/users/create-collector', {
+          personInfo: collectorInfo,
+          buyerUserId: userId,
+        });
+        setCollectorInfo({ ...collectorInfo, userId: newCollectorResponse.data.userId });
+      }
+      setShowDeliveryForm(true);
+    } catch (error) {
+      console.error('Error handling collector info submission:', error);
+    }
   };
 
   const handleDeliveryLocationSubmit = (location: DeliveryLocation) => {
