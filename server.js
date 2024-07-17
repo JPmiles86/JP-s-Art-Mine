@@ -32,6 +32,7 @@ const ArtistsAdditionalPhotos = require('./models/ArtistsAdditionalPhotos');
 const PrivacyPreferences = require('./models/PrivacyPreferences');
 const AuditTrail = require('./models/AuditTrail');
 const Sale = require('./models/Sale');
+const Shipping = require('./models/Shipping');
 const PurchaseProvenanceRecords = require('./models/PurchaseProvenanceRecords');
 const PurchaseLocations = require('./models/PurchaseLocations');
 const Like = require('./models/Like');
@@ -1697,13 +1698,33 @@ app.post('/api/confirmPurchase', async (req, res) => {
     await updateArtworkStatus(artworkId, 'Sold');
     await ArtworkPending.destroy({ where: { artworkId } });
 
+    // Create a new location for delivery if it doesn't exist
+    let deliveryLocationId;
+    if (deliveryLocation.locationId) {
+      deliveryLocationId = deliveryLocation.locationId;
+    } else {
+      const newLocation = await Locations.create(deliveryLocation);
+      deliveryLocationId = newLocation.locationId;
+    }
+
+    // Create a new shipping record with placeholders for the shipping company and origin location
+    const shipping = await Shipping.create({
+      artworkId,
+      originLocationId: null, // Placeholder value
+      destinationLocationId: deliveryLocationId,
+      shippingCompanyId: null, // Placeholder value
+      shippedDate: null, // Set this when the item is actually shipped
+      shippingCost: 0, // You may want to calculate this based on the delivery location
+      status: 'Pending',
+    });
+
     const saleDetails = {
       artworkId,
-      sellerId: 1, // Replace with actual seller ID if available
+      sellerId: 1,
       sellerAgentId: null,
       buyerId: userId,
       buyerAgentId: null,
-      newOwnerId: collectorInfo.userId,
+      newOwnerId: collectorInfo.userId || userId,
       saleDate: new Date(),
       salePrice: artworkPrice,
       discountCode: null,
@@ -1719,14 +1740,18 @@ app.post('/api/confirmPurchase', async (req, res) => {
       platformFee: null,
       saleStatus: 'Completed',
       productionId: null,
-      shippingId: null,
+      shippingId: shipping.shippingId, // Associate the shipping record with the sale
       anonymousPurchase: false,
       agentPurchaserRelationship: null,
       termsConditions: null,
       paymentMethod: 'Credit Card',
+      buyerInfo,
+      collectorInfo,
+      deliveryLocation,
     };
 
     const sale = await Sale.create(saleDetails);
+    console.log('Created sale:', sale.toJSON());
 
     const token = jwt.sign({ userId, artworkId, saleId: sale.saleId }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
@@ -1744,16 +1769,71 @@ app.get('/api/purchase-success', authenticateToken, async (req, res) => {
   const { userId, artworkId, saleId } = req.user;
 
   try {
-    const sale = await Sale.findOne({ where: { saleId, buyerId: userId, artworkId } });
+    const sale = await Sale.findOne({ 
+      where: { saleId, buyerId: userId, artworkId },
+      include: [
+        { model: Users, as: 'buyer', include: [PersonContactInfo, OrganizationContactInfo] },
+        { model: Users, as: 'newOwner', include: [PersonContactInfo, OrganizationContactInfo] },
+        { model: Shipping, include: [{ model: Locations, as: 'destination' }] },
+      ]
+    });
 
     if (!sale) {
+      console.error('Sale not found or access denied.');
       return res.status(403).json({ error: 'Access denied. Invalid purchase information.' });
     }
 
-    res.json({ message: 'Purchase successful', sale });
+    const buyerInfo = sale.buyer.entityType === 'Person' ? sale.buyer.PersonContactInfo : sale.buyer.OrganizationContactInfo;
+    const collectorInfo = sale.newOwner.entityType === 'Person' ? sale.newOwner.PersonContactInfo : sale.newOwner.OrganizationContactInfo;
+
+    res.json({ 
+      message: 'Purchase successful', 
+      sale: {
+        saleId: sale.saleId,
+        saleDate: sale.saleDate,
+        salePrice: sale.salePrice,
+        purchasePrice: sale.purchasePrice,
+        paymentMethod: sale.paymentMethod,
+        saleType: sale.saleType,
+        saleStatus: sale.saleStatus,
+        buyerInfo,
+        collectorInfo,
+        deliveryLocation: sale.Shipping ? sale.Shipping.destination : null,
+        charityId: sale.charityId,
+        charityRevenue: sale.charityRevenue,
+        artistResaleRoyalty: sale.artistResaleRoyalty,
+        platformFee: sale.platformFee,
+      } 
+    });
   } catch (error) {
     console.error('Error fetching purchase details:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/updateShippingDetails/:shippingId', async (req, res) => {
+  const { shippingId } = req.params;
+  const { shippingCompanyId, originLocationId, shippedDate, trackingNumber } = req.body;
+
+  try {
+    const shipping = await Shipping.findByPk(shippingId);
+
+    if (!shipping) {
+      return res.status(404).json({ error: 'Shipping record not found' });
+    }
+
+    shipping.shippingCompanyId = shippingCompanyId;
+    shipping.originLocationId = originLocationId;
+    shipping.shippedDate = shippedDate;
+    shipping.trackingNumber = trackingNumber;
+    shipping.status = 'Shipped'; // or whatever status is appropriate
+
+    await shipping.save();
+
+    res.json({ success: true, shipping });
+  } catch (error) {
+    console.error('Error updating shipping details:', error);
+    res.status(500).json({ error: 'An error occurred while updating shipping details' });
   }
 });
 

@@ -12,7 +12,7 @@ Diptych.init({
   },
   diptychType: {
     type: DataTypes.ENUM,
-    values: ['Singles', 'mergedPortrait', 'mergedLandscape'],
+    values: ['entangledPrints', 'fusedPortrait', 'fusedLandscape'],
     allowNull: false,
   },
 }, {

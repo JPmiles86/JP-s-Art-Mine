@@ -7,7 +7,7 @@ const PrintSizes = require('./models/PrintSizes');
 const sequelize = require('./config/database');
 
 const diptychNameToTypeMapping = {
-  'Entangled Prints': 'Singles',
+  'Entangled Prints': 'entangledPrints',
   'Fused Circle': 'mergedLandscape',
   'Fused Diamond': 'mergedPortrait',
   'Fused Square': 'mergedLandscape',
@@ -17,17 +17,17 @@ const diptychNameToTypeMapping = {
 const aspectRatioToDiptychRatioMapping = {
   '2:3': {
     'Entangled Prints': '2x2:3',
-    'Fused Circle': '3:1',
-    'Fused Diamond': '4:3',
-    'Fused Square': '3:1',
-    'Fused Triangle': '4:3'
+    'Fused Circle': '1x4:3',
+    'Fused Diamond': '1x3:1',
+    'Fused Square': '1x4:3',
+    'Fused Triangle': '1x3:1'
   },
   '3:4': {
     'Entangled Prints': '2x3:4',
-    'Fused Circle': '8:3',
-    'Fused Diamond': '3:2',
-    'Fused Square': '8:3',
-    'Fused Triangle': '3:2'
+    'Fused Circle': '1x3:2',
+    'Fused Diamond': '1x8:3',
+    'Fused Square': '1x3:2',
+    'Fused Triangle': '1x8:3'
   }
 };
 
@@ -57,7 +57,9 @@ async function transformPhotoToArtworkData(photo) {
       const sizeRecord = await SizeCategories.findOne({ where: { sizeLabel: sizeName } });
 
       for (const edition of editions) {
-        const artworkID = `${photo.photoID}-${diptychName}-${aspectRatioToDiptychRatioMapping[photo.aspectRatio][diptychName]}-${sizeName}-${edition}`; 
+        // Replace spaces with dashes in diptychName
+        const diptychNameWithDash = diptychName.replace(/\s+/g, '-');
+        const artworkID = `${photo.photoID}-${diptychNameWithDash}-${aspectRatioToDiptychRatioMapping[photo.aspectRatio][diptychName]}-${sizeName}-${edition}`; 
 
         const pricing = await Pricing.findOne({
           where: {

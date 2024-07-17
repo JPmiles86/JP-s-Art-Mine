@@ -2,11 +2,11 @@
 const Diptych = require('./models/Diptych');
 
 const diptychData = [
-  { diptychName: 'Entangled Prints', diptychType: 'Singles' },
-  { diptychName: 'Fused Circle', diptychType: 'mergedLandscape' },
-  { diptychName: 'Fused Diamond', diptychType: 'mergedPortrait' },
-  { diptychName: 'Fused Square', diptychType: 'mergedLandscape' },
-  { diptychName: 'Fused Triangle', diptychType: 'mergedPortrait' },
+  { diptychName: 'Entangled Prints', diptychType: 'entangledPrints' },
+  { diptychName: 'Fused Circle', diptychType: 'fusedLandscape' },
+  { diptychName: 'Fused Diamond', diptychType: 'fusedPortrait' },
+  { diptychName: 'Fused Square', diptychType: 'fusedLandscape' },
+  { diptychName: 'Fused Triangle', diptychType: 'fusedPortrait' },
 ];
 
 const populateDiptychs = async () => {

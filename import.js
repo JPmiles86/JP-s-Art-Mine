@@ -5,7 +5,7 @@ const insertData = require('./insert_data');
 const createArtworks = require('./artwork_creation');
 const { resolve } = require('path');
 
-const date = '230303'; // Change this to modify YYMMDD
+const date = '230226'; // Change this to modify YYMMDD
 
 const year = '20' + date.slice(0,2); // extracts '23' and prefixes it with '20' to get '2023'
 const month = date.slice(2,4); // extracts '03'

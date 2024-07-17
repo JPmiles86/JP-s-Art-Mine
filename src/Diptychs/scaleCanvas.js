@@ -1,7 +1,7 @@
 // my-gallery/src/Diptychs/scaleCanvas.js
 
 export function scaleCanvas(canvas, originalWidth, originalHeight, container, callback) {
-  console.log('scaleCanvas called with container:', container);
+ // console.log('scaleCanvas called with container:', container);
 
   const containerWidth = container.clientWidth;
   const aspectRatio = originalWidth / originalHeight;
@@ -12,7 +12,7 @@ export function scaleCanvas(canvas, originalWidth, originalHeight, container, ca
 
   let scaleFactor = containerWidth / originalWidth;
 
-  console.log('Scale factor:', scaleFactor);
+ // console.log('Scale factor:', scaleFactor);
 
   canvas.setWidth(originalWidth * scaleFactor);
   canvas.setHeight(originalHeight * scaleFactor);
@@ -32,13 +32,13 @@ export function scaleCanvas(canvas, originalWidth, originalHeight, container, ca
     group.setCoords();
   }
 
-  console.log('Canvas dimensions after scaling:', canvas.getWidth(), canvas.getHeight());
+  //console.log('Canvas dimensions after scaling:', canvas.getWidth(), canvas.getHeight());
   canvas.renderAll();
 
   // Execute the callback function after scaling is complete
-  console.log('Canvas dimensions after scaling:', canvas.getWidth(), canvas.getHeight());
+  //console.log('Canvas dimensions after scaling:', canvas.getWidth(), canvas.getHeight());
   if (callback && typeof callback === 'function') {
-    console.log('Calling callback with height:', canvas.getHeight());
+   // console.log('Calling callback with height:', canvas.getHeight());
     callback(canvas.getHeight()); // This sends the height back up to the component
   }
 

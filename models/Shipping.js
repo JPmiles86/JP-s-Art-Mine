@@ -21,7 +21,7 @@ Shipping.init({
   },
   originLocationId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true, // Changed to allow null
     references: {
       model: 'Locations',
       key: 'locationId'
@@ -37,7 +37,7 @@ Shipping.init({
   },
   shippingCompanyId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true, // Changed to allow null
     references: {
       model: 'ShippingCompanies',
       key: 'shippingCompanyId'
@@ -49,7 +49,7 @@ Shipping.init({
   },
   shippedDate: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: true, // Changed to allow null
   },
   estimatedArrivalDate: {
     type: DataTypes.DATE,
@@ -61,7 +61,7 @@ Shipping.init({
   },
   shippingCost: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: true, // Changed to allow null
   },
   shippingInvoice: {
     type: DataTypes.STRING(255),

@@ -42,9 +42,9 @@ ALTER TYPE public."enum_Artworks_edition" OWNER TO jpm_art;
 --
 
 CREATE TYPE public."enum_Diptyches_diptychType" AS ENUM (
-    'Singles',
-    'mergedPortrait',
-    'mergedLandscape'
+    'entangledPrints',
+    'fusedPortrait',
+    'fusedLandscape'
 );
 
 
@@ -55,9 +55,9 @@ ALTER TYPE public."enum_Diptyches_diptychType" OWNER TO jpm_art;
 --
 
 CREATE TYPE public."enum_Diptychs_diptychType" AS ENUM (
-    'Singles',
-    'mergedPortrait',
-    'mergedLandscape',
+    'entangledPrints',
+    'fusedPortrait',
+    'fusedLandscape',
     'Entangled',
     'FusedPortrait',
     'FusedLandscape',
@@ -124,9 +124,9 @@ ALTER TYPE public."enum_PersonContactInfos_purchasePrivacyLevel" OWNER TO jpm_ar
 --
 
 CREATE TYPE public."enum_Pricings_diptychType" AS ENUM (
-    'Singles',
-    'mergedPortrait',
-    'mergedLandscape'
+    'entangledPrints',
+    'fusedPortrait',
+    'fusedLandscape'
 );
 
 
@@ -149,9 +149,9 @@ ALTER TYPE public."enum_Pricings_photoAspectRatio" OWNER TO jpm_art;
 --
 
 CREATE TYPE public."enum_PrintSizes_diptychType" AS ENUM (
-    'Singles',
-    'mergedPortrait',
-    'mergedLandscape'
+    'entangledPrints',
+    'fusedPortrait',
+    'fusedLandscape'
 );
 
 

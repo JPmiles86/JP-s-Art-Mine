@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Grid, Box, useTheme, useMediaQuery } from '@mui/material';
 import PurchaseArtworkCarousel from './PurchaseArtworkCarousel';
 import PurchaseArtworkDetails from './PurchaseArtworkDetails'; // Import the component
+import SalesDetailsModule from './SalesDetailsModule'; // Import the new component
 import buttonStyles from './ButtonStyles.module.css';
 import axios from 'axios';
 
@@ -28,6 +29,8 @@ const Success: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [saleDetails, setSaleDetails] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTokenAndAuthenticate = async () => {
@@ -36,7 +39,8 @@ const Success: React.FC = () => {
         console.log('Token:', token);
 
         if (!token) {
-          navigate('/');
+          setError('No purchase token found. Please complete a purchase first.');
+          setIsLoading(false);
           return;
         }
 
@@ -47,19 +51,25 @@ const Success: React.FC = () => {
         });
 
         console.log('Authentication Response:', authResponse.data);
+        console.log('Sale details:', authResponse.data);
+        if (authResponse.data && authResponse.data.sale) {
+          setSaleDetails(authResponse.data.sale);
+          console.log('Delivery location:', authResponse.data.sale.deliveryLocation);
+        } else {
+          setError('Sale details not found in the response.');
+        }
 
         // Ensure artworkID is available from the URL parameters
         if (artworkID) {
           fetchArtworkDetails(artworkID);
         } else {
-          console.error('Artwork ID is missing in URL parameters');
+          setError('Artwork ID is missing in URL parameters');
           setIsLoading(false);
-          navigate('/');
         }
       } catch (error) {
         console.error('Error during authentication:', error);
+        setError('An error occurred while fetching sale details.');
         setIsLoading(false);
-        navigate('/');
       }
     };
 
@@ -68,7 +78,6 @@ const Success: React.FC = () => {
         const response = await axios.get(`/api/artworks/${artworkID}/details`);
         console.log('Artwork Details Response:', response.data);
 
-        // Set the artwork details from the response
         setArtworkDetails({
           artworkId: response.data.artworkId,
           photoId: response.data.photoId,
@@ -85,6 +94,7 @@ const Success: React.FC = () => {
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching artwork details:', error);
+        setError('An error occurred while fetching artwork details.');
         setIsLoading(false);
       }
     };
@@ -94,6 +104,10 @@ const Success: React.FC = () => {
 
   if (isLoading) {
     return <Typography>Loading...</Typography>;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
   }
 
   if (!artworkDetails) {
@@ -137,6 +151,11 @@ const Success: React.FC = () => {
           <Box position="sticky" top={0}>
             {artworkDetails && (
               <PurchaseArtworkDetails artworkDetails={artworkDetails} />
+            )}
+            {saleDetails ? (
+              <SalesDetailsModule saleDetails={saleDetails} />
+            ) : (
+              <Typography>Sale details are not available.</Typography>
             )}
           </Box>
         </Grid>

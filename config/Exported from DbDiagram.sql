@@ -4,15 +4,15 @@ CREATE TYPE "enum_Artworks_edition" AS ENUM (
 );
 
 CREATE TYPE "enum_Diptyches_diptychType" AS ENUM (
-  'Singles',
-  'mergedPortrait',
-  'mergedLandscape'
+  'entangledPrints',
+  'fusedPortrait',
+  'fusedLandscape'
 );
 
 CREATE TYPE "enum_Diptychs_diptychType" AS ENUM (
-  'Singles',
-  'mergedPortrait',
-  'mergedLandscape',
+  'entangledPrints',
+  'fusedPortrait',
+  'fusedLandscape',
   'Entangled',
   'FusedPortrait',
   'FusedLandscape',
@@ -20,9 +20,9 @@ CREATE TYPE "enum_Diptychs_diptychType" AS ENUM (
 );
 
 CREATE TYPE "enum_Pricings_diptychType" AS ENUM (
-  'Singles',
-  'mergedPortrait',
-  'mergedLandscape'
+  'entangledPrints',
+  'fusedPortrait',
+  'fusedLandscape'
 );
 
 CREATE TYPE "enum_Pricings_photoAspectRatio" AS ENUM (
@@ -31,9 +31,9 @@ CREATE TYPE "enum_Pricings_photoAspectRatio" AS ENUM (
 );
 
 CREATE TYPE "enum_PrintSizes_diptychType" AS ENUM (
-  'Singles',
-  'mergedPortrait',
-  'mergedLandscape'
+  'entangledPrints',
+  'fusedPortrait',
+  'fusedLandscape'
 );
 
 CREATE TYPE "enum_PrintSizes_photoAspectRatio" AS ENUM (

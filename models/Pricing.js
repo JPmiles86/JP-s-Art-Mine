@@ -4,19 +4,19 @@ const sequelize = require('../config/database');
 
 const pricingMatrix = {
     '2:3': {
-      Singles: {
+      entangledPrints: {
         S: 100,
         M: 200,
         L: 300,
         XL: 400,
       },
-      mergedPortrait: {
+      fusedPortrait: {
         S: 150,
         M: 250,
         L: 350,
         XL: 450,
       },
-      mergedLandscape: {
+      fusedLandscape: {
         S: 200,
         M: 300,
         L: 400,
@@ -24,19 +24,19 @@ const pricingMatrix = {
       }
     },
     '3:4': {
-      Singles: {
+      entangledPrints: {
         S: 110,
         M: 210,
         L: 310,
         XL: 410,
       },
-      mergedPortrait: {
+      fusedPortrait: {
         S: 160,
         M: 260,
         L: 360,
         XL: 460,
       },
-      mergedLandscape: {
+      fusedLandscape: {
         S: 210,
         M: 310,
         L: 410,
@@ -71,7 +71,7 @@ Pricing.init({
     },
     diptychType: {
       type: DataTypes.ENUM,
-      values: ['Singles', 'mergedPortrait', 'mergedLandscape']
+      values: ['entangledPrints', 'fusedPortrait', 'fusedLandscape']
     },
     price: {
       type: DataTypes.FLOAT,

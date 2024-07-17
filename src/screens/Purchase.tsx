@@ -117,29 +117,30 @@ const Purchase: React.FC = () => {
     }
   }, [userId, artwork]);
 
-  // Update handleConfirmPurchase to pass collector userId
-const handleConfirmPurchase = async () => {
-  try {
-    const response = await axios.post('/api/confirmPurchase', {
-      userId,
-      artworkId: artwork?.id,
-      buyerInfo,
-      collectorInfo: collectorInfo || buyerInfo, // Use buyerInfo if collectorInfo is null
-      deliveryLocation,
-      billingLocation,
-      artworkPrice,
-    });
-
-    if (response.data.success) {
-      localStorage.setItem('purchaseToken', response.data.token);
-      navigate(`/${filter}/${photoID}/success/${artworkID}`);
-    } else {
-      console.error('Purchase failed');
+  const handleConfirmPurchase = async () => {
+    try {
+      const response = await axios.post('/api/confirmPurchase', {
+        userId,
+        artworkId: artwork?.id,
+        buyerInfo,
+        collectorInfo: collectorInfo || buyerInfo,
+        deliveryLocation,
+        billingLocation,
+        artworkPrice,
+      });
+  
+      if (response.data.success) {
+        console.log('Purchase successful:', response.data);
+        localStorage.setItem('purchaseToken', response.data.token);
+        console.log('Token stored in localStorage:', response.data.token);
+        navigate(`/${filter}/${photoID}/success/${artworkID}`);
+      } else {
+        console.error('Purchase failed:', response.data);
+      }
+    } catch (error) {
+      console.error('Error confirming purchase:', error);
     }
-  } catch (error) {
-    console.error('Error confirming purchase:', error);
-  }
-};
+  };
 
   const toggleTimerDisplay = () => {
     setMinimized(!minimized);

@@ -11,8 +11,7 @@ const { Photo, CameraModel, Series, Dates, ImageNumbers,
     Production, Shipping, ArtworkTransaction, Exhibition, ConditionReport,
     Document, Insurance, ArtworkTransfer, Loan, ArtworkImage, ExhibitionImage, 
     ArtworkTag, PrintShop, PrinterMachine, ShippingCompany, APSaleEligibility, 
-    UserNotification, ArtworkPending, ArtworkLocations, PurchaseProvenanceRecords, 
-    PurchaseLocations } = models;
+    UserNotification, ArtworkPending, ArtworkLocations, PurchaseProvenanceRecords, PurchaseLocations } = models;
 
 // Artwork associations
 Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
