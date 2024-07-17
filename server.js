@@ -1695,7 +1695,7 @@ app.post('/api/confirmPurchase', async (req, res) => {
   const { userId, artworkId, buyerInfo, collectorInfo, deliveryLocation, billingLocation, artworkPrice } = req.body;
 
   try {
-    await updateArtworkStatus(artworkId, 'Sold');
+    await updateArtworkStatus(artworkId, 'Sold'); // Here, status is 'Sold'
     await ArtworkPending.destroy({ where: { artworkId } });
 
     // Create a new location for delivery if it doesn't exist
@@ -1754,6 +1754,9 @@ app.post('/api/confirmPurchase', async (req, res) => {
     console.log('Created sale:', sale.toJSON());
 
     const token = jwt.sign({ userId, artworkId, saleId: sale.saleId }, JWT_SECRET_KEY, { expiresIn: '1h' });
+
+    // Emit the status update event to all connected clients
+    io.emit('artworkStatusUpdated', { artworkID: artworkId, status: 'Sold' });
 
     console.log('Generated JWT Token:', token);
     console.log('Token Contents:', { userId, artworkId, saleId: sale.saleId });

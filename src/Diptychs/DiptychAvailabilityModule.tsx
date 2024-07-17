@@ -70,7 +70,7 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
   const cpArtworks = artworkDetails.filter(artwork => artwork.edition === 'CP');
   const apArtworks = artworkDetails.filter(artwork => artwork.edition === 'AP');
 
-    // Define the desired size order
+  // Define the desired size order
   const sizeOrder = ['Small', 'Medium', 'Large', 'X-Large'];
 
   // Sort the cpArtworks array using the custom sorting function
@@ -92,6 +92,7 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
     setSocket(newSocket);
   
     newSocket.on('artworkStatusUpdated', ({ artworkID, status }) => {
+      console.log('Received artworkStatusUpdated event:', { artworkID, status });
       setArtworkDetails((prevDetails) =>
         prevDetails.map((artwork) =>
           artwork.artworkId === artworkID ? { ...artwork, status } : artwork
@@ -100,6 +101,7 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
     });
   
     return () => {
+      console.log('Disconnecting socket...');
       newSocket.disconnect();
     };
   }, []);
@@ -137,10 +139,10 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
           <tr>
             <th className={styles.tableCell}>Size</th>
             <th className={styles.tableCell}>
-            <Box display="flex" flexDirection="column" alignItems="center">
-              <Typography><strong>Print Size</strong></Typography>
-              <Typography><strong>{showInInches ? '(inches)' : '(cm)'}</strong></Typography>
-            </Box>
+              <Box display="flex" flexDirection="column" alignItems="center">
+                <Typography><strong>Print Size</strong></Typography>
+                <Typography><strong>{showInInches ? '(inches)' : '(cm)'}</strong></Typography>
+              </Box>
             </th>
             <th className={styles.tableCell}>CP Price (USD)</th>
             <th className={styles.tableCell}>Artwork Availability <br></br>(Collector's Print)</th>

@@ -1,5 +1,3 @@
-// my-gallery/src/screens/Purchase.tsx
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -64,12 +62,12 @@ const Purchase: React.FC = () => {
               setShowAuthModal(true);
               setShowSignUpNote(true);
             } else {
-              await updateArtworkStatus(response.data.artworkID, userId);
+              await updateArtworkStatus(response.data.artworkID, 'Pending Sale', userId);
               await updateArtworkPendingEntry(response.data.id, userId);
               startCountdownTimer();
             }
           } else {
-            await updateArtworkStatus(response.data.artworkID, null);
+            await updateArtworkStatus(response.data.artworkID, 'Pending Sale', null);
             await updateArtworkPendingEntry(response.data.id, null);
             startCountdownTimer();
             setTimeout(() => {
@@ -133,6 +131,9 @@ const Purchase: React.FC = () => {
         console.log('Purchase successful:', response.data);
         localStorage.setItem('purchaseToken', response.data.token);
         console.log('Token stored in localStorage:', response.data.token);
+        if (artwork?.artworkID) {
+          await updateArtworkStatus(artwork.artworkID, 'Sold', userId); // Update status to 'Sold'
+        }
         navigate(`/${filter}/${photoID}/success/${artworkID}`);
       } else {
         console.error('Purchase failed:', response.data);
