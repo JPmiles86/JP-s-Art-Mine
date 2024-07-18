@@ -1,4 +1,3 @@
-// ImageGrid.tsx
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ImageGrid.module.css';
@@ -223,6 +222,7 @@ const ImageGrid: React.FC = () => {
                     src={`${urlConfig.baseURL}${gridHeaderData.imageUrl.slice(gridHeaderData.imageUrl.indexOf('originals') + 'originals'.length)}`}
                     alt="Header"
                     className={styles.circularImage}
+                    style={{ marginTop: '10px' }} // Add this line for margin
                   />
                 )}
               </>

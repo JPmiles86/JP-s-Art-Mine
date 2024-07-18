@@ -1,8 +1,9 @@
 // my-gallery/src/components/forms/PurchaseReviewForm.tsx
 
 import React from 'react';
-import { Grid, Typography, Button } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
+import { formatDimensions } from '../../utils/formatDimensions';
 
 interface PurchaseReviewFormProps {
   buyerInfo: any;
@@ -39,7 +40,7 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
   };
 
   return (
-    <div className={className} style={{ backgroundColor: '#f5f5f5', padding: '20px' }}>
+    <div className={className} style={{ backgroundColor: '#f5f5f5', padding: '20px', marginBottom: '30px' }}>
       <Typography
         variant="h6"
         style={{
@@ -63,8 +64,8 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
             <Typography variant="body2"><strong>Edition:</strong> {artworkDetails?.edition === 'CP' ? "Collector's Print - 1/1" : "Artist's Print - 1/1"}</Typography>
             <br></br>
             <Typography variant="body2"><strong>Artwork Size:</strong> {artworkDetails?.sizeName}</Typography>
-            <Typography variant="body2"><strong>Print Size (inches):</strong> {artworkDetails?.printSizeInInches}</Typography>
-            <Typography variant="body2"><strong>Print Size (cm):</strong> {artworkDetails?.printSizeInCm}</Typography>
+            <Typography variant="body2"><strong>Print Size (inches):</strong> {formatDimensions(artworkDetails?.printSizeInInches)}</Typography>
+            <Typography variant="body2"><strong>Print Size (cm):</strong> {formatDimensions(artworkDetails?.printSizeInCm)}</Typography>
             <br></br>
             <Typography variant="body1"><strong>Price: ${artworkDetails?.price}</strong></Typography>
             <Typography variant="body2"><strong>Currency: {artworkDetails?.currency}</strong></Typography>
@@ -114,7 +115,7 @@ const PurchaseReviewForm: React.FC<PurchaseReviewFormProps> = ({
             <Typography variant="body2">{billingLocation?.country}</Typography>
           </Grid>
           <Grid item xs={12}>
-            <button className={buttonStyles.button} style={{ marginBottom: '30px' }} onClick={() => onConfirmPurchase(artworkDetails?.price)}>
+            <button className={buttonStyles.button} style={{ marginBottom: '15px' }} onClick={() => onConfirmPurchase(artworkDetails?.price)}>
               Confirm Purchase
             </button>
           </Grid>

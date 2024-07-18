@@ -7,6 +7,7 @@ import buttonStyles from '../screens/ButtonStyles.module.css';
 import styles from './DiptychAvailabilityStyles.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { formatDimensions } from '../utils/formatDimensions';
 
 interface ArtworkDetail {
   artworkId: string;
@@ -154,7 +155,7 @@ const DiptychAvailabilityModule: React.FC<DiptychAvailabilityModuleProps> = ({ p
             <tr key={cpArtwork.artworkId}>
               <td className={styles.tableCellContents}>{cpArtwork.sizeName}</td>
               <td className={styles.tableCellContents}>
-                {showInInches ? cpArtwork.printSizeInInches : cpArtwork.printSizeInCm}
+                {showInInches ? formatDimensions(cpArtwork.printSizeInInches) : formatDimensions(cpArtwork.printSizeInCm)}
               </td>
               <td className={styles.tableCellContents}>${cpArtwork.price.toFixed(0)}</td>
               <td className={styles.tableCellContents}>

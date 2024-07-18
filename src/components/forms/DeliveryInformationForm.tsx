@@ -1,7 +1,7 @@
 // my-gallery/src/components/forms/DeliveryInformationForm.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, SelectChangeEvent, TextField, Select, MenuItem } from '@mui/material';
+import { Grid, Typography, SelectChangeEvent, TextField, Select, MenuItem, Button } from '@mui/material';
 import axios from 'axios';
 import LocationFormPurchase, { Location } from './LocationFormPurchase';
 import buttonStyles from '../../screens/ButtonStyles.module.css';
@@ -130,6 +130,12 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
     setIsEditingRecipient(false);
   };
 
+  const handleCancelRecipient = () => {
+    setDeliveryRecipient('');
+    setIsEditingRecipient(false);
+    setOtherRecipientInfo({ name: '', phoneNumber: '' });
+  };
+
   const getRecipientInfo = (recipient: string) => {
     const info = recipient === 'buyer' ? buyerInfo : collectorInfo;
 
@@ -148,7 +154,6 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
 
     return null;
   };
-
 
   return (
     <div className={className} style={{ backgroundColor: isEditing || !selectedLocation ? '#f5f5f5' : '#ffffff', padding: '20px' }}>
@@ -247,6 +252,9 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                         <button className={buttonStyles.button} onClick={handleSaveRecipient}>
                           Save
                         </button>
+                        <button className={buttonStyles.button} onClick={handleCancelRecipient}>
+                          Cancel
+                        </button>
                       </Grid>
                     </>
                   )}
@@ -277,6 +285,9 @@ const DeliveryInformationForm: React.FC<DeliveryInformationFormProps> = ({ userI
                       <Grid item xs={12}>
                         <button className={buttonStyles.button} onClick={handleSaveRecipient}>
                           Save
+                        </button>
+                        <button className={buttonStyles.button} onClick={handleCancelRecipient}>
+                          Cancel
                         </button>
                       </Grid>
                     </Grid>

@@ -99,7 +99,7 @@ const SalesDetailsModule: React.FC<SalesDetailsModuleProps> = ({ saleDetails }) 
     };
   
     return (
-        <Box mt={4} style={{ backgroundColor: '#f5f5f5', padding: '16px' }}>
+        <Box mt={4} style={{ backgroundColor: '#f5f5f5', padding: '16px', marginBottom: '30px' }}>
           <Typography variant="h5" gutterBottom>
             <strong>Sales Details</strong>
           </Typography>

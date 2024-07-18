@@ -1,6 +1,9 @@
+// my-gallery/src/components/forms/PurchaseArtworkDetails.tsx
+
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 import buttonStyles from './ButtonStyles.module.css';
+import { formatDimensions } from '../utils/formatDimensions';
 
 interface PurchaseArtworkDetailsProps {
   artworkDetails: any;
@@ -23,8 +26,8 @@ const PurchaseArtworkDetails: React.FC<PurchaseArtworkDetailsProps> = React.memo
       </Box>
       <Box mt={2}>
         <Typography><strong>Artwork Size:</strong> {artworkDetails.sizeName}</Typography>
-        <Typography><strong>Print Size (inches):</strong> {artworkDetails.printSizeInInches}</Typography>
-        <Typography><strong>Print Size (cm):</strong> {artworkDetails.printSizeInCm}</Typography>
+        <Typography><strong>Print Size (inches):</strong> {formatDimensions(artworkDetails.printSizeInInches)}</Typography>
+        <Typography><strong>Print Size (cm):</strong> {formatDimensions(artworkDetails.printSizeInCm)}</Typography>
       </Box>
       <Box mt={2}>
         <Typography variant="h6"><strong>Price: ${artworkDetails.price}</strong></Typography>
