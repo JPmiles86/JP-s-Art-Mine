@@ -128,7 +128,6 @@ const TopNavBar: React.FC = () => {
     const photoID = pathSegments[2];
   
     if (location.pathname === '/favorites') {
-      // Favorites page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -140,7 +139,6 @@ const TopNavBar: React.FC = () => {
         </>
       );
     } else if (location.pathname === '/profile') {
-      // Profile page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -151,10 +149,23 @@ const TopNavBar: React.FC = () => {
           </Link>
         </>
       );
+    } else if (location.pathname === '/refer-a-friend') {
+      return (
+        <>
+          <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <Link to="/favorites" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
+            My Favorites
+          </Link>
+          <Link to="/profile" className={ButtonStyles.navButtonBig} style={{ textDecoration: 'none' }}>
+            My Profile
+          </Link>
+        </>
+      );
     } else if (location.pathname === '/') {
       return null;
     } else if (location.pathname.startsWith(`/${filter}`) && !location.pathname.includes(`/${photoID}`)) {
-      // Image Grid page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -166,7 +177,6 @@ const TopNavBar: React.FC = () => {
         </>
       );
     } else if (location.pathname === `/${filter}/${photoID}`) {
-      // Exhibition Space page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -184,7 +194,6 @@ const TopNavBar: React.FC = () => {
         </>
       );
     } else if (location.pathname === `/${filter}/${photoID}/inquire`) {
-      // Inquire page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -202,7 +211,6 @@ const TopNavBar: React.FC = () => {
         </>
       );
     } else if (location.pathname.startsWith(`/${filter}/${photoID}/purchase`) || location.pathname.startsWith(`/${filter}/${photoID}/request`)) {
-      // Purchase or Request Access page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -223,7 +231,6 @@ const TopNavBar: React.FC = () => {
         </>
       );
     } else if (location.pathname.startsWith(`/${filter}/${photoID}/success`)) {
-      // Success page
       return (
         <>
           <Link to="/" className={ButtonStyles.navButtonBig} style={{ marginRight: '20px', textDecoration: 'none' }}>
@@ -243,7 +250,7 @@ const TopNavBar: React.FC = () => {
     }
   
     return null;
-  };
+  };  
   
   return (
     <AppBar
@@ -308,6 +315,9 @@ const TopNavBar: React.FC = () => {
               </MenuItem>
               <MenuItem onClick={() => handleMenuItemClick('/curation-lists')}>
                 Curation Lists
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuItemClick('/refer-a-friend')}>
+                Refer a Friend {/* Add this menu item */}
               </MenuItem>
               <MenuItem onClick={logout}>Logout</MenuItem>
             </Menu>

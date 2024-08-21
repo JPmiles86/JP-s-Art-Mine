@@ -12,7 +12,10 @@ const { Photo, CameraModel, Series, Dates, ImageNumbers,
     Document, Insurance, ArtworkTransfer, Loan, ArtworkImage, ExhibitionImage, 
     ArtworkTag, PrintShop, PrinterMachine, ShippingCompany, APSaleEligibility, 
     UserNotification, ArtworkPending, ArtworkLocations, PurchaseProvenanceRecords, 
-    PurchaseLocations } = models;
+    PurchaseLocations, Referrals, DiscountCodes, Reward, 
+    Subscriber, SubscriberQuota, CurationListWebsite, CurationListArtMine, 
+    CurationListUser, CurationListUserPhotos, ColorCategory, ColorShade, PhotoColor,
+} = models;
 
 // Artwork associations
 Artwork.belongsTo(Photo, { foreignKey: 'photoRefId' });
@@ -146,6 +149,11 @@ HiddenPhoto.belongsTo(Photo, { foreignKey: 'photoId' });
 Users.hasMany(HiddenPhoto, { foreignKey: 'userId' });
 HiddenPhoto.belongsTo(Users, { foreignKey: 'userId' });
 
+Referrals.belongsTo(Users, { as: 'referrer', foreignKey: 'referrerId' });
+Users.hasMany(Referrals, { foreignKey: 'referrerId', as: 'referrals' });
+
+Users.hasMany(DiscountCodes, { foreignKey: 'userId' });
+DiscountCodes.belongsTo(Users, { foreignKey: 'userId' });
 
 // Event associations
 Event.belongsTo(EventType, { foreignKey: 'eventTypeId' });
@@ -193,6 +201,17 @@ Shipping.hasMany(Sale, { foreignKey: 'shippingId' });
 Sale.hasMany(Document, { foreignKey: 'saleId' });
 Document.belongsTo(Sale, { foreignKey: 'saleId' });
 
+// Add these lines to associate Sale with Referrals
+Sale.hasOne(Referrals, { foreignKey: 'referrerId', sourceKey: 'buyerId', as: 'referral' });
+Referrals.belongsTo(Sale, { foreignKey: 'referrerId', targetKey: 'buyerId', as: 'sale' });
+
+// Rewards associations
+Users.hasMany(Reward, { foreignKey: 'userId' });
+Reward.belongsTo(Users, { foreignKey: 'userId' });
+
+// Optional: If you want to associate Rewards with Sales
+Sale.hasMany(Reward, { foreignKey: 'saleId' });
+Reward.belongsTo(Sale, { foreignKey: 'saleId' });
 
 // Production associations
 Production.belongsTo(Users, { as: 'printShop', foreignKey: 'printShopId' });
@@ -304,3 +323,82 @@ Sale.hasMany(PurchaseLocations, { foreignKey: 'saleId' });
 
 PurchaseLocations.belongsTo(Locations, { foreignKey: 'locationId' });
 Locations.hasMany(PurchaseLocations, { foreignKey: 'locationId' });
+
+// Referrals associations
+Users.hasMany(Referrals, { foreignKey: 'referrerId' });
+Referrals.belongsTo(Users, { foreignKey: 'referrerId' });
+
+// Rewards associations
+Users.hasMany(Reward, { foreignKey: 'userId' });
+Reward.belongsTo(Users, { foreignKey: 'userId' });
+
+// Optional: If you want to associate Rewards with Sales
+Sale.hasMany(Reward, { foreignKey: 'saleId' });
+Reward.belongsTo(Sale, { foreignKey: 'saleId' });
+
+
+// Subscriber associations
+Users.hasOne(Subscriber, { foreignKey: 'userId' });
+Subscriber.belongsTo(Users, { foreignKey: 'userId' });
+
+Subscriber.hasMany(SubscriberQuota, { foreignKey: 'subscriberId' });
+SubscriberQuota.belongsTo(Subscriber, { foreignKey: 'subscriberId' });
+
+// CurationListWebsite associations
+Photo.hasMany(CurationListWebsite, { foreignKey: 'photoId' });
+CurationListWebsite.belongsTo(Photo, { foreignKey: 'photoId' });
+
+DiptychSVG.hasMany(CurationListWebsite, { foreignKey: 'diptychSvgId' });
+CurationListWebsite.belongsTo(DiptychSVG, { foreignKey: 'diptychSvgId' });
+
+Users.hasMany(CurationListWebsite, { foreignKey: 'addedBy' });
+CurationListWebsite.belongsTo(Users, { foreignKey: 'addedBy' });
+
+// CurationListArtMine associations
+Photo.hasMany(CurationListArtMine, { foreignKey: 'photoId' });
+CurationListArtMine.belongsTo(Photo, { foreignKey: 'photoId' });
+
+DiptychSVG.hasMany(CurationListArtMine, { foreignKey: 'diptychSvgId' });
+CurationListArtMine.belongsTo(DiptychSVG, { foreignKey: 'diptychSvgId' });
+
+Users.hasMany(CurationListArtMine, { foreignKey: 'addedBy' });
+CurationListArtMine.belongsTo(Users, { foreignKey: 'addedBy' });
+
+// Make sure these associations for Referrals and Rewards are present
+Users.hasMany(Referrals, { foreignKey: 'referrerId' });
+Referrals.belongsTo(Users, { foreignKey: 'referrerId' });
+
+Users.hasMany(Reward, { foreignKey: 'userId' });
+Reward.belongsTo(Users, { foreignKey: 'userId' });
+
+Users.hasMany(CurationListUser, { foreignKey: 'userId' });
+CurationListUser.belongsTo(Users, { foreignKey: 'userId' });
+
+// Curation List to Curation List Photos Association
+CurationListUser.hasMany(CurationListUserPhotos, { foreignKey: 'listId' });
+CurationListUserPhotos.belongsTo(CurationListUser, { foreignKey: 'listId' });
+
+// Photo to Curation List Photos Association
+Photo.hasMany(CurationListUserPhotos, { foreignKey: 'photoId' });
+CurationListUserPhotos.belongsTo(Photo, { foreignKey: 'photoId' });
+
+
+// Reward associations
+Reward.belongsTo(Users, { foreignKey: 'userId', as: 'user' });
+Reward.belongsTo(Sale, { foreignKey: 'saleId', as: 'sale' });
+
+// User associations
+Users.hasMany(Reward, { foreignKey: 'userId', as: 'rewards' });
+
+// Sale associations
+Sale.hasMany(Reward, { foreignKey: 'saleId', as: 'rewards' });
+
+// color assosiations
+ColorCategory.hasMany(ColorShade, { foreignKey: 'colorCategoryId' });
+ColorShade.belongsTo(ColorCategory, { foreignKey: 'colorCategoryId' });
+
+Photo.hasMany(PhotoColor, { foreignKey: 'photoId' });
+PhotoColor.belongsTo(Photo, { foreignKey: 'photoId' });
+
+ColorShade.hasMany(PhotoColor, { foreignKey: 'colorShadeId' });
+PhotoColor.belongsTo(ColorShade, { foreignKey: 'colorShadeId' });

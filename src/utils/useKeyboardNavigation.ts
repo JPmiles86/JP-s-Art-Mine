@@ -1,16 +1,4 @@
-// my-gallery/src/screens/useKeyboardNavigation.ts
-
 import { useEffect } from 'react';
-
-// const { isAuthModalOpen } = useStore((state) => state);
-
-// useKeyboardNavigation(
-//  isAuthModalOpen ? () => {} : wrappedHandleNextPhoto,
-//  isAuthModalOpen ? () => {} : wrappedHandlePrevPhoto,
-//  isAuthModalOpen ? () => {} : handleSwapShape,
-//  isAuthModalOpen ? () => {} : handleRotateShape,
-//  isAuthModalOpen ? () => {} : handleToggleMergeStatus
-// );
 
 const useKeyboardNavigation = (
   handleNextPhoto: (() => void) | undefined,
@@ -18,39 +6,45 @@ const useKeyboardNavigation = (
   swapShape: () => void,
   rotateShape: () => void,
   toggleMergeStatus: () => void,
-  isAuthModalOpen: boolean
+  isModalOpen: boolean
 ) => {
   useEffect(() => {
+    console.log("isAnyModalOpen: ", isModalOpen); // Debugging
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only execute keyboard navigation logic if AuthModal is not open
-      if (!isAuthModalOpen) {
-      switch (e.key) {
-        case 'ArrowRight':
-          handleNextPhoto?.();
-          break;
-        case 'ArrowLeft':
-          handlePrevPhoto?.();
-          break;
-        case 'ArrowUp':
-        case 's':
-        case 'S':
-          swapShape();
-          break;
-        case 'ArrowDown':
-        case 'r':
-        case 'R':
-          rotateShape();
-          break;
-        case '0':
-        case 'm':
-        case 'M':
-        case ' ':
-          toggleMergeStatus();
-          break;
-        default:
-          break;
+      // Only execute keyboard navigation logic if no modal is open
+      if (!isModalOpen) {
+        switch (e.key) {
+          case 'ArrowRight':
+          case 'n':
+          case 'N':
+            handleNextPhoto?.();
+            break;
+          case 'ArrowLeft':
+          case 'p':
+          case 'P':
+            handlePrevPhoto?.();
+            break;
+          case 'ArrowUp':
+          case 's':
+          case 'S':
+            swapShape();
+            break;
+          case 'ArrowDown':
+          case 'r':
+          case 'R':
+            rotateShape();
+            break;
+          case '0':
+          case 'm':
+          case 'M':
+          case ' ':
+            toggleMergeStatus();
+            break;
+          default:
+            break;
+        }
       }
-     }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -58,7 +52,7 @@ const useKeyboardNavigation = (
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleNextPhoto, handlePrevPhoto, rotateShape, swapShape, toggleMergeStatus, isAuthModalOpen]);
+  }, [handleNextPhoto, handlePrevPhoto, rotateShape, swapShape, toggleMergeStatus, isModalOpen]);
 };
 
 export default useKeyboardNavigation;

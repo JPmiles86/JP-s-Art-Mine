@@ -1,4 +1,4 @@
-// createPhotosTable.js
+// my-gallery/createPhotosTable.js
 const sequelize = require('./config/database');
 const Photo = require('./models/Photo');
 

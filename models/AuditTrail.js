@@ -1,38 +1,49 @@
-// my-gallery/models/AuditTrail.js
-
-const { DataTypes } = require('sequelize');
+// AuditTrail.js
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Users = require('./Users');
 
-const AuditTrail = sequelize.define('AuditTrail', {
+class AuditTrail extends Model {}
+
+AuditTrail.init({
   AuditID: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true
+    primaryKey: true,
   },
   UserID: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Users,
-      key: 'userId'
-    }
+      model: 'Users',
+      key: 'userId',
+    },
   },
   ChangeType: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   ChangeDetails: {
     type: DataTypes.TEXT,
-    allowNull: false
+    allowNull: false,
+  },
+  EntityID: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  EntityType: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   ChangeDate: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: DataTypes.NOW
-  }
+    defaultValue: DataTypes.NOW,
+  },
 }, {
-  timestamps: false
+  sequelize,
+  modelName: 'AuditTrail',
+  tableName: 'AuditTrails',
+  timestamps: false,
 });
 
 module.exports = AuditTrail;

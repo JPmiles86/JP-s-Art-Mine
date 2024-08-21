@@ -1,31 +1,15 @@
-//my-gallery/src/screens/Success.tsx
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Grid, Box, useTheme, useMediaQuery } from '@mui/material';
 import PurchaseArtworkCarousel from './PurchaseArtworkCarousel';
-import PurchaseArtworkDetails from './PurchaseArtworkDetails'; // Import the component
-import SalesDetailsModule from './SalesDetailsModule'; // Import the new component
-import buttonStyles from './ButtonStyles.module.css';
+import PurchaseArtworkDetails from './PurchaseArtworkDetails';
+import SalesDetailsModule from './SalesDetailsModule';
 import axios from 'axios';
-
-interface ArtworkDetails {
-  artworkId: string;
-  photoId?: string;
-  diptychId?: number;
-  diptychName?: string;
-  edition?: string;
-  sizeName?: string;
-  printSizeInInches?: string;
-  printSizeInCm?: string;
-  price?: number; // Corrected from salePrice to price to match the API response
-  currency?: string;
-}
 
 const Success: React.FC = () => {
   const { filter, photoID, artworkID } = useParams<{ filter: string; photoID: string; artworkID: string }>();
   const navigate = useNavigate();
-  const [artworkDetails, setArtworkDetails] = useState<ArtworkDetails | null>(null);
+  const [artworkDetails, setArtworkDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -50,16 +34,14 @@ const Success: React.FC = () => {
           },
         });
 
-        console.log('Authentication Response:', authResponse.data);
-        console.log('Sale details:', authResponse.data);
         if (authResponse.data && authResponse.data.sale) {
           setSaleDetails(authResponse.data.sale);
-          console.log('Delivery location:', authResponse.data.sale.deliveryLocation);
+          console.log('Fetched Sale Details:', authResponse.data.sale);
+
         } else {
           setError('Sale details not found in the response.');
         }
 
-        // Ensure artworkID is available from the URL parameters
         if (artworkID) {
           fetchArtworkDetails(artworkID);
         } else {
@@ -140,7 +122,6 @@ const Success: React.FC = () => {
         As the artist, I am deeply grateful for your support. This means a lot to me, and I hope you enjoy your new artwork.
       </Typography>
       
-
       <Grid container spacing={4}>
         <Grid item xs={12} md={7}>
           <Box style={{ marginTop: '30px' }} position="relative">

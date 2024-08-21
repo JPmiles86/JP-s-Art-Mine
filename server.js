@@ -12,6 +12,9 @@ const multer = require('multer');
 const path = require('path');
 require('./models/associations');
 const Photo = require('./models/Photo');
+const ColorCategory = require('./models/ColorCategory');
+const ColorShade = require('./models/ColorShade');
+const PhotoColor = require('./models/PhotoColor');
 const Series = require('./models/Series');
 const Dates = require('./models/Dates');
 const ImageNumbers = require('./models/ImageNumbers');
@@ -23,6 +26,7 @@ const Pricing = require('./models/Pricing');
 const PrintSizes = require('./models/PrintSizes');
 const SizeCategories = require('./models/SizeCategories');
 const Users = require('./models/Users');
+const Referrals = require('./models/Referrals');
 // const EntityType = require('./models/EntityType');
 const Locations = require('./models/Locations');
 const PersonContactInfo = require('./models/PersonContactInfo');
@@ -40,6 +44,11 @@ const HiddenPhoto = require('./models/HiddenPhoto');
 const UserLocations = require('./models/UserLocations');
 const ArtworkPending = require('./models/ArtworkPending');
 const authRoutes = require('./src/routes/authRoutes');
+const curationRoutes = require('./src/routes/curationRoutes');
+const Reward = require('./models/Reward');
+const { rewardReferrer, rewardCurator } = require('./src/utils/rewardsService');
+const { sendRewardNotification, sendRewardNotificationToReferrer } = require('./src/utils/emailService');
+const { getUserDetails } = require('./src/utils/userService'); // Import the user service
 // const artworkApi = require('./src/routes/artworkApi'); 
 const passport = require('passport');
 const url = require('url');
@@ -54,6 +63,7 @@ const stripe = require('stripe')('sk_test_51PDsBALgrr7kNbZdltUvNjrZgbhd2ro4kb3Gw
 const jwt = require('jsonwebtoken');
 const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 
+const router = express.Router();
 
 const io = require('socket.io')(http, {
   cors: {
@@ -64,7 +74,7 @@ const io = require('socket.io')(http, {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, '/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals/userProfileImages');
+    cb(null, '/Users/jpmiles/JPMilesArtGallery/my-gallery/public/assets/images/originals/userProfileImages');
   },
   filename: function (req, file, cb) {
     const userId = req.params.userId;
@@ -118,11 +128,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+app.use(router);
+
 app.use(express.json()); // Make sure you have this line to parse JSON body
 
-app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals'));
+app.use('/images', express.static('/Users/jpmiles/JPMilesArtGallery/my-gallery/public/assets/images/originals'));
 
 app.use('/api/auth', authRoutes);
+
+app.use('/api/curation', curationRoutes);
 
 app.use(bodyParser.json());
 
@@ -1233,7 +1247,7 @@ app.post('/api/users/:userId/profile-photo', upload.single('profilePhoto'), asyn
     if (user) {
       // Delete the old profile photo file if it exists
       if (user.profilePhotoUrl) {
-        const oldPhotoPath = path.join('/Users/jpmiles/JPMilesArtGallery/my-gallery/build/assets/images/originals', user.profilePhotoUrl);
+        const oldPhotoPath = path.join('/Users/jpmiles/JPMilesArtGallery/my-gallery/public/assets/images/originals', user.profilePhotoUrl);
         console.log('Old photo path:', oldPhotoPath);
         if (fs.existsSync(oldPhotoPath)) {
           console.log('Deleting old profile photo:', oldPhotoPath);
@@ -1535,7 +1549,7 @@ app.post('/api/artworks/:artworkID/purchase', async (req, res) => {
   const { buyerInfo } = req.body;
 
   try {
-    // Process the purchase
+    // Process the purchase (save buyer information, update artwork status, create records)
     // Save the buyer information to the database (PurchaseProvenanceRecords table)
     // Update the artwork status
     // Create records in the Sales and ArtworkTransfer tables
@@ -1547,7 +1561,10 @@ app.post('/api/artworks/:artworkID/purchase', async (req, res) => {
       await OrganizationContactInfo.upsert(buyerInfo);
     }
 
-    res.status(200).json({ message: 'Purchase successful' });
+    // Log buyer information
+    console.log('Buyer Info Email:', buyerInfo.email);
+
+    res.status(200).json({ message: 'Purchase information processed successfully' });
   } catch (error) {
     console.error('Error processing purchase:', error);
     res.status(500).json({ error: 'An error occurred while processing the purchase' });
@@ -1672,7 +1689,7 @@ app.post('/api/createPaymentIntent', async (req, res) => {
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: artworkPrice * 100, // Convert to cents
+      amount: artworkPrice * 100,
       currency: 'usd',
       payment_method: paymentMethodId,
       confirmation_method: 'manual',
@@ -1694,11 +1711,15 @@ app.post('/api/createPaymentIntent', async (req, res) => {
 app.post('/api/confirmPurchase', async (req, res) => {
   const { userId, artworkId, buyerInfo, collectorInfo, deliveryLocation, billingLocation, artworkPrice } = req.body;
 
-  try {
-    await updateArtworkStatus(artworkId, 'Sold'); // Here, status is 'Sold'
-    await ArtworkPending.destroy({ where: { artworkId } });
+  console.log('Confirm Purchase Request:', req.body);
 
-    // Create a new location for delivery if it doesn't exist
+  try {
+    await updateArtworkStatus(artworkId, 'Sold');
+    console.log('Artwork status updated to "Sold"');
+
+    await ArtworkPending.destroy({ where: { artworkId } });
+    console.log('Removed artwork from pending list');
+
     let deliveryLocationId;
     if (deliveryLocation.locationId) {
       deliveryLocationId = deliveryLocation.locationId;
@@ -1706,17 +1727,18 @@ app.post('/api/confirmPurchase', async (req, res) => {
       const newLocation = await Locations.create(deliveryLocation);
       deliveryLocationId = newLocation.locationId;
     }
+    console.log('Delivery location ID:', deliveryLocationId);
 
-    // Create a new shipping record with placeholders for the shipping company and origin location
     const shipping = await Shipping.create({
       artworkId,
-      originLocationId: null, // Placeholder value
+      originLocationId: null,
       destinationLocationId: deliveryLocationId,
-      shippingCompanyId: null, // Placeholder value
-      shippedDate: null, // Set this when the item is actually shipped
-      shippingCost: 0, // You may want to calculate this based on the delivery location
+      shippingCompanyId: null,
+      shippedDate: null,
+      shippingCost: 0,
       status: 'Pending',
     });
+    console.log('Shipping created:', shipping.toJSON());
 
     const saleDetails = {
       artworkId,
@@ -1740,7 +1762,7 @@ app.post('/api/confirmPurchase', async (req, res) => {
       platformFee: null,
       saleStatus: 'Completed',
       productionId: null,
-      shippingId: shipping.shippingId, // Associate the shipping record with the sale
+      shippingId: shipping.shippingId,
       anonymousPurchase: false,
       agentPurchaserRelationship: null,
       termsConditions: null,
@@ -1753,23 +1775,87 @@ app.post('/api/confirmPurchase', async (req, res) => {
     const sale = await Sale.create(saleDetails);
     console.log('Created sale:', sale.toJSON());
 
+    // Initialize variables
+    let referrerName = '';
+    let referrerEmail = '';
+
+    // Cross-reference buyer's email to find referrer
+    console.log('Checking for referral for buyer email:', buyerInfo.primaryEmail);
+
+    if (buyerInfo && buyerInfo.primaryEmail) {
+      const referral = await Referrals.findOne({ where: { referredEmail: buyerInfo.primaryEmail, status: 'signed_up' } });
+
+      if (referral) {
+        console.log('Referral found:', referral.toJSON());
+
+        referral.status = 'purchased';
+        await referral.save();
+        console.log('Referral status updated to "purchased"');
+
+        // Fetch referrer details from Users and contact info
+        const referrer = await Users.findOne({ where: { userId: referral.referrerId } });
+
+        if (referrer) {
+          console.log('Referrer found:', referrer.toJSON());
+
+          const referrerContactInfo = referrer.entityType === 'Person'
+            ? await PersonContactInfo.findOne({ where: { userId: referrer.userId } })
+            : await OrganizationContactInfo.findOne({ where: { userId: referrer.userId } });
+
+          console.log('Referrer contact info:', referrerContactInfo ? referrerContactInfo.toJSON() : 'Not found');
+
+          referrerName = referrer.entityType === 'Person'
+            ? `${referrerContactInfo?.firstName || ''} ${referrerContactInfo?.lastName || ''}`.trim()
+            : referrerContactInfo?.organizationName || '';
+
+          referrerEmail = referrer.email;
+
+          console.log('Referrer name:', referrerName);
+          console.log('Referrer email:', referrerEmail);
+
+          // Create a reward for the referrer
+          const reward = await rewardReferrer(referral.referrerId, sale.saleId);
+
+          if (reward) {
+            console.log('Reward successfully created:', reward.toJSON());
+
+            // Send the reward notification email to the referrer
+            await sendRewardNotificationToReferrer(referrerEmail, referrerContactInfo?.firstName, referrerContactInfo?.lastName);
+            console.log('Reward notification email sent to referrer:', referrerEmail);
+          } else {
+            console.error('Reward creation failed');
+          }
+        } else {
+          console.error('Referrer not found');
+        }
+      } else {
+        console.error('Referral not found or already processed');
+      }
+    } else {
+      console.error('Buyer email is undefined or missing');
+    }
+
     const token = jwt.sign({ userId, artworkId, saleId: sale.saleId }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
-    // Emit the status update event to all connected clients
     io.emit('artworkStatusUpdated', { artworkID: artworkId, status: 'Sold' });
 
     console.log('Generated JWT Token:', token);
     console.log('Token Contents:', { userId, artworkId, saleId: sale.saleId });
 
-    res.json({ success: true, sale, token });
+    // Send the referrer details back to the frontend
+    res.json({ success: true, sale, token, referrerName, referrerEmail });
+    console.log('Returning referrer details:', { referrerName, referrerEmail });
   } catch (error) {
     console.error('Error confirming purchase:', error);
     res.status(500).json({ success: false, error: 'An error occurred while confirming the purchase' });
   }
 });
 
+
 app.get('/api/purchase-success', authenticateToken, async (req, res) => {
   const { userId, artworkId, saleId } = req.user;
+
+  console.log('Decoded JWT Token:', req.user); // Added console log for debugging
 
   try {
     const sale = await Sale.findOne({ 
@@ -1778,6 +1864,13 @@ app.get('/api/purchase-success', authenticateToken, async (req, res) => {
         { model: Users, as: 'buyer', include: [PersonContactInfo, OrganizationContactInfo] },
         { model: Users, as: 'newOwner', include: [PersonContactInfo, OrganizationContactInfo] },
         { model: Shipping, include: [{ model: Locations, as: 'destination' }] },
+        {
+          model: Referrals,
+          as: 'referral',
+          attributes: ['referrerId'],
+          required: false,
+          include: [{ model: Users, as: 'referrer', include: [PersonContactInfo, OrganizationContactInfo] }]
+        },
       ]
     });
 
@@ -1788,6 +1881,27 @@ app.get('/api/purchase-success', authenticateToken, async (req, res) => {
 
     const buyerInfo = sale.buyer.entityType === 'Person' ? sale.buyer.PersonContactInfo : sale.buyer.OrganizationContactInfo;
     const collectorInfo = sale.newOwner.entityType === 'Person' ? sale.newOwner.PersonContactInfo : sale.newOwner.OrganizationContactInfo;
+
+    // Extract referrer details if available
+    let referrerName = '';
+    let referrerEmail = '';
+
+    if (sale.referral && sale.referral.referrer) {
+      console.log('Sale with referral:', sale.referral);
+      const referrer = sale.referral.referrer;
+      const referrerContactInfo = referrer.entityType === 'Person' 
+        ? referrer.PersonContactInfo 
+        : referrer.OrganizationContactInfo;
+      
+      referrerName = referrer.entityType === 'Person'
+        ? `${referrerContactInfo?.firstName || ''} ${referrerContactInfo?.lastName || ''}`.trim()
+        : referrerContactInfo?.organizationName || '';
+      referrerEmail = referrer.email;
+    }
+
+    console.log('Sale found:', sale); // Added console log for debugging
+    console.log('Referrer Name:', referrerName);
+    console.log('Referrer Email:', referrerEmail);
 
     res.json({ 
       message: 'Purchase successful', 
@@ -1806,6 +1920,9 @@ app.get('/api/purchase-success', authenticateToken, async (req, res) => {
         charityRevenue: sale.charityRevenue,
         artistResaleRoyalty: sale.artistResaleRoyalty,
         platformFee: sale.platformFee,
+        referrerId: sale.referral ? sale.referral.referrerId : null,
+        referrerName,
+        referrerEmail,
       } 
     });
   } catch (error) {
@@ -1813,6 +1930,60 @@ app.get('/api/purchase-success', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Fetch referrer details based on saleId
+app.get('/api/referrer-info/:saleId', authenticateToken, async (req, res) => {
+  const { saleId } = req.params;
+
+  try {
+    // Fetch the reward associated with the sale
+    const reward = await Reward.findOne({ where: { saleId } });
+
+    if (!reward) {
+      return res.status(404).json({ error: 'Reward not found for the provided sale ID.' });
+    }
+
+    const referrer = await Users.findOne({ where: { userId: reward.userId } });
+
+    if (!referrer) {
+      return res.status(404).json({ error: 'Referrer not found.' });
+    }
+
+    let referrerName = '';
+    let referrerEmail = referrer.email;
+
+    if (referrer.entityType === 'Person') {
+      const personContact = await PersonContactInfo.findOne({ where: { userId: referrer.userId } });
+      referrerName = `${personContact?.firstName || ''} ${personContact?.lastName || ''}`.trim();
+    } else if (referrer.entityType === 'Organization') {
+      const organizationContact = await OrganizationContactInfo.findOne({ where: { userId: referrer.userId } });
+      referrerName = organizationContact?.organizationName || '';
+    }
+
+    res.json({
+      referrerName,
+      referrerEmail,
+    });
+  } catch (error) {
+    console.error('Error fetching referrer info:', error);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// Scheduled job to reset subscriber quotas on the 1st of every month
+cron.schedule('0 0 1 * *', async () => {
+  console.log('Resetting subscriber quotas...');
+  try {
+    await SubscriberQuota.update(
+      { usedQuota: 0 },
+      { where: {} }
+    );
+    console.log('Subscriber quotas have been reset.');
+  } catch (error) {
+    console.error('Error during subscriber quota reset:', error);
+  }
+});
+
 
 app.put('/api/updateShippingDetails/:shippingId', async (req, res) => {
   const { shippingId } = req.params;
@@ -1843,6 +2014,8 @@ app.put('/api/updateShippingDetails/:shippingId', async (req, res) => {
 // app.listen(port, () => {
 //   console.log(`Server is running at http://localhost:${port}`);
 // });
+
+module.exports = router;
 
 http.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

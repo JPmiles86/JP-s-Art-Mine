@@ -1,0 +1,23 @@
+// my-gallery/data/colorCategoryMatrix.js
+module.exports = [
+    { name: 'Red', colorCode: '#FF0000' },
+    { name: 'Pink', colorCode: '#FFC0CB' },
+    { name: 'Orange', colorCode: '#FFA500' },
+    { name: 'Yellow', colorCode: '#FFFF00' },
+    { name: 'Green', colorCode: '#00FF00' },
+    { name: 'Cyan', colorCode: '#00FFFF' },
+    { name: 'Blue', colorCode: '#0000FF' },
+    { name: 'Purple', colorCode: '#800080' },
+    { name: 'Magenta', colorCode: '#FF00FF' },
+    { name: 'Brown', colorCode: '#A52A2A' },
+    { name: 'White', colorCode: '#FFFFFF' },
+    { name: 'Gray', colorCode: '#808080' },
+    { name: 'Black', colorCode: '#000000' },
+    { name: 'Beige', colorCode: '#F5F5DC' },
+    { name: 'Teal', colorCode: '#008080' },
+    { name: 'Lavender', colorCode: '#E6E6FA' },
+    { name: 'Maroon', colorCode: '#800000' },
+    { name: 'Olive', colorCode: '#808000' },
+    { name: 'Navy', colorCode: '#000080' },
+    { name: 'Turquoise', colorCode: '#40E0D0' },
+];

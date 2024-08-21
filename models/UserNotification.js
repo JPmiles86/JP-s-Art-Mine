@@ -1,42 +1,57 @@
-// my-gallery/models/UserNotification.js
-
+// UserNotification.js
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 class UserNotification extends Model {}
 
 UserNotification.init({
-  userNotificationId: {
+  id: {
     type: DataTypes.INTEGER,
+    primaryKey: true,
     autoIncrement: true,
-    primaryKey: true
   },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: 'Users',
-      key: 'userId'
-    }
+      key: 'userId',
+    },
   },
-  artworkId: {
+  type: {
+    type: DataTypes.ENUM(
+      'curation_approval', 
+      'artwork_sale', 
+      'subscription_renewal', 
+      'quota_reset', 
+      'artwork_like',
+      'artwork_added_to_list',
+      'artwork_made_public',
+      'followed_user_action'
+    ),
+    allowNull: false,
+  },
+  entityId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'Artworks',
-      key: 'id'
-    }
+    allowNull: true,
   },
-  notified: {
-    type: DataTypes.BOOLEAN,
+  message: {
+    type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: false
-  }
+  },
+  read: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  },
 }, {
   sequelize,
   modelName: 'UserNotification',
   tableName: 'UserNotifications',
-  timestamps: true
+  timestamps: true,
 });
 
 module.exports = UserNotification;

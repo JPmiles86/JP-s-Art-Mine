@@ -19,7 +19,9 @@ import Profile from './screens/Profile';
 import Favorites from './screens/Favorites';
 import Purchase from './screens/Purchase';
 import RequestAccess from './screens/RequestAccess';
-import Success from './screens/Success'; // Import the new Success component
+import Success from './screens/Success';
+import ReferAFriend from './screens/ReferAFriend'; 
+import ReferralSignUp from './screens/ReferralSignUp';
 
 // kick off the polyfill!
 smoothscroll.polyfill();
@@ -65,12 +67,14 @@ const AppContent: React.FC = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/refer-a-friend" element={<ReferAFriend />} /> 
+            <Route path="/register" element={<ReferralSignUp />} />
             <Route path="/:filter" element={<ImageGrid />} />
             <Route path="/:filter/:photoID" element={<ExhibitionSpace />} />
             <Route path="/:filter/:photoID/inquire" element={<Inquire />} />
             <Route path="/:filter/:photoID/purchase/:artworkID" element={<Purchase />} />
             <Route path="/:filter/:photoID/request/:artworkID" element={<RequestAccess />} />
-            <Route path="/:filter/:photoID/success/:artworkID" element={<Success />} /> {/* Add the new route */}
+            <Route path="/:filter/:photoID/success/:artworkID" element={<Success />} />
           </Routes>
         </ScrollContext.Provider>
       </Container>

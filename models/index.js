@@ -51,5 +51,17 @@ module.exports = {
     ProvenanceLocations: require('./ProvenanceLocations'),
     PurchaseProvenanceRecords: require('./PurchaseProvenanceRecords'),
     PurchaseLocations: require('./PurchaseLocations'),
+    Referrals: require('./Referrals'),
+    DiscountCodes: require('./DiscountCodes'),
+    Subscriber: require('./Subscriber'),  
+    SubscriberQuota: require('./SubscriberQuota'),  
+    CurationListUser: require('./CurationListUser'),
+    CurationListUserPhotos: require('./CurationListUserPhotos'),
+    CurationListWebsite: require('./CurationListWebsite'),  
+    CurationListArtMine: require('./CurationListArtMine'),  
+    Reward: require('./Reward'),
+    ColorCategory: require('./ColorCategory'),
+    ColorShade: require('./ColorShade'),
+    PhotoColor: require('./PhotoColor'),
   };
   

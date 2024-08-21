@@ -3,9 +3,10 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { Users, PasswordResetToken } = require('../../models');
+const { Users, PersonContactInfo, OrganizationContactInfo, PasswordResetToken, Referrals, DiscountCodes } = require('../../models');
 const jwt = require('jsonwebtoken');
-const { sendSignUpEmail, sendPasswordResetEmail } = require('../../src/utils/emailService');
+const { sendReferrerNotification, sendSignUpEmail, sendPasswordResetEmail, sendReferralEmail, sendRewardNotificationToReferrer } = require('../../src/utils/emailService');
+const { getUserDetails } = require('../../src/utils/userService'); // Import getUserDetails here
 const crypto = require('crypto');
 const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 
@@ -13,26 +14,25 @@ function generateResetToken() {
   return crypto.randomBytes(20).toString('hex');
 }
 
+// Generate a unique referral code
+function generateReferralCode() {
+  return crypto.randomBytes(3).toString('hex').toUpperCase();
+}
+
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, referralCode } = req.body;
   const lowercaseEmail = email.toLowerCase();
-  const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
 
   try {
-    // Check if the user already exists
     const existingUser = await Users.findOne({ where: { email: lowercaseEmail } });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generate a random number between 1 and 20
     const randomNumber = Math.floor(Math.random() * 20) + 1;
-    const paddedNumber = randomNumber.toString().padStart(2, '0'); 
+    const paddedNumber = randomNumber.toString().padStart(2, '0');
 
-    // Create a new user with lowercase email and assign a random profile picture URL
     const newUser = await Users.create({
       email: lowercaseEmail,
       password: hashedPassword,
@@ -40,29 +40,44 @@ router.post('/register', async (req, res) => {
       profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
     });
 
-    // Set the 'createdBy' and 'creationReason' fields after creating the user
     await newUser.update({
       createdBy: newUser.userId,
       creationReason: 'User Sign-up',
     });
-    
-    // Generate username based on email and userId
-    const username = `${lowercaseEmail.split('@')[0]}#${newUser.userId}`;
 
-    // Update the user's username
+    const username = `${lowercaseEmail.split('@')[0]}#${newUser.userId}`;
     await newUser.update({ username });
 
-    // Generate a JWT token
+    if (referralCode) {
+      const referral = await Referrals.findOne({ 
+        where: { 
+          referralCode: referralCode,
+          referredEmail: lowercaseEmail,
+          status: 'pending'
+        } 
+      });
+
+      if (referral) {
+        referral.status = 'signed_up';
+        await referral.save();
+
+        // Ensure referrerId is numeric
+        if (referral.referrerId && !isNaN(referral.referrerId)) {
+          await sendReferrerNotification(referral.referrerId, newUser.PersonContactInfo?.firstName, newUser.PersonContactInfo?.lastName, newUser.email);
+        } else {
+          console.error('Invalid referrerId:', referral.referrerId);
+        }
+      }
+    }
+
     const token = jwt.sign({ userId: newUser.userId }, JWT_SECRET_KEY);
 
-    // Include user data in the response
     const userData = {
       userId: newUser.userId,
       email: newUser.email,
       username: newUser.username,
       role: newUser.role,
       isAnonymous: newUser.isAnonymous,
-      // Include any other user properties you need
     };
 
     res.status(201).json({ message: 'User registered successfully', token, userData });
@@ -72,28 +87,125 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.post('/referralSignUp', async (req, res) => {
+  const { email, password, firstName, lastName, referralCode } = req.body;
+  const lowercaseEmail = email.toLowerCase();
+
+  try {
+    // Check if the user already exists
+    const existingUser = await Users.findOne({ where: { email: lowercaseEmail } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash the user's password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate a random profile photo number
+    const randomNumber = Math.floor(Math.random() * 20) + 1;
+    const paddedNumber = randomNumber.toString().padStart(2, '0');
+
+    // Create the new user
+    const newUser = await Users.create({
+      email: lowercaseEmail,
+      password: hashedPassword,
+      authMethod: 'email',
+      profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
+    });
+
+    // Update the user with additional information
+    await newUser.update({
+      createdBy: newUser.userId,
+      creationReason: 'User Sign-up',
+    });
+
+    // Create a unique username for the user
+    const username = `${lowercaseEmail.split('@')[0]}#${newUser.userId}`;
+    await newUser.update({ username });
+
+    // Save the first and last name to PersonContactInfo if the user is a person
+    await PersonContactInfo.create({
+      userId: newUser.userId,
+      firstName,
+      lastName,
+      primaryEmail: lowercaseEmail,
+    });
+
+    // Handle the referral logic if a referral code is provided
+    if (referralCode) {
+      const referral = await Referrals.findOne({ where: { referralCode } });
+
+      if (referral && referral.referrerId && !isNaN(referral.referrerId)) {
+        referral.status = 'signed_up';
+        referral.referredUserId = newUser.userId; // Record the referred user's userId
+        await referral.save();
+
+        // Send notification to referrer
+        const referrer = await Users.findOne({ where: { userId: referral.referrerId } });
+
+        if (referrer) {
+          let referrerFirstName = '';
+          let referrerLastName = '';
+
+          if (referrer.entityType === 'Person') {
+            const referrerContact = await PersonContactInfo.findOne({ where: { userId: referrer.userId } });
+            referrerFirstName = referrerContact?.firstName || '';
+            referrerLastName = referrerContact?.lastName || '';
+          }
+
+          await sendReferrerNotification(
+            referral.referrerId,
+            firstName,
+            lastName,
+            lowercaseEmail
+          );
+        } else {
+          console.error('Referrer not found:', referral.referrerId);
+        }
+      } else {
+        console.error('Invalid referral or referrerId:', referral);
+      }
+    }
+
+    // Generate a JWT token for the new user
+    const token = jwt.sign({ userId: newUser.userId }, JWT_SECRET_KEY);
+
+    // Prepare the user data to be sent in the response
+    const userData = {
+      userId: newUser.userId,
+      email: newUser.email,
+      username: newUser.username,
+      role: newUser.role,
+      isAnonymous: newUser.isAnonymous,
+    };
+
+    // Send the success response
+    res.status(201).json({ message: 'User registered successfully', token, userData });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+
+
 router.post('/anonymous-signup', async (req, res) => {
   const { userId, email, password, username } = req.body;
   const lowercaseEmail = email.toLowerCase();
-  const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not';
 
   try {
-    // Find the anonymous user by userId
     const anonymousUser = await Users.findByPk(userId);
     if (!anonymousUser) {
       return res.status(404).json({ error: 'Anonymous user not found' });
     }
 
-    // Check if the email is already in use by another user
     const existingUser = await Users.findOne({ where: { email: lowercaseEmail } });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already exists' });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update the anonymous user's email, password, role, and username
     await anonymousUser.update({
       email: lowercaseEmail,
       password: hashedPassword,
@@ -104,10 +216,8 @@ router.post('/anonymous-signup', async (req, res) => {
       creationReason: 'Anonymous User Sign-up',
     });
 
-    // Generate a new JWT token
     const token = jwt.sign({ userId: anonymousUser.userId }, JWT_SECRET_KEY);
 
-    // Include user data in the response
     const userData = {
       userId: anonymousUser.userId,
       email: anonymousUser.email,
@@ -136,96 +246,80 @@ router.post('/send-signup-email', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const lowercaseEmail = email.toLowerCase();
-    const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
-  
-    try {
-      // Check if the user exists
-      const user = await Users.findOne({ where: { email: lowercaseEmail } });
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-  
-      // Compare the password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-  
-      // Generate a JWT token
-      const token = jwt.sign({ userId: user.userId }, JWT_SECRET_KEY);
+  const { email, password } = req.body;
+  const lowercaseEmail = email.toLowerCase();
 
-      // Include user data in the response
-      const userData = {
-        userId: user.userId,
-        email: user.email,
-        role: user.role,
-        // Include any other user properties you need
-      };
-  
-      res.status(200).json({ message: 'Login successful', token, userData });
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ error: 'Login failed' });
+  try {
+    const user = await Users.findOne({ where: { email: lowercaseEmail } });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-  });
 
-  router.post('/anonymous', async (req, res) => {
-    const JWT_SECRET_KEY = 'jpm-is-the-best-artist-not'; 
-    try {
-      // Get the current maximum userId
-      const maxUserId = await Users.max('userId');
-
-      // Generate a random number between 1 and 20
-      const randomNumber = Math.floor(Math.random() * 20) + 1;
-      const paddedNumber = randomNumber.toString().padStart(2, '0');
-
-      // Create an anonymous user with the next available userId and random profile picture URL
-      const anonymousUser = await Users.create({
-        isAnonymous: true,
-        role: 'AnonymousUser',
-        authMethod: 'email',
-        username: `Anonymous#${maxUserId + 1}`,
-        profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
-      });
-
-      // Set the 'createdBy' and 'creationReason' fields after creating the anonymous user
-      await anonymousUser.update({
-        createdBy: anonymousUser.userId,
-        creationReason: 'Anonymous Sign-up',
-      });
-
-      // Generate a JWT token for the anonymous user
-      const token = jwt.sign({ userId: anonymousUser.userId }, JWT_SECRET_KEY);
-
-      res.status(200).json({ message: 'Anonymous user created', token, userId: anonymousUser.userId });
-    } catch (error) {
-      console.error('Anonymous user creation error:', error);
-      res.status(500).json({ error: 'Anonymous user creation failed' });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-  });
 
-  router.post('/check-email', async (req, res) => {
-    const { email } = req.body;
-    const lowercaseEmail = email.toLowerCase();
+    const token = jwt.sign({ userId: user.userId }, JWT_SECRET_KEY);
 
-    try {
-      const user = await Users.findOne({ where: { email: lowercaseEmail } });
-      if (user) {
-        // User exists, send password reset email
-        // Implement your email sending logic here
-        res.status(200).json({ exists: true, userId: user.userId });
-      } else {
-        res.status(404).json({ exists: false });
-      }
-    } catch (error) {
-      console.error('Error checking email:', error);
-      res.status(500).json({ error: 'An error occurred' });
+    const userData = {
+      userId: user.userId,
+      email: user.email,
+      role: user.role,
+    };
+
+    res.status(200).json({ message: 'Login successful', token, userData });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+router.post('/anonymous', async (req, res) => {
+  try {
+    const maxUserId = await Users.max('userId');
+    const randomNumber = Math.floor(Math.random() * 20) + 1;
+    const paddedNumber = randomNumber.toString().padStart(2, '0');
+
+    const anonymousUser = await Users.create({
+      isAnonymous: true,
+      role: 'AnonymousUser',
+      authMethod: 'email',
+      username: `Anonymous#${maxUserId + 1}`,
+      profilePhotoUrl: `/userProfileImages/anonymous${paddedNumber}.jpg`,
+    });
+
+    await anonymousUser.update({
+      createdBy: anonymousUser.userId,
+      creationReason: 'Anonymous Sign-up',
+    });
+
+    const token = jwt.sign({ userId: anonymousUser.userId }, JWT_SECRET_KEY);
+
+    res.status(200).json({ message: 'Anonymous user created', token, userId: anonymousUser.userId });
+  } catch (error) {
+    console.error('Anonymous user creation error:', error);
+    res.status(500).json({ error: 'Anonymous user creation failed' });
+  }
+});
+
+router.post('/check-email', async (req, res) => {
+  const { email } = req.body;
+  const lowercaseEmail = email.toLowerCase();
+
+  try {
+    const user = await Users.findOne({ where: { email: lowercaseEmail } });
+    if (user) {
+      res.status(200).json({ exists: true, userId: user.userId });
+    } else {
+      res.status(404).json({ exists: false });
     }
-  });
+  } catch (error) {
+    console.error('Error checking email:', error);
+    res.status(500).json({ error: 'An error occurred' });
+  }
+});
 
-// Password reset request route
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   const lowercaseEmail = email.toLowerCase();
@@ -234,17 +328,13 @@ router.post('/forgot-password', async (req, res) => {
     const user = await Users.findOne({ where: { email: lowercaseEmail } });
 
     if (user) {
-      // Generate a unique password reset token
       const resetToken = generateResetToken();
-
-      // Store the reset token in the database along with the user's email and expiration timestamp
       await PasswordResetToken.create({
         email: lowercaseEmail,
         token: resetToken,
-        expires: Date.now() + 3600000, // Token expires in 1 hour
+        expires: Date.now() + 3600000,
       });
 
-      // Send the password reset email
       await sendPasswordResetEmail(lowercaseEmail, resetToken);
 
       res.status(200).json({ message: 'Password reset email sent' });
@@ -257,25 +347,18 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// Password reset route
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
 
   try {
-    // Find the password reset token in the database
     const resetToken = await PasswordResetToken.findOne({ where: { token } });
 
     if (resetToken && resetToken.expires > Date.now()) {
       const user = await Users.findOne({ where: { email: resetToken.email } });
 
       if (user) {
-        // Hash the new password
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Update the user's password
         await user.update({ password: hashedPassword });
-
-        // Delete the used reset token from the database
         await resetToken.destroy();
 
         res.status(200).json({ message: 'Password reset successful' });
@@ -311,5 +394,95 @@ router.get('/user', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user data' });
   }
 });
+
+router.post('/send-referral', async (req, res) => {
+  const { friendFirstName, friendLastName, friendEmail, referrerEmail } = req.body;
+
+  try {
+    // Find the referrer by their email
+    const referrer = await Users.findOne({ where: { email: referrerEmail } });
+
+    if (!referrer) {
+      return res.status(404).json({ error: 'Referrer not found' });
+    }
+
+    // Log the userId before calling getUserDetails
+    console.log('Referrer userId:', referrer.userId);
+
+    // Use the getUserDetails function to retrieve referrer information
+    const { entityType, firstName, lastName, organizationName } = await getUserDetails(referrer.userId);
+
+    const referrerName = entityType === 'Organization' ? organizationName : `${firstName} ${lastName}`;
+
+    // Check if the email is already registered
+    const existingUser = await Users.findOne({ where: { email: friendEmail } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'This email is already registered.' });
+    }
+
+    // Check if someone else has already sent a referral to this email
+    const existingReferral = await Referrals.findOne({ where: { referredEmail: friendEmail } });
+    if (existingReferral) {
+      return res.status(400).json({ message: 'This email has already been referred by someone else.' });
+    }
+
+    // Generate a unique referral code
+    const referralCode = generateReferralCode();
+
+    // Create referral entry
+    await Referrals.create({
+      referrerId: referrer.userId,
+      referredEmail: friendEmail,
+      referralCode: referralCode,
+      status: 'pending'
+    });
+
+    // Generate a referral link
+    const referralLink = `http://localhost:3000/register?referralCode=${referralCode}`;
+
+    // Send referral email with the correct details
+    await sendReferralEmail(referrer.userId, friendEmail, referralLink, friendFirstName, friendLastName);
+
+    res.status(200).json({ message: 'Referral email sent successfully. Feel free to send another referral.' });
+  } catch (error) {
+    console.error('Error sending referral email:', error.message);
+    res.status(500).json({ error: 'Failed to send referral email' });
+  }
+});
+
+router.get('/api/referrer-details/:saleId', async (req, res) => {
+  const { saleId } = req.params;
+
+  try {
+    const reward = await Reward.findOne({ where: { saleId } });
+
+    if (!reward || !reward.userId) {
+      return res.status(404).json({ error: 'Referrer not found for the given saleId' });
+    }
+
+    const referrer = await Users.findOne({ where: { userId: reward.userId } });
+
+    if (!referrer) {
+      return res.status(404).json({ error: 'Referrer not found' });
+    }
+
+    const referrerContactInfo = referrer.entityType === 'Person'
+      ? await PersonContactInfo.findOne({ where: { userId: referrer.userId } })
+      : await OrganizationContactInfo.findOne({ where: { userId: referrer.userId } });
+
+    const referrerName = referrer.entityType === 'Person'
+      ? `${referrerContactInfo?.firstName || ''} ${referrerContactInfo?.lastName || ''}`.trim()
+      : referrerContactInfo?.organizationName || '';
+
+    res.json({
+      firstName: referrerName,
+      email: referrer.email,
+    });
+  } catch (error) {
+    console.error('Error fetching referrer details:', error);
+    res.status(500).json({ error: 'Failed to fetch referrer details' });
+  }
+});
+
 
 module.exports = router;

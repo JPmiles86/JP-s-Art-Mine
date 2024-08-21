@@ -1,4 +1,3 @@
-// insert_data.js
 const sequelize = require('./config/database');
 const Photo = require('./models/Photo');
 const Dates = require('./models/Dates');
@@ -9,26 +8,31 @@ module.exports = async function insertData(data) {
   console.log('InsertData input:', data);
   await sequelize.sync();
 
-  // A helper function to create the Series
-  async function createSeries(seriesCode, seriesName, imageUrl) {
+  // A helper function to create or update the Series with imageUrl if missing
+  async function createOrUpdateSeries(seriesCode, seriesName, imageUrl) {
     const existingSeries = await Series.findOne({ where: { seriesCode: seriesCode } });
 
     if (!existingSeries) {
       await Series.create({ seriesCode: seriesCode, seriesName: seriesName, imageUrl: imageUrl });
+    } else if (!existingSeries.imageUrl) {
+      await existingSeries.update({ imageUrl: imageUrl });
     }
   }
 
   // Prepare an empty array to hold our new photo records
   let newPhotos = [];
 
-  // Create a set to hold unique series and camera models
-  const uniqueSeries = new Set();
+  // Create an object to track unique series and camera models
+  const uniqueSeries = {};
   const uniqueCameraModels = new Set();
 
   // Loop over each item in the data results
   for (const item of data.results) {
     const dateFormal = item.dateFormal;
     const date = item.date; // Assuming your parsed data contains a 'date' field 
+
+    // Prepend the required path to the image URL for series
+    const fullImageUrl = `/my-gallery/public${item.imagePath}`;
 
     // Check if date exists in Dates table
     const existingDate = await Dates.findOne({ where: { date: date } });
@@ -45,17 +49,26 @@ module.exports = async function insertData(data) {
       await Dates.create(dateRecord);
     }
 
-    // Add the item's series and camera model to the unique set
-    uniqueSeries.add({ seriesCode: item.seriesCode, seriesName: item.seriesName, imageUrl: item.imagePath });
+    // Add the item's series to the unique series object
+    if (!uniqueSeries[item.seriesCode]) {
+      uniqueSeries[item.seriesCode] = {
+        seriesCode: item.seriesCode,
+        seriesName: item.seriesName,
+        imageUrl: fullImageUrl,  // Use the modified URL here
+      };
+    }
+
+    // Add the item's camera model to the unique set
     uniqueCameraModels.add(item.model);
 
     // Now we can add the photo record to our array, since the necessary Date record exists
     newPhotos.push(item);
   }
 
-  // Loop over each unique series and create a new Series record
-  for (const series of uniqueSeries) {
-    await createSeries(series.seriesCode, series.seriesName, series.imageUrl);
+  // Loop over each unique series and create or update the Series record
+  for (const seriesCode in uniqueSeries) {
+    const series = uniqueSeries[seriesCode];
+    await createOrUpdateSeries(series.seriesCode, series.seriesName, series.imageUrl);
   }
 
   // Loop over each unique camera model and create a new CameraModel record
@@ -70,7 +83,7 @@ module.exports = async function insertData(data) {
 
   // Now that we've added all necessary Date records, we can bulk create the Photo records
   console.log('InsertData bulkCreate input:', newPhotos);
-  
+
   // Bulk create the photos and ignore any duplicate entries
   const photos = await Photo.bulkCreate(newPhotos, { ignoreDuplicates: true, returning: true });
 

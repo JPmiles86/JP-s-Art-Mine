@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instant Color Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #jsonInput {
+            width: 100%;
+            height: 200px;
+        }
+        #colorContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .color-box {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Instant Color Visualizer</h1>
+    <textarea id="jsonInput" placeholder="Paste your JSON data here"></textarea>
+    <div id="colorContainer"></div>
+
+    <script>
+        const jsonInput = document.getElementById('jsonInput');
+        const colorContainer = document.getElementById('colorContainer');
+
+        function visualizeColors() {
+            colorContainer.innerHTML = '';
+            const jsonText = jsonInput.value.trim();
+            if (!jsonText) return;
+
+            try {
+                const colors = JSON.parse(jsonText);
+                colors.forEach(color => {
+                    const colorBox = document.createElement('div');
+                    colorBox.className = 'color-box';
+                    colorBox.style.backgroundColor = color.hex;
+                    colorBox.innerHTML = `
+                        ${color.category}<br>
+                        ${color.percentage.toFixed(2)}%<br>
+                        Rank: ${color.rank}
+                    `;
+                    colorContainer.appendChild(colorBox);
+                });
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                colorContainer.innerHTML = '<p>Invalid JSON data. Please check your input.</p>';
+            }
+        }
+
+        jsonInput.addEventListener('input', visualizeColors);
+        
+        // Initial visualization if there's content on page load
+        visualizeColors();
+    </script>
+</body>
+</html>

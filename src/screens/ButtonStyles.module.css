@@ -88,6 +88,26 @@
   flex-basis: calc(20% - 10px); /* Adjust based on total number of buttons */
 }
 
+
+.button.medium {
+  background-color: #ffffff;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 16px;
+  font-family: 'EB Garamond', serif;
+  padding: 5px 5px;
+  height: 40px;
+  line-height: -1; /* Adjust the line-height to vertically center the text */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex-grow: 0; /* Prevent stretching */
+  text-align: center;
+  margin: 5px;
+  margin-top: 5px;
+  max-width: 120px; /* Max width for buttons */
+  flex-basis: calc(20% - 10px); /* Adjust based on total number of buttons */
+}
+
 .button:last-child {
   margin-right: 0; /* Remove margin for the last button */
 }
