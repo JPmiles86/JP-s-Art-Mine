@@ -22,6 +22,35 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Ignore my-gallery/public/assets
-my-gallery/public/assets/
+# Ignore public/assets directory and its contents
+/public/assets/
+
+# Ignore jpm_art_database files
 jpm_art_database.*
+
+# Ignore images in public/assets (this is redundant if /public/assets/ is ignored)
+/public/assets/images/
+
+# Ignore myenv directory and its contents
+/myenv/
+
+# Ignore copy files more thoroughly
+*copy*
+*copy.*
+
+# Ignore Jupyter notebooks
+*.ipynb
+
+# Ignore server copy
+server copy.js
+
+# Ignore SQL files (if they contain sensitive information)
+*.sql
+
+# Ignore specific files (adjust as needed)
+/config/jpm_art_database_Schema.sql
+/config/JPM_Art_Database Schema*.sql
+/config/JPM_Database_BU_March18.sql
+/models/combined.js
+/config/combined.js
+/all_models.js
